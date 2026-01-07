@@ -767,3 +767,174 @@ html[data-theme="cupcake"] .btn-accent:hover {
         max-width: 8rem;
     }
 }
+
+/* =========================================================
+   FINAL OVERRIDES (paste at END of styles.css)
+   Fix: Room members formatting + Details button overlaps
+   ========================================================= */
+
+/* ---------- 0) Stronger fallbacks for Tailwind-like helpers used in app.js ---------- */
+.truncate {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Fallback if color-mix isn't supported */
+.bg-base-20040 {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+@supports (background-color: color-mix(in oklab, black, white)) {
+    .bg-base-20040 {
+        background-color: color-mix(in oklab, hsl(var(--b2)) 40%, transparent);
+    }
+}
+
+/* ---------- 1) Room Members panel (nested card inside pool card) ---------- */
+/* Your HTML makes #roomMembersWrap a .card inside another .card-body [file:7] */
+#roomMembersWrap {
+    box-shadow: none !important;
+    /* remove double heavy shadow */
+    border: 1px solid hsl(var(--b3)) !important;
+    background: color-mix(in oklab, hsl(var(--b1)) 70%, transparent) !important;
+}
+
+#roomMembersWrap .card-body {
+    padding: 0.85rem !important;
+}
+
+/* Ensure header row aligns nicely (Room members + Online badge) */
+#roomMembersWrap .card-body>div:first-child {
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Members list rows from app.js:
+     <div class="flex items-center justify-between p-2 rounded-xl bg-base-20040 ...">
+       <div class="truncate">name/email</div>
+       <span class="badge ...">online/offline</span>
+     </div> [file:4]
+  */
+#roomMembersList {
+    margin-top: 0.25rem;
+}
+
+#roomMembersList>div {
+    display: grid !important;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: 0.6rem;
+
+    padding: 0.6rem 0.7rem !important;
+    border-radius: 0.75rem !important;
+    border: 1px solid hsl(var(--b3)) !important;
+}
+
+#roomMembersList>div>.truncate {
+    min-width: 0;
+}
+
+#roomMembersList>div>.badge {
+    justify-self: end;
+    white-space: nowrap;
+}
+
+/* Keep list from blowing up the right column on mobile */
+#roomMembersList {
+    max-height: 14rem;
+    overflow: auto;
+}
+
+@media (max-width: 768px) {
+    #roomMembersList {
+        max-height: 12rem;
+    }
+}
+
+/* ---------- 2) Results cards: stop “Details/Add” overlap ---------- */
+/* app.js renders .card-actions with Tailwind classes; force reliable layout [file:4] */
+#results .card .card-body {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Title + rating badge row can squeeze; allow wrap cleanly */
+#results .card .card-body>.flex.items-start {
+    flex-wrap: wrap;
+}
+
+#results .card .card-body>.flex.items-start .card-title {
+    min-width: 0;
+}
+
+/* Actions row: wrap and never overlap content */
+#results .card .card-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+
+    margin-top: auto !important;
+    /* push buttons to bottom of card body */
+}
+
+#results .card .card-actions .btn {
+    white-space: nowrap;
+}
+
+/* Small phones: stack buttons full width */
+@media (max-width: 420px) {
+    #results .card .card-actions {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    #results .card .card-actions .btn {
+        width: 100%;
+    }
+}
+
+/* ---------- 3) Pool rows: prevent right-side action buttons overlapping text ---------- */
+/* Each pool row is a flex container created by app.js [file:4] */
+#pool>div {
+    align-items: flex-start;
+    /* allow right column to wrap down cleanly */
+}
+
+/* Actions column is the last child in the row HTML [file:4] */
+#pool>div>div:last-child {
+    margin-left: auto;
+    /* keep it on the right when space allows */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    max-width: 45%;
+}
+
+/* If title is long, it should truncate and not collide with buttons */
+#pool>div>div:nth-child(2) {
+    min-width: 0;
+}
+
+/* Mobile: actions go below, full width */
+@media (max-width: 640px) {
+    #pool>div {
+        flex-wrap: wrap;
+    }
+
+    #pool>div>div:last-child {
+        max-width: 100%;
+        width: 100%;
+        justify-content: flex-start;
+        margin-left: 0;
+    }
+
+    #pool .btn-xs {
+        flex: 1 1 auto;
+        min-width: 5rem;
+    }
+}
