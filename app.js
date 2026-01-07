@@ -675,7 +675,7 @@
     }
 
     function addToPoolById(id) {
-        requireLoginForRoomWrite();
+        if (!requireLoginForRoomWrite()) return;
         const m = state.results.find((x) => x.id === id);
         if (!m) return;
 
@@ -694,7 +694,7 @@
     }
 
     function removeFromPool(id) {
-        requireLoginForRoomWrite();
+        if (!requireLoginForRoomWrite()) return;
         state.pool = state.pool.filter((x) => x.id !== id);
         saveJson(LS_POOL, state.pool);
         renderPool();
@@ -702,7 +702,7 @@
     }
 
     function toggleWatched(id) {
-        requireLoginForRoomWrite();
+        if (!requireLoginForRoomWrite()) return;
         if (state.watched.has(id)) state.watched.delete(id);
         else state.watched.add(id);
 
@@ -712,7 +712,7 @@
     }
 
     function clearPool() {
-        requireLoginForRoomWrite();
+        if (!requireLoginForRoomWrite()) return;
         state.pool = [];
         saveJson(LS_POOL, state.pool);
         renderPool();
@@ -1074,14 +1074,6 @@
                 startUserDocListener();
             });
 
-        }
-
-        function requireLoginForRoomWrite() {
-            if (!inRoom()) return true;          // normal (non-room) mode can stay local
-            if (authState.user) return true;     // logged-in user can edit room
-            toast("Login to edit this room.", "info");
-            openAuthDialog();
-            return false;
         }
 
         async function loadSharedListFromUrl() {
