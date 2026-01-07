@@ -796,6 +796,15 @@
         if (fa) {
             fa.onAuthStateChanged(fa.auth, async (user) => {
                 authState.user = user || null;
+                const fs = window.firebaseStore;
+                if (user && fs) {
+                    await fs.setDoc(
+                        fs.doc(fs.db, "users", user.uid),
+                        { email: user.email || null, createdAt: fs.serverTimestamp() },
+                        { merge: true }
+                    );
+                }
+
                 updateUserChip();
 
                 if (!authState.user) {
