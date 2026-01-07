@@ -30,7 +30,6 @@ if (!cfg) {
   const provider = new GoogleAuthProvider();
   const db = getFirestore(app);
 
-  // expose to window so app.js can use it
   window.firebaseAuth = {
     auth,
     provider,
@@ -41,7 +40,6 @@ if (!cfg) {
     signOut
   };
 
-  // expose Firestore helpers app.js expects
   window.firebaseStore = {
     db,
     doc,
