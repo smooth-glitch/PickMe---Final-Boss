@@ -1,0 +1,50 @@
+/* Peppy background + subtle grain */
+body {
+    background:
+      radial-gradient(900px 500px at 15% -10%, rgba(255, 0, 170, 0.22), transparent 55%),
+      radial-gradient(800px 520px at 90% 0%, rgba(0, 255, 230, 0.16), transparent 55%),
+      radial-gradient(900px 520px at 60% 110%, rgba(120, 90, 255, 0.18), transparent 55%),
+      hsl(var(--b2));
+  }
+  
+  body::before{
+    content:"";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: .06;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+  }
+  
+  /* Make posters feel snappy on hover */
+  .card img {
+    transition: transform 160ms ease, filter 160ms ease;
+  }
+  .card:hover img {
+    transform: translateY(-2px) scale(1.02);
+    filter: saturate(1.1) contrast(1.05);
+  }
+  
+  /* A tiny “pop” for Tonight’s pick badge */
+  @keyframes pop {
+    0% { transform: scale(.96); opacity: .7; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .badge-primary {
+    animation: pop 220ms ease-out;
+  }
+  
+  /* Better scrollbar (Chrome/Edge) */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, hsl(var(--p)) 35%, transparent);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-track { background: transparent; }
+  
+  /* Accessibility: reduce motion */
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  }
+  
