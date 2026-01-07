@@ -12,6 +12,12 @@
     let loadedSharedList = null;
     let lastAutoOpenedPickKey = null;
 
+    let unsubMembers = null;
+    let heartbeatTimer = null;
+
+    const HEARTBEAT_MS = 25000;        // 25s
+    const ONLINE_WINDOW_MS = 70000;    // 70s (>= HEARTBEAT_MS * 2 is safe)
+
     const state = {
         imgBase: "https://image.tmdb.org/t/p/",
         posterSize: "w500",
@@ -53,6 +59,91 @@
         toast("Login to edit this room.", "info");
         openAuthDialog();
         return false;
+    }
+
+    function membersColRef() {
+        const fs = window.firebaseStore;
+        return fs.collection(fs.db, "rooms", roomState.id, "members");
+    }
+
+    function stopMembersListener() {
+        if (unsubMembers) unsubMembers();
+        unsubMembers = null;
+    }
+
+    function stopHeartbeat() {
+        if (heartbeatTimer) clearInterval(heartbeatTimer);
+        heartbeatTimer = null;
+    }
+
+    async function heartbeatOnce() {
+        if (!inRoom() || !authState.user) return;
+
+        const fs = window.firebaseStore;
+        const u = authState.user;
+
+        await fs.setDoc(
+            fs.doc(fs.db, "rooms", roomState.id, "members", u.uid),
+            {
+                uid: u.uid,
+                name: u.displayName || "",
+                email: u.email || "",
+                lastSeenAt: fs.serverTimestamp()
+            },
+            { merge: true }
+        );
+    }
+
+    function startHeartbeat() {
+        stopHeartbeat();
+        if (!inRoom() || !authState.user) return;
+
+        heartbeatOnce().catch(() => { });
+        heartbeatTimer = setInterval(() => heartbeatOnce().catch(() => { }), HEARTBEAT_MS);
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") heartbeatOnce().catch(() => { });
+        });
+    }
+
+    function startMembersListener() {
+        const fs = window.firebaseStore;
+        if (!fs || !inRoom()) return;
+
+        stopMembersListener();
+
+        $("roomMembersWrap")?.classList.remove("hidden");
+
+        unsubMembers = fs.onSnapshot(
+            membersColRef(),
+            (snap) => {
+                const now = Date.now();
+                const members = snap.docs.map((d) => {
+                    const m = d.data() || {};
+                    const ms = typeof m.lastSeenAt?.toMillis === "function" ? m.lastSeenAt.toMillis() : 0;
+                    const online = ms && (now - ms) <= ONLINE_WINDOW_MS;
+                    return { id: d.id, name: m.name, email: m.email, lastSeenMs: ms, online };
+                }).sort((a, b) => (b.lastSeenMs || 0) - (a.lastSeenMs || 0));
+
+                const onlineCount = members.filter(x => x.online).length;
+                const countEl = $("roomOnlineCount");
+                if (countEl) countEl.textContent = `Online: ${onlineCount}`;
+
+                const list = $("roomMembersList");
+                if (!list) return;
+                list.innerHTML = members.map(m => {
+                    const label = (m.name || m.email || m.id);
+                    const badge = m.online ? "badge-success" : "badge-ghost";
+                    const status = m.online ? "online" : "offline";
+                    return `
+                <div class="flex items-center justify-between p-2 rounded-xl bg-base-200/40 border border-base-300">
+                  <div class="truncate">${escapeHtml(label)}</div>
+                  <span class="badge badge-sm ${badge}">${status}</span>
+                </div>
+              `;
+                }).join("");
+            }
+        );
     }
 
     function inRoom() {
@@ -208,10 +299,17 @@
         setRoomInUrl(roomId);
         updateRoomUI();
         startRoomListener();
+        startMembersListener();
+        startHeartbeat();
+
     }
 
     function leaveRoom() {
         stopRoomListener();
+        stopMembersListener();
+        stopHeartbeat();
+        $("roomMembersWrap")?.classList.add("hidden");
+
         roomState.id = null;
         setRoomInUrl(null);
         updateRoomUI();

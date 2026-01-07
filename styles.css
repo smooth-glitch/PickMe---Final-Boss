@@ -478,3 +478,99 @@ html[data-theme="cupcake"] .btn-accent:hover {
 .text-base-content\/60 {
     font-weight: 400;
 }
+
+/* =========================================================
+   Additions for current index.html + app.js (no rewrites)
+   ========================================================= */
+
+/* 1) Mobile header wrapping (your header is flex; buttons can overflow) */
+@media (max-width: 640px) {
+    header.header-shell {
+        flex-wrap: wrap;
+        row-gap: 0.5rem;
+    }
+
+    /* second header row (button group) becomes full width and wraps */
+    header.header-shell>div:last-child {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    /* make “Pick for me” easy to tap */
+    #btnPick {
+        width: 100%;
+    }
+}
+
+/* 2) Room members list: long names/emails shouldn’t break layout */
+#roomMembersWrap {
+    border-radius: 0.9rem;
+}
+
+#roomMembersList>div {
+    word-break: break-word;
+}
+
+/* 3) Pager can wrap on small screens */
+#pagerWrap {
+    flex-wrap: wrap;
+}
+
+/* 4) Room pick banner: match your “card-ish” look */
+#roomPickBanner {
+    border: 1px solid hsl(var(--b3));
+    border-radius: 0.9rem;
+}
+
+/* 5) Modals: ensure usable on very small screens */
+@media (max-width: 480px) {
+    .modal-box {
+        max-height: calc(100vh - 2rem);
+        overflow: auto;
+        padding: 1rem;
+    }
+
+    .modal-action {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .modal-action .btn {
+        flex: 1 1 9rem;
+    }
+}
+
+/* 6) Fallback utility classes used in app.js-rendered HTML
+        (in case CDN Tailwind doesn’t generate these) */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.aspect-23 {
+    aspect-ratio: 2 / 3;
+}
+
+.bg-base-20040 {
+    background-color: color-mix(in oklab, hsl(var(--b2)) 40%, transparent);
+}
+
+.text-base-content60 {
+    color: color-mix(in oklab, hsl(var(--bc)) 60%, transparent);
+}
+
+.text-base-content70 {
+    color: color-mix(in oklab, hsl(var(--bc)) 70%, transparent);
+}
+
+/* toast wrapper created by app.js uses z-999 */
+.z-999 {
+    z-index: 999;
+}
+
+#toasts.toast {
+    z-index: 9999;
+}
