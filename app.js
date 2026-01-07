@@ -585,15 +585,19 @@
     // ---------- auth helpers ----------
     function updateUserChip() {
         const chip = $("userChip");
+        const icon = $("userStatusIcon");
         if (!chip) return;
 
         if (authState.user) {
             const u = authState.user;
             chip.textContent = u.displayName || u.email || "Signed in";
+            if (icon) icon.classList.remove("hidden");
         } else {
             chip.textContent = "Sign in";
+            if (icon) icon.classList.add("hidden");
         }
     }
+
 
     function openAuthDialog() {
         const dlg = $("dlgAuth");
