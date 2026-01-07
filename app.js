@@ -962,18 +962,12 @@
 
         $("btnImportList")?.addEventListener("click", async () => {
             if (!authState.user) {
-                toast("Sign in to import this list.", "error");
-                return;
-            }
-            if (!loadedSharedList) {
-                toast("No shared list loaded.", "error");
+                openAuthDialog();            // show your existing auth modal
+                toast("Sign in to import this list.", "info");
                 return;
             }
 
-            if (Array.isArray(loadedSharedList.pool)) state.pool = loadedSharedList.pool;
-            if (Array.isArray(loadedSharedList.watched)) state.watched = new Set(loadedSharedList.watched);
-            if (loadedSharedList.filters && typeof loadedSharedList.filters === "object") state.filters = loadedSharedList.filters;
-
+            // Save current state (which came from the shared link) into user's doc
             saveJson(LS_POOL, state.pool);
             saveJson(LS_WATCHED, Array.from(state.watched));
             saveJson(LS_FILTERS, state.filters);
@@ -982,8 +976,9 @@
             renderPool();
             scheduleCloudSave();
 
-            toast("Imported to your pool.", "success");
+            toast("Imported to your account.", "success");
         });
+
 
         $("btnAuthSubmit")?.addEventListener("click", handleAuthSubmit);
         $("btnGoogleDemo")?.addEventListener("click", handleGoogleSignIn);
