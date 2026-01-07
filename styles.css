@@ -1,50 +1,480 @@
 /* Peppy background + subtle grain */
 body {
     background:
-      radial-gradient(900px 500px at 15% -10%, rgba(255, 0, 170, 0.22), transparent 55%),
-      radial-gradient(800px 520px at 90% 0%, rgba(0, 255, 230, 0.16), transparent 55%),
-      radial-gradient(900px 520px at 60% 110%, rgba(120, 90, 255, 0.18), transparent 55%),
-      hsl(var(--b2));
-  }
-  
-  body::before{
-    content:"";
+        radial-gradient(900px 500px at 15% -10%, rgba(255, 0, 170, 0.28), transparent 55%),
+        radial-gradient(800px 520px at 90% 0%, rgba(0, 255, 230, 0.22), transparent 55%),
+        radial-gradient(900px 520px at 60% 110%, rgba(120, 90, 255, 0.24), transparent 55%),
+        hsl(var(--b2));
+}
+
+body::before {
+    content: "";
     position: fixed;
     inset: 0;
     pointer-events: none;
-    opacity: .06;
+    opacity: .08;
     mix-blend-mode: overlay;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
-  }
-  
-  /* Make posters feel snappy on hover */
-  .card img {
+}
+
+/* Make posters feel snappy on hover */
+.card img {
     transition: transform 160ms ease, filter 160ms ease;
-  }
-  .card:hover img {
+}
+
+.card:hover img {
     transform: translateY(-2px) scale(1.02);
     filter: saturate(1.1) contrast(1.05);
-  }
-  
-  /* A tiny “pop” for Tonight’s pick badge */
-  @keyframes pop {
-    0% { transform: scale(.96); opacity: .7; }
-    100% { transform: scale(1); opacity: 1; }
-  }
-  .badge-primary {
+}
+
+/* A tiny â€œpopâ€ for Tonightâ€™s pick badge */
+@keyframes pop {
+    0% {
+        transform: scale(.96);
+        opacity: .7;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.badge-primary {
     animation: pop 220ms ease-out;
-  }
-  
-  /* Better scrollbar (Chrome/Edge) */
-  ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-thumb {
-    background: color-mix(in oklab, hsl(var(--p)) 35%, transparent);
+}
+
+/* Better scrollbar (Chrome/Edge) */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, hsl(var(--p)) 42%, transparent);
     border-radius: 999px;
-  }
-  ::-webkit-scrollbar-track { background: transparent; }
-  
-  /* Accessibility: reduce motion */
-  @media (prefers-reduced-motion: reduce) {
-    * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-  }
-  
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Accessibility: reduce motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ===== Custom themes on top of daisyUI ===== */
+
+/* Synthwave (default) â€“ deep neon night */
+html[data-theme="synthwave"] {
+    /* surfaces: deep blue / purple */
+    --b1: 240 29% 16%;
+    /* base-100: cards */
+    --b2: 248 38% 10%;
+    /* base-200: page */
+    --b3: 248 40% 8%;
+    /* base-300: borders */
+
+    /* neon core colors */
+    --p: 315 93% 63%;
+    /* primary: hot magenta */
+    --s: 184 100% 60%;
+    /* secondary: cyan */
+    --a: 52 100% 63%;
+    /* accent: neon yellow/orange */
+
+    /* content */
+    --bc: 210 32% 92%;
+    /* base-content: near white text */
+
+    /* slightly brighter success/error for dark bg */
+    --su: 145 72% 55%;
+    --er: 0 83% 64%;
+}
+
+/* Cupcake (light) â€“ pastel cyberpunk */
+html[data-theme="cupcake"] {
+    /* soft, slightly cool surfaces */
+    --b1: 220 40% 99%;
+    /* card bg */
+    --b2: 220 45% 96%;
+    /* page bg */
+    --b3: 220 30% 92%;
+    /* borders */
+
+    /* pastel neon accents */
+    --p: 283 84% 62%;
+    /* soft violet */
+    --s: 192 94% 62%;
+    /* bright cyan */
+    --a: 46 98% 64%;
+    /* punchy amber */
+
+    --bc: 222 18% 18%;
+    /* dark text on light */
+    --su: 145 64% 40%;
+    --er: 0 76% 55%;
+}
+
+/* Theme icon animation */
+.theme-ico {
+    transition:
+        transform 260ms ease,
+        color 260ms ease,
+        stroke 260ms ease;
+}
+
+/* Dark synthwave: neon magenta camera with slight tilt */
+html[data-theme="synthwave"] .theme-ico {
+    color: hsl(315 93% 63%);
+    stroke: currentColor;
+    transform: rotate(-8deg) scale(1);
+}
+
+/* Light cupcake: teal camera, opposite tilt */
+html[data-theme="cupcake"] .theme-ico {
+    color: hsl(192 94% 62%);
+    stroke: currentColor;
+    transform: rotate(8deg) scale(1.05);
+}
+
+/* Press feedback */
+button:active .theme-ico,
+.btn:active .theme-ico {
+    transform: scale(0.94) translateY(1px);
+}
+
+/* Ensure readable text in both themes */
+html[data-theme="synthwave"] body,
+html[data-theme="synthwave"] .card,
+html[data-theme="synthwave"] .navbar {
+    color: hsl(var(--bc));
+}
+
+html[data-theme="cupcake"] body,
+html[data-theme="cupcake"] .card,
+html[data-theme="cupcake"] .navbar {
+    color: hsl(var(--bc));
+}
+
+/* Make card backgrounds use theme base-100 explicitly */
+.card {
+    background-color: hsl(var(--b1));
+}
+
+/* Ensure auth dialog text and fields are visible */
+html[data-theme="synthwave"] .modal-box {
+    background-color: hsl(var(--b1));
+    color: hsl(var(--bc));
+}
+
+html[data-theme="cupcake"] .modal-box {
+    background-color: hsl(var(--b1));
+    color: hsl(var(--bc));
+}
+
+/* Inputs and labels inside dialogs */
+.modal-box .label-text,
+.modal-box p,
+.modal-box h3 {
+    color: hsl(var(--bc));
+}
+
+.modal-box .input,
+.modal-box .btn,
+.modal-box .divider {
+    color: hsl(var(--bc));
+}
+
+/* Layout: results grid a bit roomier */
+/* Results grid: responsive, wider cards on desktop */
+#results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+
+/* Card shell: more professional look */
+.card {
+    border-radius: 0.9rem;
+    /* less bubbly */
+    border: 1px solid hsl(var(--b3));
+    /* subtle outline */
+    background-color: hsl(var(--b1));
+    box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.48),
+        0 0 0 1px rgba(255, 255, 255, 0.02);
+    /* layered shadow */
+    overflow: hidden;
+}
+
+/* Card hover: gentle lift, not cartoonish */
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 22px 55px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* Card poster area */
+.card figure {
+    padding: 0.75rem 0.75rem 0;
+}
+
+.card img {
+    border-radius: 0.7rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+/* Card body spacing / typography */
+.card-body {
+    padding: 0.75rem 0.9rem 0.9rem;
+    gap: 0.4rem;
+}
+
+.card-title {
+    font-size: 0.96rem;
+    letter-spacing: 0.01em;
+}
+
+/* Rating badge more “pro” */
+.badge-primary {
+    border-radius: 999px;
+    padding-inline: 0.55rem;
+    font-weight: 600;
+}
+
+/* Pool rows: cleaner chips */
+#pool .badge {
+    border-radius: 999px;
+}
+
+/* Header shell that follows theme */
+.header-shell {
+    background-color: hsl(var(--b1));
+    border-color: hsl(var(--b3));
+    box-shadow:
+        0 14px 30px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+/* Ensure text matches theme content color */
+.header-shell,
+.header-shell span {
+    color: hsl(var(--bc));
+}
+
+/* Main layout: stack on small screens, 2-column on md+ (already in HTML) */
+@media (max-width: 768px) {
+    .card-body {
+        padding-inline: 0.9rem;
+    }
+}
+
+/* Make buttons not shrink too small in header */
+.header-shell .btn {
+    min-width: 2.25rem;
+}
+
+/* Ensure Add button is visible on dark synthwave theme */
+html[data-theme="synthwave"] .btn-secondary {
+    background-color: hsl(var(--s));
+    /* bright cyan secondary */
+    color: hsl(0 0% 5%);
+    /* almost black text */
+    border-color: transparent;
+}
+
+html[data-theme="synthwave"] .btn-secondary:hover {
+    filter: brightness(1.1);
+}
+
+/* === Unified controls: buttons + inputs === */
+
+/* Base control sizing */
+.btn,
+.input,
+.select {
+    min-height: 2.4rem;
+    height: 2.4rem;
+    border-radius: 0.7rem;
+    font-size: 0.9rem;
+    padding-inline: 0.85rem;
+}
+
+/* Small variants still slightly smaller but consistent */
+.btn-sm,
+.input-sm,
+.select-sm {
+    min-height: 2.1rem;
+    height: 2.1rem;
+    font-size: 0.82rem;
+    border-radius: 0.65rem;
+}
+
+/* XS (pool filters) */
+.btn-xs,
+.input-xs,
+.select-xs {
+    min-height: 1.8rem;
+    height: 1.8rem;
+    font-size: 0.78rem;
+    border-radius: 0.6rem;
+}
+
+/* Primary button look */
+.btn-primary {
+    background: linear-gradient(135deg,
+            hsl(var(--p)),
+            color-mix(in oklab, hsl(var(--p)) 80%, hsl(var(--s)) 20%));
+    border-color: transparent;
+    color: hsl(0 0% 5%);
+    box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.btn-primary:hover {
+    filter: brightness(1.05);
+}
+
+/* Secondary button look (Search / Add) */
+.btn-secondary {
+    background: linear-gradient(135deg,
+            hsl(var(--s)),
+            color-mix(in oklab, hsl(var(--s)) 75%, hsl(var(--p)) 25%));
+    border-color: transparent;
+    color: hsl(0 0% 5%);
+    box-shadow:
+        0 10px 24px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.btn-secondary:hover {
+    filter: brightness(1.06);
+}
+
+/* Ghost buttons (header/login, details) */
+.btn-ghost {
+    border-radius: 999px;
+    border-color: transparent;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.btn-ghost:hover {
+    background-color: color-mix(in oklab, hsl(var(--b3)) 60%, transparent);
+}
+
+/* Inputs/selects: consistent look */
+.input,
+.select {
+    border-width: 1px;
+    border-color: hsl(var(--b3));
+    background-color: hsl(var(--b1));
+    box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(255, 255, 255, 0.03);
+    color: hsl(var(--bc));
+}
+
+.input:focus,
+.select:focus {
+    outline: none;
+    border-color: hsl(var(--p));
+    box-shadow:
+        0 0 0 1px hsl(var(--p)),
+        0 10px 24px rgba(0, 0, 0, 0.55);
+}
+
+/* Theme toggle button animation */
+.theme-toggle__dark-inner {
+    transition:
+        transform 260ms ease,
+        color 260ms ease;
+}
+
+/* Rotate / color by theme */
+html[data-theme="synthwave"] .theme-toggle__dark-inner {
+    color: hsl(315 93% 63%);
+    transform: rotate(-10deg);
+}
+
+html[data-theme="cupcake"] .theme-toggle__dark-inner {
+    color: hsl(192 94% 62%);
+    transform: rotate(10deg);
+}
+
+/* Press feedback */
+.theme-toggle:active .theme-toggle__dark-inner {
+    transform: scale(0.92) translateY(1px);
+}
+
+/* Result sort dropdown text contrast */
+#resultSort.select {
+    color: hsl(var(--bc));
+}
+
+#resultSort.select option {
+    color: hsl(var(--bc));
+    background-color: hsl(var(--b1));
+}
+
+/* Dark theme: all main buttons purple */
+html[data-theme="synthwave"] .btn-primary,
+html[data-theme="synthwave"] .btn-secondary,
+html[data-theme="synthwave"] .btn-accent {
+    background: linear-gradient(135deg,
+            hsl(var(--p)),
+            color-mix(in oklab, hsl(var(--p)) 80%, hsl(var(--s)) 20%));
+    border-color: transparent;
+    color: hsl(0 0% 5%);
+    box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+html[data-theme="synthwave"] .btn-primary:hover,
+html[data-theme="synthwave"] .btn-secondary:hover,
+html[data-theme="synthwave"] .btn-accent:hover {
+    filter: brightness(1.06);
+}
+
+/* Light theme: all main buttons blue (match toggle) */
+html[data-theme="cupcake"] .btn-primary,
+html[data-theme="cupcake"] .btn-secondary,
+html[data-theme="cupcake"] .btn-accent {
+    background: linear-gradient(135deg,
+            hsl(var(--s)),
+            color-mix(in oklab, hsl(var(--s)) 80%, hsl(var(--p)) 20%));
+    border-color: transparent;
+    color: hsl(0 0% 5%);
+    box-shadow:
+        0 10px 22px rgba(15, 23, 42, 0.3),
+        0 0 0 1px rgba(15, 23, 42, 0.06);
+}
+
+html[data-theme="cupcake"] .btn-primary:hover,
+html[data-theme="cupcake"] .btn-secondary:hover,
+html[data-theme="cupcake"] .btn-accent:hover {
+    filter: brightness(1.04);
+}
+
+/* Slightly wider content on large screens */
+@media (min-width: 1024px) {
+    .max-w-5xl {
+        max-width: 1200px;
+    }
+}
+
+/* Card subtitles (years, helper text) a bit softer */
+.card-body p,
+.text-base-content\/60 {
+    font-weight: 400;
+}

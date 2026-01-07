@@ -11,23 +11,32 @@
         imgBase: "https://image.tmdb.org/t/p/",
         posterSize: "w500",
         results: [],
-        pool: loadJson(LS_POOL, []),
-        watched: new Set(loadJson(LS_WATCHED, [])),
-        filters: loadJson(LS_FILTERS, { excludeWatched: true, minRating: 6 }),
+        pool: [],
+        watched: new Set(),
+        filters: { excludeWatched: true, minRating: 6 },
         currentDetails: null,
-        busy: false
+        busy: false,
+
+        // pagination
+        page: 1,
+        totalPages: 1,
+        lastMode: "trending", // "trending" | "search" | "discover"
+        lastQuery: "",
+        lastSort: "popularity.desc"
     };
 
-    // ---------- storage ----------
+    const authState = {
+        user: null // firebase.User or null
+    };
+
     // ---------- storage (sessionStorage + safe fallback) ----------
     const STORE = (() => {
         try {
-            // sessionStorage should persist across reloads in the same tab/session. [web:126]
             sessionStorage.setItem("__mnp_test__", "1");
             sessionStorage.removeItem("__mnp_test__");
             return sessionStorage;
         } catch {
-            return null; // storage blocked (don’t crash the whole app)
+            return null;
         }
     })();
 
@@ -46,10 +55,14 @@
             if (!STORE) return;
             STORE.setItem(key, JSON.stringify(value));
         } catch {
-            // ignore write errors so UI/features still work
+            // ignore
         }
     }
 
+    // init persisted state
+    state.pool = loadJson(LS_POOL, []);
+    state.watched = new Set(loadJson(LS_WATCHED, []));
+    state.filters = loadJson(LS_FILTERS, { excludeWatched: true, minRating: 6 });
 
     // ---------- UI helpers ----------
     function escapeHtml(s) {
@@ -73,9 +86,11 @@
 
         const el = document.createElement("div");
         el.className =
-            type === "success" ? "alert alert-success shadow-lg" :
-                type === "error" ? "alert alert-error shadow-lg" :
-                    "alert alert-info shadow-lg";
+            type === "success"
+                ? "alert alert-success shadow-lg"
+                : type === "error"
+                    ? "alert alert-error shadow-lg"
+                    : "alert alert-info shadow-lg";
 
         el.innerHTML = `<span>${escapeHtml(msg)}</span>`;
         wrap.appendChild(el);
@@ -88,12 +103,19 @@
 
     function setBusy(on) {
         state.busy = !!on;
-
-        const ids = ["btnSearch", "btnTrending", "btnPick", "btnClearPool"];
+        const ids = [
+            "btnSearch",
+            "btnTrending",
+            "btnPick",
+            "btnClearPool",
+            "btnPrevPage",
+            "btnNextPage"
+        ];
         for (const id of ids) {
             const b = $(id);
             if (b) b.disabled = state.busy;
         }
+        renderPager();
     }
 
     function year(dateStr) {
@@ -109,7 +131,6 @@
         const wrap = $("results");
         const empty = $("resultsEmpty");
         if (!wrap) return;
-
         wrap.innerHTML = "";
         empty?.classList.add("hidden");
 
@@ -129,6 +150,22 @@
         `;
             wrap.appendChild(sk);
         }
+    }
+
+    // ---------- pager ----------
+    function renderPager() {
+        const cur = $("pageCurrent");
+        const tot = $("pageTotal");
+        const prev = $("btnPrevPage");
+        const next = $("btnNextPage");
+
+        if (!cur || !tot || !prev || !next) return;
+
+        cur.textContent = String(state.page);
+        tot.textContent = String(state.totalPages);
+
+        prev.disabled = state.page <= 1 || state.busy;
+        next.disabled = state.page >= state.totalPages || state.busy;
     }
 
     // ---------- TMDB ----------
@@ -154,16 +191,14 @@
         try {
             const cfg = await tmdb("/configuration");
             const images = cfg?.images;
-
             if (images?.secure_base_url) state.imgBase = images.secure_base_url;
-
             const sizes = images?.poster_sizes || [];
             state.posterSize =
                 sizes.includes("w500") ? "w500" :
                     sizes.includes("w342") ? "w342" :
                         (sizes[0] || "w500");
         } catch {
-            // fallback ok
+            // ignore
         }
     }
 
@@ -178,15 +213,17 @@
 
         if (!state.results.length) {
             empty?.classList.remove("hidden");
+            renderPager();
             return;
         }
         empty?.classList.add("hidden");
 
         for (const m of state.results) {
-            const inPool = state.pool.some(x => x.id === m.id);
+            const inPool = state.pool.some((x) => x.id === m.id);
 
             const card = document.createElement("div");
-            card.className = "card bg-base-100 shadow-md hover:shadow-xl transition-shadow";
+            card.className =
+                "card bg-base-100 shadow-md hover:shadow-xl transition-shadow w-full";
 
             const p = posterUrl(m.poster_path);
             const poster = p
@@ -201,23 +238,31 @@
              </div>`;
 
             card.innerHTML = `
-          ${poster}
-          <div class="card-body p-4">
-            <div class="flex items-start justify-between gap-2">
-              <h3 class="card-title text-base leading-snug">${escapeHtml(m.title || "Untitled")}</h3>
-              <span class="badge badge-primary badge-outline">${Number(m.vote_average ?? 0).toFixed(1)}</span>
-            </div>
-            <p class="text-sm text-base-content/60">${escapeHtml(year(m.release_date))}</p>
-  
-            <div class="card-actions mt-2 justify-end">
-              <button class="btn btn-sm btn-ghost" data-action="details" data-id="${m.id}">Details</button>
-              <button class="btn btn-sm ${inPool ? "btn-disabled" : "btn-secondary"}"
-                      data-action="add" data-id="${m.id}">
-                ${inPool ? "In pool" : "Add"}
-              </button>
-            </div>
-          </div>
-        `;
+             ${poster}
+             <div class="card-body p-4 gap-2">
+               <div class="flex items-start justify-between gap-3">
+                 <h3 class="card-title text-base leading-snug line-clamp-2 flex-1">
+                   ${escapeHtml(m.title || "Untitled")}
+                 </h3>
+                 <span class="badge badge-primary badge-outline shrink-0">
+                   ${Number(m.vote_average ?? 0).toFixed(1)}
+                 </span>
+               </div>
+               <p class="text-sm text-base-content/60">
+                 ${escapeHtml(year(m.release_date))}
+               </p>
+               <div class="card-actions mt-3 justify-end gap-2">
+                 <button class="btn btn-sm btn-ghost" data-action="details" data-id="${m.id}">
+                   Details
+                 </button>
+                 <button class="btn btn-sm ${inPool ? "btn-disabled" : "btn-secondary"}"
+                         data-action="add" data-id="${m.id}">
+                   ${inPool ? "In pool" : "Add"}
+                 </button>
+               </div>
+             </div>
+           `;
+
 
             card.addEventListener("click", (e) => {
                 const btn = e.target.closest("button[data-action]");
@@ -232,6 +277,8 @@
 
             wrap.appendChild(card);
         }
+
+        renderPager();
     }
 
     function renderPool() {
@@ -244,7 +291,7 @@
         const minRating = Number(state.filters.minRating ?? 0);
         const excludeWatched = !!state.filters.excludeWatched;
 
-        const filtered = state.pool.filter(m => {
+        const filtered = state.pool.filter((m) => {
             const okRating = Number(m.vote_average ?? 0) >= minRating;
             const okWatched = excludeWatched ? !state.watched.has(m.id) : true;
             return okRating && okWatched;
@@ -320,10 +367,10 @@
     }
 
     function addToPoolById(id) {
-        const m = state.results.find(x => x.id === id);
+        const m = state.results.find((x) => x.id === id);
         if (!m) return;
 
-        if (state.pool.some(x => x.id === id)) {
+        if (state.pool.some((x) => x.id === id)) {
             toast("Already in pool", "info");
             return;
         }
@@ -337,7 +384,7 @@
     }
 
     function removeFromPool(id) {
-        state.pool = state.pool.filter(x => x.id !== id);
+        state.pool = state.pool.filter((x) => x.id !== id);
         saveJson(LS_POOL, state.pool);
         renderPool();
     }
@@ -361,7 +408,7 @@
         const minRating = Number(state.filters.minRating ?? 0);
         const excludeWatched = !!state.filters.excludeWatched;
 
-        return state.pool.filter(m => {
+        return state.pool.filter((m) => {
             const okRating = Number(m.vote_average ?? 0) >= minRating;
             const okWatched = excludeWatched ? !state.watched.has(m.id) : true;
             return okRating && okWatched;
@@ -369,18 +416,22 @@
     }
 
     function pickForMe() {
-        const candidates = getPickCandidates();
+        let candidates = getPickCandidates();
+
+        if (!candidates.length && state.pool.length) {
+            candidates = [...state.pool];
+        }
+
         if (!candidates.length) {
-            toast("No movies match your filters.", "error");
+            toast("No movies in the pool to pick from.", "error");
             return;
         }
 
-        // small “shuffle” feel
         const chosen = candidates[Math.floor(Math.random() * candidates.length)];
         openDetails(chosen.id, { highlight: true });
     }
 
-    // ---------- details modal ----------
+    // ---------- details ----------
     async function openDetails(id, opts = {}) {
         try {
             setBusy(true);
@@ -392,7 +443,7 @@
             const parts = [];
             parts.push(year(data.release_date));
             if (typeof data.runtime === "number" && data.runtime > 0) parts.push(`${data.runtime} min`);
-            if (Array.isArray(data.genres) && data.genres.length) parts.push(data.genres.map(g => g.name).join(", "));
+            if (Array.isArray(data.genres) && data.genres.length) parts.push(data.genres.map((g) => g.name).join(", "));
             parts.push(`★ ${Number(data.vote_average ?? 0).toFixed(1)}`);
 
             $("dlgMeta").textContent = parts.join(" • ");
@@ -431,7 +482,7 @@
             box.appendChild(wrap);
 
             $("dlg").showModal();
-        } catch (e) {
+        } catch {
             toast("Failed to load details.", "error");
         } finally {
             setBusy(false);
@@ -447,35 +498,73 @@
         toast("Marked watched", "success");
     }
 
-    // ---------- search / trending ----------
-    async function loadTrending() {
+    // ---------- search / discover / trending ----------
+    async function loadTrending(page = 1) {
         try {
             setBusy(true);
             renderResultsLoading();
-            const data = await tmdb("/trending/movie/day", { language: "en-US" });
+
+            state.lastMode = "trending";
+            state.lastQuery = "";
+            state.page = page;
+
+            const data = await tmdb("/trending/movie/day", {
+                language: "en-US",
+                page
+            });
+
+            state.totalPages = data.total_pages || 1;
             renderResults(data.results || []);
         } catch {
             toast("Trending failed. Check API key / network.", "error");
+            state.totalPages = 1;
             renderResults([]);
         } finally {
             setBusy(false);
         }
     }
 
-    async function doSearch() {
+    async function doSearch(page = 1) {
         const q = $("q").value.trim();
-        if (!q) {
-            toast("Type something to search.", "info");
-            return;
-        }
+        const sort = $("resultSort")?.value || "popularity.desc";
+        const minVote = Number(state.filters.minRating ?? 0);
 
         try {
             setBusy(true);
             renderResultsLoading();
-            const data = await tmdb("/search/movie", { query: q, language: "en-US" });
+
+            state.page = page;
+            state.lastSort = sort;
+
+            let data;
+            if (q) {
+                state.lastMode = "search";
+                state.lastQuery = q;
+
+                data = await tmdb("/search/movie", {
+                    query: q,
+                    language: "en-US",
+                    include_adult: "false",
+                    page
+                });
+            } else {
+                state.lastMode = "discover";
+                state.lastQuery = "";
+
+                data = await tmdb("/discover/movie", {
+                    language: "en-US",
+                    sort_by: sort,
+                    "vote_average.gte": minVote,
+                    "vote_count.gte": 100,
+                    page
+                });
+            }
+
+            state.totalPages = data.total_pages || 1;
             renderResults(data.results || []);
         } catch {
-            toast("Search failed. Check API key / network.", "error");
+            toast("Search / discover failed.", "error");
+            state.totalPages = 1;
             renderResults([]);
         } finally {
             setBusy(false);
@@ -485,60 +574,199 @@
     // ---------- theme ----------
     function applyTheme(theme) {
         document.documentElement.setAttribute("data-theme", theme);
-        $("themeToggle").checked = theme !== "synthwave";
         saveJson(LS_THEME, theme);
     }
-
 
     function initTheme() {
         const saved = loadJson(LS_THEME, "synthwave");
         applyTheme(saved);
     }
 
+    // ---------- auth helpers ----------
+    function updateUserChip() {
+        const chip = $("userChip");
+        if (!chip) return;
+
+        if (authState.user) {
+            const u = authState.user;
+            chip.textContent = u.displayName || u.email || "Signed in";
+        } else {
+            chip.textContent = "Sign in";
+        }
+    }
+
+    function openAuthDialog() {
+        const dlg = $("dlgAuth");
+        if (!dlg) return;
+
+        if (authState.user) {
+            toast(
+                `Signed in as ${authState.user.displayName || authState.user.email}`,
+                "info"
+            );
+            return;
+        }
+
+        $("authName").value = "";
+        $("authEmail").value = "";
+        $("authPass").value = "";
+        dlg.showModal();
+    }
+
+    function handleAuthSubmit() {
+        const fa = window.firebaseAuth;
+        if (!fa) {
+            toast("Auth not ready. Check Firebase config.", "error");
+            return;
+        }
+
+        const name = $("authName").value.trim();
+        const email = $("authEmail").value.trim();
+        const pass = $("authPass").value.trim();
+
+        if (!email || !pass) {
+            toast("Email and password required.", "error");
+            return;
+        }
+
+        fa
+            .signInWithEmailAndPassword(fa.auth, email, pass)
+            .then(() => {
+                $("dlgAuth")?.close();
+                toast("Signed in.", "success");
+            })
+            .catch((err) => {
+                if (err.code === "auth/user-not-found") {
+                    return fa
+                        .createUserWithEmailAndPassword(fa.auth, email, pass)
+                        .then(() => {
+                            $("dlgAuth")?.close();
+                            toast("Account created & signed in.", "success");
+                        });
+                }
+                toast(err.message || "Sign-in failed.", "error");
+            });
+    }
+
+    function handleGoogleSignIn() {
+        const fa = window.firebaseAuth;
+        if (!fa) {
+            toast("Auth not ready. Check Firebase config.", "error");
+            return;
+        }
+
+        fa
+            .signInWithPopup(fa.auth, fa.provider)
+            .then(() => {
+                $("dlgAuth")?.close();
+                toast("Signed in with Google.", "success");
+            })
+            .catch((err) => {
+                if (err.code !== "auth/popup-closed-by-user") {
+                    toast(err.message || "Google sign-in failed.", "error");
+                }
+            });
+    }
+
+    function handleSignOut() {
+        const fa = window.firebaseAuth;
+        if (!fa) return;
+        fa
+            .signOut(fa.auth)
+            .then(() => {
+                toast("Signed out.", "info");
+            })
+            .catch((err) => {
+                toast(err.message || "Sign-out failed.", "error");
+            });
+    }
+
     // ---------- boot ----------
     function syncControls() {
-        $("excludeWatched").checked = !!state.filters.excludeWatched;
-        $("minRating").value = String(state.filters.minRating ?? 6);
+        const ex = $("excludeWatched");
+        const mr = $("minRating");
+        if (ex) ex.checked = !!state.filters.excludeWatched;
+        if (mr) mr.value = String(state.filters.minRating ?? 6);
     }
 
     async function boot() {
         initTheme();
         syncControls();
+        renderPool();
+        renderPager();
+        updateUserChip();
 
-        $("excludeWatched").addEventListener("change", () => {
+        const fa = window.firebaseAuth;
+        if (fa) {
+            fa.onAuthStateChanged(fa.auth, (user) => {
+                authState.user = user || null;
+                updateUserChip();
+            });
+        }
+
+        $("excludeWatched")?.addEventListener("change", () => {
             state.filters.excludeWatched = $("excludeWatched").checked;
             saveJson(LS_FILTERS, state.filters);
             renderPool();
         });
 
-        $("minRating").addEventListener("input", () => {
+        $("minRating")?.addEventListener("input", () => {
             const v = Number($("minRating").value);
             state.filters.minRating = Number.isFinite(v) ? v : 0;
             saveJson(LS_FILTERS, state.filters);
             renderPool();
         });
 
-        $("btnSearch").addEventListener("click", doSearch);
-        $("btnTrending").addEventListener("click", loadTrending);
-        $("btnPick").addEventListener("click", pickForMe);
-        $("btnClearPool").addEventListener("click", clearPool);
-        $("btnWatched").addEventListener("click", markCurrentWatched);
+        $("btnSearch")?.addEventListener("click", () => doSearch(1));
+        $("btnTrending")?.addEventListener("click", () => loadTrending(1));
+        $("btnPick")?.addEventListener("click", pickForMe);
+        $("btnClearPool")?.addEventListener("click", clearPool);
+        $("btnWatched")?.addEventListener("click", markCurrentWatched);
 
-        $("q").addEventListener("keydown", (e) => {
-            if (e.key === "Enter") doSearch();
+        $("q")?.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") doSearch(1);
         });
 
-        $("themeToggle").addEventListener("change", () => {
-            const theme = $("themeToggle").checked ? "cupcake" : "synthwave";
-            applyTheme(theme);
+        $("resultSort")?.addEventListener("change", () => {
+            if (state.lastMode === "trending") loadTrending(1);
+            else doSearch(1);
         });
 
-        renderPool();
+        $("btnPrevPage")?.addEventListener("click", () => {
+            if (state.page <= 1 || state.busy) return;
+            const nextPage = state.page - 1;
+            if (state.lastMode === "trending") loadTrending(nextPage);
+            else doSearch(nextPage);
+        });
+
+        $("btnNextPage")?.addEventListener("click", () => {
+            if (state.page >= state.totalPages || state.busy) return;
+            const nextPage = state.page + 1;
+            if (state.lastMode === "trending") loadTrending(nextPage);
+            else doSearch(nextPage);
+        });
+
+        $("themeToggleBtn")?.addEventListener("click", () => {
+            const current =
+                document.documentElement.getAttribute("data-theme") || "synthwave";
+            const next = current === "synthwave" ? "cupcake" : "synthwave";
+            applyTheme(next);
+        });
+
+
+        $("btnUser")?.addEventListener("click", () => {
+            if (authState.user) {
+                handleSignOut();
+            } else {
+                openAuthDialog();
+            }
+        });
+
+        $("btnAuthSubmit")?.addEventListener("click", handleAuthSubmit);
+        $("btnGoogleDemo")?.addEventListener("click", handleGoogleSignIn);
 
         await loadTmdbConfig();
-        await loadTrending();
-
-        toast("Ready 🎬", "success");
+        await loadTrending(1);
     }
 
     if (document.readyState === "loading") {
