@@ -44,6 +44,36 @@
         }
     })();
 
+    const roomState = { id: null, unsub: null };
+
+    function inRoom() {
+        return !!roomState.id;
+    }
+
+    function roomDocRef() {
+        const fs = window.firebaseStore;
+        return fs.doc(fs.db, "rooms", roomState.id);
+    }
+
+    function activeDocRef() {
+        return inRoom() ? roomDocRef() : userDocRef();
+    }
+
+    function updateRoomUI() {
+        const badge = $("roomBadge");
+        const btnCreate = $("btnCreateRoom");
+        const btnCopy = $("btnCopyRoomLink");
+        const btnLeave = $("btnLeaveRoom");
+
+        if (badge) {
+            badge.classList.toggle("hidden", !inRoom());
+            badge.textContent = inRoom() ? `Room: ${roomState.id}` : "Room: —";
+        }
+        if (btnCreate) btnCreate.classList.toggle("hidden", inRoom());
+        if (btnCopy) btnCopy.classList.toggle("hidden", !inRoom());
+        if (btnLeave) btnLeave.classList.toggle("hidden", !inRoom());
+    }
+
     function fsReady() {
         return !!window.firebaseStore && !!authState.user;
     }
@@ -54,27 +84,133 @@
     }
 
     function scheduleCloudSave() {
+        if (!authState.user) return;
         if (!fsReady() || applyingRemote) return;
 
         clearTimeout(saveTimer);
         saveTimer = setTimeout(async () => {
             try {
                 const fs = window.firebaseStore;
-                await fs.setDoc(
-                    userDocRef(),
-                    {
-                        pool: state.pool,
-                        watched: Array.from(state.watched),
-                        filters: state.filters,
-                        updatedAt: fs.serverTimestamp()
-                    },
-                    { merge: true }
-                );
+                await fs.setDoc(activeDocRef(), {
+                    pool: state.pool,
+                    watched: Array.from(state.watched),
+                    filters: state.filters,
+                    updatedAt: fs.serverTimestamp()
+                }, { merge: true });
+
             } catch (e) {
                 // keep app working even if firestore fails
                 console.warn("Firestore save failed", e);
             }
         }, 400);
+    }
+
+    function stopRoomListener() {
+        if (roomState.unsub) roomState.unsub();
+        roomState.unsub = null;
+    }
+
+    function startRoomListener() {
+        const fs = window.firebaseStore;
+        if (!fs || !inRoom()) return;
+
+        stopRoomListener();
+
+        roomState.unsub = fs.onSnapshot(
+            roomDocRef(),
+            (snap) => {
+                if (!snap.exists()) return;
+                const data = snap.data() || {};
+
+                applyingRemote = true;
+                try {
+                    if (Array.isArray(data.pool)) state.pool = data.pool;
+                    if (Array.isArray(data.watched)) state.watched = new Set(data.watched);
+                    if (data.filters && typeof data.filters === "object") state.filters = data.filters;
+
+                    renderPool();
+                    renderResults(state.results);
+                } finally {
+                    applyingRemote = false;
+                }
+            },
+            (err) => {
+                console.warn("Room listener failed:", err);
+                toast(err?.message || "Failed to load room.", "error");
+            }
+        );
+    }
+
+    function setRoomInUrl(roomId) {
+        const url = new URL(window.location.href);
+        if (roomId) url.searchParams.set("room", roomId);
+        else url.searchParams.delete("room");
+        history.replaceState({}, "", url.toString());
+    }
+
+    async function createRoom() {
+        const fs = window.firebaseStore;
+        if (!fs) return toast("Firestore not ready.", "error");
+        if (!authState.user) {
+            openAuthDialog();
+            toast("Sign in to create a room.", "info");
+            return;
+        }
+
+        const ref = fs.doc(fs.collection(fs.db, "rooms"));
+        await fs.setDoc(ref, {
+            ownerUid: authState.user.uid,
+            pool: state.pool,
+            watched: Array.from(state.watched),
+            filters: state.filters,
+            createdAt: fs.serverTimestamp(),
+            updatedAt: fs.serverTimestamp()
+        });
+
+        joinRoom(ref.id);
+    }
+
+    function joinRoom(roomId) {
+        // stop user listener so it doesn't overwrite the room state
+        if (unsubUserDoc) unsubUserDoc();
+        unsubUserDoc = null;
+
+        roomState.id = roomId;
+        setRoomInUrl(roomId);
+        updateRoomUI();
+        startRoomListener();
+    }
+
+    function leaveRoom() {
+        stopRoomListener();
+        roomState.id = null;
+        setRoomInUrl(null);
+        updateRoomUI();
+
+        // go back to local view immediately
+        state.pool = loadJson(LS_POOL, []);
+        state.watched = new Set(loadJson(LS_WATCHED, []));
+        state.filters = loadJson(LS_FILTERS, { excludeWatched: true, minRating: 6 });
+        syncControls();
+        renderPool();
+
+        // and if logged-in, reattach user sync
+        if (authState.user) {
+            ensureUserDoc().then(() => startUserDocListener());
+        }
+    }
+
+    async function copyRoomLink() {
+        if (!inRoom()) return;
+        const url = new URL(window.location.href);
+        url.searchParams.set("room", roomState.id);
+
+        try {
+            await navigator.clipboard.writeText(url.toString());
+            toast("Room link copied.", "success");
+        } catch {
+            window.prompt("Copy room link:", url.toString());
+        }
     }
 
     async function ensureUserDoc() {
@@ -850,6 +986,7 @@
         const fa = window.firebaseAuth;
         if (fa) {
             fa.onAuthStateChanged(fa.auth, async (user) => {
+                if (inRoom()) return;
                 authState.user = user || null;
                 const fs = window.firebaseStore;
                 if (user && fs) {
@@ -861,6 +998,16 @@
                 }
 
                 updateUserChip();
+                if (inRoom()) return;
+                updateRoomUI();
+                const url = new URL(window.location.href);
+                const roomId = url.searchParams.get("room");
+                if (roomId) {
+                    roomState.id = roomId;
+                    updateRoomUI();
+                    startRoomListener();
+                }
+
 
                 if (!authState.user) {
                     if (unsubUserDoc) unsubUserDoc();
@@ -920,6 +1067,9 @@
         $("btnClearPool")?.addEventListener("click", clearPool);
         $("btnWatched")?.addEventListener("click", markCurrentWatched);
         $("btnShareList")?.addEventListener("click", sharePoolOnWhatsApp);
+        $("btnCreateRoom")?.addEventListener("click", createRoom);
+        $("btnLeaveRoom")?.addEventListener("click", leaveRoom);
+        $("btnCopyRoomLink")?.addEventListener("click", copyRoomLink);
 
         $("q")?.addEventListener("keydown", (e) => {
             if (e.key === "Enter") doSearch(1);
