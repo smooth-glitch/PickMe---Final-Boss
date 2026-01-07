@@ -166,4 +166,3 @@ python -m http.server 5500
 ## 🙌 Author
 
 Designed & developed by **Arjun**.
-```
