@@ -104,29 +104,41 @@
         if (unsubUserDoc) unsubUserDoc();
         const ref = userDocRef();
 
-        unsubUserDoc = fs.onSnapshot(ref, (snap) => {
-            if (!snap.exists()) return;
-            const data = snap.data() || {};
+        unsubUserDoc = fs.onSnapshot(
+            ref,
+            (snap) => {
+                // If doc isn't created yet, just stop (ensureUserDoc should create it)
+                if (!snap.exists()) {
+                    console.warn("User doc does not exist yet:", authState.user?.uid);
+                    return;
+                }
 
-            applyingRemote = true;
-            try {
-                if (Array.isArray(data.pool)) state.pool = data.pool;
-                if (Array.isArray(data.watched)) state.watched = new Set(data.watched);
-                if (data.filters && typeof data.filters === "object") state.filters = data.filters;
+                const data = snap.data() || {};
 
-                // persist locally too (keeps old behavior)
-                saveJson(LS_POOL, state.pool);
-                saveJson(LS_WATCHED, Array.from(state.watched));
-                saveJson(LS_FILTERS, state.filters);
+                applyingRemote = true;
+                try {
+                    if (Array.isArray(data.pool)) state.pool = data.pool;
+                    if (Array.isArray(data.watched)) state.watched = new Set(data.watched);
+                    if (data.filters && typeof data.filters === "object") state.filters = data.filters;
 
-                syncControls();
-                renderPool();
-                renderResults(state.results);
-            } finally {
-                applyingRemote = false;
+                    saveJson(LS_POOL, state.pool);
+                    saveJson(LS_WATCHED, Array.from(state.watched));
+                    saveJson(LS_FILTERS, state.filters);
+
+                    syncControls();
+                    renderPool();
+                    renderResults(state.results);
+                } finally {
+                    applyingRemote = false;
+                }
+            },
+            (err) => {
+                console.warn("Firestore onSnapshot failed:", err);
+                toast(err?.message || "Error loading data from Firestore.", "error");
             }
-        });
+        );
     }
+
 
     function loadJson(key, fallback) {
         try {
