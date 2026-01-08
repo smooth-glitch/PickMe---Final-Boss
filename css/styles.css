@@ -1479,3 +1479,32 @@ main.grid>section:first-child.card,
 main.grid>section:first-child .card-body {
     overflow: visible !important;
 }
+
+/* --- FIX: modal backdrop + box opacity (mobile-safe) --- */
+dialog.modal {
+    background: transparent;
+}
+
+/* dialog element itself */
+
+dialog.modal::backdrop {
+    background: rgba(0, 0, 0, 0.68);
+    backdrop-filter: blur(6px);
+}
+
+/* ensure the visible box is solid in both themes */
+.modal .modal-box {
+    background-color: hsl(var(--b1));
+    color: hsl(var(--bc));
+    border: 1px solid hsl(var(--b3));
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.60);
+}
+
+/* --- FIX: toast/notification opacity --- */
+#toasts.toast .alert {
+    opacity: 1 !important;
+    background-color: hsl(var(--b1) / 0.96);
+    color: hsl(var(--bc));
+    border: 1px solid hsl(var(--b3));
+    backdrop-filter: blur(8px);
+}
