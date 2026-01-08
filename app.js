@@ -1186,42 +1186,54 @@
         });
     }
 
-    async function pickForMe() {
+    async function pickForMe(opts = {}) {
         let candidates = getPickCandidates();
 
-        if (!candidates.length && state.pool.length) {
-            candidates = [...state.pool];
-        }
-
+        if (!candidates.length && state.pool.length) candidates = [...state.pool];
         if (!candidates.length) {
             toast("No movies in the pool to pick from.", "error");
             return;
         }
 
+        // ✅ avoid repeating the same pick on reroll (when possible)
+        if (opts.avoidId && candidates.length > 1) {
+            candidates = candidates.filter(m => m.id !== opts.avoidId);
+        }
+
         const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+
+        // ✅ remember last picked
+        lastPickedMovieId = chosen.id;
+
         if (inRoom()) {
             if (!authState.user) {
                 toast("Login to pick in this room.", "info");
                 openAuthDialog();
                 return;
             }
-
             const fs = window.firebaseStore;
-            await fs.setDoc(activeDocRef(), {
-                lastPick: {
-                    movieId: chosen.id,
-                    title: chosen.title || "",
-                    pickedBy: authState.user.uid,
-                    pickedAt: fs.serverTimestamp()
+            await fs.setDoc(
+                activeDocRef(),
+                {
+                    lastPick: {
+                        movieId: chosen.id,
+                        title: chosen.title,
+                        pickedBy: authState.user.uid,
+                        pickedAt: fs.serverTimestamp(),
+                    },
+                    updatedAt: fs.serverTimestamp(),
                 },
-                updatedAt: fs.serverTimestamp()
-            }, { merge: true });
-
-            return; // room listener will handle UI/opening
+                { merge: true }
+            );
+            return;
         }
 
-        openDetails(chosen.id, { highlight: true });
+        openDetails(chosen.id, { highlight: true, mediaType: chosen.mediaType || state.filters.mediaType });
+    }
 
+    function rerollPick() {
+        // reroll should avoid repeating the same id if possible
+        pickForMe({ avoidId: lastPickedMovieId });
     }
 
     async function loadBestVideos(kind, id) {
@@ -1382,6 +1394,11 @@
             wrap.appendChild(left);
             wrap.appendChild(right);
             box.appendChild(wrap);
+
+            const btnReroll = document.getElementById("btnReroll");
+            if (btnReroll) {
+                btnReroll.classList.toggle("hidden", !opts?.highlight);
+            }
 
             $("dlg").showModal();
         } catch {
@@ -1793,6 +1810,7 @@
         $("btnCreateRoom")?.addEventListener("click", createRoom);
         $("btnLeaveRoom")?.addEventListener("click", leaveRoom);
         $("btnCopyRoomLink")?.addEventListener("click", copyRoomLink);
+        btnReroll?.addEventListener("click", rerollPick);
 
         $("q")?.addEventListener("keydown", (e) => {
             if (e.key === "Enter") doSearch(1);
