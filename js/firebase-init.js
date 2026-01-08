@@ -7,7 +7,7 @@ import {
   signInWithPopup,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut
+  signOut,
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
 import {
@@ -18,15 +18,13 @@ import {
   getDoc,
   deleteDoc,
   onSnapshot,
-  serverTimestamp
+  serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-window.firebaseStore = { db, collection, doc, setDoc, getDoc, deleteDoc, onSnapshot, serverTimestamp };
-
-const cfg = window.APP_CONFIG?.firebaseConfig;
+const cfg = window.APPCONFIG?.firebaseConfig;
 
 if (!cfg) {
-  console.error("Missing firebaseConfig in config.js (window.APP_CONFIG).");
+  console.error("Missing firebaseConfig in config.js (window.APPCONFIG).");
 } else {
   const app = initializeApp(cfg);
 
@@ -41,18 +39,18 @@ if (!cfg) {
     signInWithPopup,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
-    signOut
+    signOut,
   };
 
-  // Expose Firestore helpers app.js uses
+  // Expose Firestore helpers (used across the app)
   window.firebaseStore = {
     db,
     collection,
     doc,
     setDoc,
     getDoc,
+    deleteDoc,
     onSnapshot,
-    serverTimestamp
+    serverTimestamp,
   };
 }
-
