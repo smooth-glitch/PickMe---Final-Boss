@@ -21,10 +21,10 @@ import {
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-const cfg = window.APPCONFIG?.firebaseConfig;
+const cfg = window.APPCONFIG?.firebaseConfig ?? window.APP_CONFIG?.firebaseConfig;
 
 if (!cfg) {
-  console.error("Missing firebaseConfig in config.js (window.APPCONFIG).");
+  console.error("Missing firebaseConfig in config.js (window.APPCONFIG / window.APP_CONFIG).");
 } else {
   const app = initializeApp(cfg);
 
@@ -42,7 +42,6 @@ if (!cfg) {
     signOut,
   };
 
-  // Expose Firestore helpers (used across the app)
   window.firebaseStore = {
     db,
     collection,

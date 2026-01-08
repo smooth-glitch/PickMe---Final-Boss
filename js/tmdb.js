@@ -1,7 +1,8 @@
 import { API, state } from "./state.js";
 
 export async function tmdb(path, params = {}) {
-    const key = window.APP_CONFIG?.TMDB_API_KEY;
+    const key = window.APP_CONFIG?.TMDB_API_KEY ?? window.APPCONFIG?.TMDBAPIKEY;
+
     if (!key) throw new Error("Missing TMDB key in config.js");
 
     const u = new URL(API + "/" + path.replace(/^\//, ""));
