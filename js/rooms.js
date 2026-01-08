@@ -29,6 +29,90 @@ const ONLINEWINDOWMS = 70000;
 
 // main.js should call setSyncControls(syncControlsFn)
 let syncControlsCb = null;
+// Top-level (near unsubMembers)
+let membersInitDone = false;
+
+export function stopMembersListener() {
+    if (unsubMembers) unsubMembers();
+    unsubMembers = null;
+
+    // Reset so next room join doesn't suppress notifications forever
+    membersInitDone = false;
+}
+
+export function startMembersListener() {
+    const fs = window.firebaseStore;
+    if (!fs || !inRoom()) return;
+
+    stopMembersListener();
+
+    const roomMembersWrap = id("roomMembersWrap");
+    const roomMembersList = id("roomMembersList");
+    const roomOnlineCount = id("roomOnlineCount");
+
+    roomMembersWrap?.classList.remove("hidden");
+
+    unsubMembers = fs.onSnapshot(
+        membersColRef(),
+        (snap) => {
+            // 1) Join notifications (skip the initial snapshot)
+            if (!membersInitDone) {
+                membersInitDone = true;
+            } else {
+                const selfUid = authState.user?.uid || null;
+
+                for (const ch of snap.docChanges()) {
+                    if (ch.type !== "added") continue;          // only new joins
+                    if (selfUid && ch.doc.id === selfUid) continue; // ignore your own join
+
+                    const data = ch.doc.data() || {};
+                    const label = data.name || data.email || ch.doc.id;
+                    toast(`${label} joined`, "info");
+                }
+            }
+
+            // 2) Your existing list rendering (unchanged)
+            const now = Date.now();
+
+            const members = snap.docs
+                .map((d) => {
+                    const m = d.data();
+                    const ms = typeof m.lastSeenAt?.toMillis === "function" ? m.lastSeenAt.toMillis() : 0;
+                    return {
+                        id: d.id,
+                        name: m.name,
+                        email: m.email,
+                        lastSeenMs: ms,
+                        online: ms && now - ms < ONLINEWINDOWMS,
+                    };
+                })
+                .sort((a, b) => (b.lastSeenMs || 0) - (a.lastSeenMs || 0));
+
+            const onlineCount = members.filter((x) => x.online).length;
+            if (roomOnlineCount) roomOnlineCount.textContent = `Online ${onlineCount}`;
+
+            if (!roomMembersList) return;
+            roomMembersList.innerHTML = members
+                .map((m) => {
+                    const label = m.name || m.email || m.id;
+                    const badge = m.online ? "badge-success" : "badge-ghost";
+                    const status = m.online ? "online" : "offline";
+                    return `
+            <div class="flex items-center justify-between p-2 rounded-xl bg-base-200/40 border border-base-300">
+              <div class="truncate">${label}</div>
+              <span class="badge badge-sm ${badge}">${status}</span>
+            </div>
+          `;
+                })
+                .join("");
+        },
+        (err) => {
+            console.warn("Members listener failed", err);
+            toast(err?.message || "Failed to load room members.", "error");
+        }
+    );
+}
+
 export function setSyncControls(fn) {
     syncControlsCb = typeof fn === "function" ? fn : null;
 }
