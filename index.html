@@ -108,6 +108,40 @@
                         </div>
 
                         <div class="flex flex-col gap-2">
+                            <label class="label"><span class="label-text text-xs">OTT</span></label>
+
+                            <div class="dropdown w-full">
+                                <button id="ottDropdownBtn" type="button"
+                                    class="btn btn-outline btn-sm w-full justify-between">
+                                    OTT
+                                    <span class="opacity-60 text-xs" id="ottDropdownCount"></span>
+                                </button>
+
+                                <div id="ottDropdownMenu"
+                                    class="dropdown-content z-50 mt-2 w-full p-2 rounded-xl border border-base-300 bg-base-100 shadow-xl max-h-64 overflow-auto">
+                                    <label
+                                        class="flex items-center gap-2 p-2 rounded-lg hover:bg-base-200/40 cursor-pointer">
+                                        <input id="ottNetflix" type="checkbox" class="checkbox checkbox-xs">
+                                        <span class="text-sm">Netflix</span>
+                                    </label>
+
+                                    <label
+                                        class="flex items-center gap-2 p-2 rounded-lg hover:bg-base-200/40 cursor-pointer">
+                                        <input id="ottPrime" type="checkbox" class="checkbox checkbox-xs">
+                                        <span class="text-sm">Prime Video</span>
+                                    </label>
+
+                                    <label
+                                        class="flex items-center gap-2 p-2 rounded-lg hover:bg-base-200/40 cursor-pointer">
+                                        <input id="ottHotstar" type="checkbox" class="checkbox checkbox-xs">
+                                        <span class="text-sm">Disney Hotstar</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="flex flex-col gap-2">
                             <label class="label">
                                 <span class="label-text text-xs">Result sort</span>
                             </label>
@@ -173,39 +207,7 @@
                         </div>
                     </div>
 
-                    <!-- Watch filters (Region auto + OTT multi-select) -->
-                    <div id="watchFilters" class="space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs text-base-content/70">Watch filters</span>
-                            <span id="regionHint" class="text-xs text-base-content/60">Auto</span>
-                        </div>
-
-                        <label class="label py-0">
-                            <span class="label-text text-xs">Region</span>
-                        </label>
-                        <select id="watchRegion" class="select select-bordered select-sm w-full"></select>
-
-                        <label class="label py-0 mt-1">
-                            <span class="label-text text-xs">OTT accounts (multi)</span>
-                        </label>
-
-                        <div class="flex flex-wrap gap-2 text-xs">
-                            <label class="watch-chip">
-                                <input id="ottNetflix" type="checkbox" class="checkbox checkbox-xs" />
-                                <span>Netflix</span>
-                            </label>
-
-                            <label class="watch-chip">
-                                <input id="ottPrime" type="checkbox" class="checkbox checkbox-xs" />
-                                <span>Prime Video</span>
-                            </label>
-
-                            <label class="watch-chip">
-                                <input id="ottHotstar" type="checkbox" class="checkbox checkbox-xs" />
-                                <span>Disney+ Hotstar</span>
-                            </label>
-                        </div>
-
+                    
                         <div class="text-xs text-base-content/60">
                             OTT filters apply to Discover (empty search).
                         </div>
@@ -244,10 +246,10 @@
                 <button id="btnReroll" class="btn btn-secondary btn-sm hidden">Re-roll</button>
                 <button id="btnWatched" class="btn btn-accent btn-sm">Mark watched</button>
                 <form method="dialog">
-                  <button class="btn btn-sm">Close</button>
+                    <button class="btn btn-sm">Close</button>
                 </form>
-              </div>
-              
+            </div>
+
         </div>
     </dialog>
 

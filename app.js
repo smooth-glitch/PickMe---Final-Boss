@@ -117,6 +117,15 @@
         return Array.isArray(data.genres) ? data.genres : [];
     }
 
+    function updateOttDropdownLabel() {
+        const countEl = document.getElementById("ottDropdownCount");
+        if (!countEl) return;
+
+        const ott = state.filters?.ott || {};
+        const n = Number(!!ott.netflix) + Number(!!ott.prime) + Number(!!ott.hotstar);
+        countEl.textContent = n ? `${n} selected` : "";
+    }
+
     function updateGenreDropdownLabel() {
         const countEl = document.getElementById("genreDropdownCount");
         const n = Array.isArray(state.filters.genres) ? state.filters.genres.length : 0;
@@ -253,10 +262,10 @@
 
     function selectedProviderIds() {
         const ids = [];
-        if (state.filters.ott?.netflix && providerIdsByKey.netflix) ids.push(providerIdsByKey.netflix);
-        if (state.filters.ott?.prime && providerIdsByKey.prime) ids.push(providerIdsByKey.prime);
-        if (state.filters.ott?.hotstar && providerIdsByKey.hotstar) ids.push(providerIdsByKey.hotstar);
-        return ids;
+        if (state.filters.ott?.netflix) ids.push(providerIdsByKey.netflix);
+        if (state.filters.ott?.prime) ids.push(providerIdsByKey.prime);
+        if (state.filters.ott?.hotstar) ids.push(providerIdsByKey.hotstar);
+        return ids.filter((x) => Number.isFinite(x));
     }
 
     async function initWatchFiltersUI() {
@@ -295,6 +304,8 @@
         cbPrime.checked = !!state.filters.ott?.prime;
         cbHotstar.checked = !!state.filters.ott?.hotstar;
 
+        updateOttDropdownLabel();
+
         // Load provider IDs for the selected region [web:29]
         await loadProviderIdsForRegion(state.filters.region);
 
@@ -315,6 +326,8 @@
                 prime: cbPrime.checked,
                 hotstar: cbHotstar.checked,
             };
+            updateOttDropdownLabel();
+
             saveJson(LSFILTERS, state.filters);
             scheduleCloudSave();
 
@@ -1487,6 +1500,14 @@
                 if (kind === "movie" && year) params.primary_release_year = year; // [web:16]
                 if (kind === "tv" && year) params.first_air_date_year = year;      // [web:22]
 
+                // ✅ OTT provider filter applies only to Discover (empty search)
+                const providerIds = selectedProviderIds();
+                if (providerIds.length) {
+                    params.with_watch_providers = providerIds.join("|");     // OR list
+                    params.watch_region = state.filters.region || "IN";
+                    params.with_watch_monetization_types = "flatrate";
+                }
+
                 data = await tmdb(`/discover/${kind}`, params);
             }
 
@@ -1688,6 +1709,8 @@
         if (cbNetflix) cbNetflix.checked = false;
         if (cbPrime) cbPrime.checked = false;
         if (cbHotstar) cbHotstar.checked = false;
+
+        updateOttDropdownLabel();
 
         // Persist + refresh
         saveJson(LSFILTERS, state.filters);

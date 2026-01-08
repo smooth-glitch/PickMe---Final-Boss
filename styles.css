@@ -1553,3 +1553,71 @@ main.grid>section>.card-body {
 main.grid * {
     min-width: 0;
 }
+
+/* =========================================================
+   OTT dropdown (matches Genre dropdown styles)
+   Paste at END of styles.css
+   ========================================================= */
+
+/* Button surface matches other selects */
+#ottDropdownBtn {
+    border: 1px solid hsl(var(--b3)) !important;
+    background-color: hsl(var(--b1)) !important;
+    color: hsl(var(--bc)) !important;
+    box-shadow: var(--ui-shadow-soft) !important;
+}
+
+#ottDropdownBtn:hover {
+    background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent) !important;
+}
+
+#ottDropdownBtn:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55) !important;
+}
+
+/* Menu surface matches genre dropdown menu */
+#ottDropdownMenu {
+    border-color: hsl(var(--b3)) !important;
+    background-color: hsl(var(--b1)) !important;
+    color: hsl(var(--bc)) !important;
+
+    min-width: 100%;
+    max-width: min(28rem, 92vw);
+}
+
+#ottDropdownMenu label {
+    width: 100%;
+}
+
+#ottDropdownMenu span {
+    white-space: normal;
+}
+
+/* Desktop: keep all filter controls same width (include OTT) */
+@media (min-width: 768px) {
+    #ottDropdownBtn {
+        width: var(--ctrlW) !important;
+    }
+
+    /* dropdown menu should match the button width */
+    #ottDropdownMenu {
+        width: var(--ctrlW) !important;
+        min-width: var(--ctrlW) !important;
+        max-width: var(--ctrlW) !important;
+    }
+}
+
+/* Laptop widths: allow wrapping + prevent overflow (include OTT) */
+@media (min-width: 768px) and (max-width: 1535px) {
+    #ottDropdownBtn {
+        width: auto !important;
+        min-width: 8.5rem;
+    }
+
+    #ottDropdownMenu {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: min(28rem, 92vw) !important;
+    }
+}
