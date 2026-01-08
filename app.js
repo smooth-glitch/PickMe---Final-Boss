@@ -269,56 +269,62 @@
     }
 
     async function initWatchFiltersUI() {
-        const regionSel = document.getElementById("watchRegion");
-        const hint = document.getElementById("regionHint");
         const cbNetflix = document.getElementById("ottNetflix");
         const cbPrime = document.getElementById("ottPrime");
         const cbHotstar = document.getElementById("ottHotstar");
 
-        if (!regionSel || !cbNetflix || !cbPrime || !cbHotstar) return;
+        // Region UI is optional now (you removed it from HTML)
+        const regionSel = document.getElementById("watchRegion");
+        const hint = document.getElementById("regionHint");
 
-        // Ensure defaults exist
+        if (!cbNetflix || !cbPrime || !cbHotstar) return;
+
+        // Ensure defaults exist (this sets state.filters.region using detectRegionFromBrowser)
         ensureWatchFilterDefaults();
         saveJson(LSFILTERS, state.filters);
 
-        // Build the regions list (TMDB) [web:13]
-        const data = await tmdb("/watch/providers/regions", { language: "en-US" });
-        const regions = Array.isArray(data?.results) ? data.results : [];
+        // If region dropdown exists, populate + sync it; otherwise just use detected/saved region
+        if (regionSel) {
+            const data = await tmdb("watch/providers/regions", { language: "en-US" });
+            const regions = Array.isArray(data?.results) ? data.results : [];
 
-        regionSel.innerHTML = regions
-            .map(r => `<option value="${r.iso_3166_1}">${escapeHtml(r.english_name)} (${r.iso_3166_1})</option>`)
-            .join("");
+            regionSel.innerHTML = regions
+                .map(
+                    (r) =>
+                        `<option value="${r.iso_3166_1}">${escapeHtml(r.english_name)} (${r.iso_3166_1})</option>`
+                )
+                .join("");
 
-        // Auto-pick from browser
-        const detected = detectRegionFromBrowser();
-        state.filters.region = state.filters.region || detected;
+            const detected = detectRegionFromBrowser();
+            state.filters.region = state.filters.region || detected;
 
-        const exists = regions.some(r => r.iso_3166_1 === state.filters.region);
-        regionSel.value = exists ? state.filters.region : "IN";
-        state.filters.region = regionSel.value;
+            const exists = regions.some((r) => r.iso_3166_1 === state.filters.region);
+            regionSel.value = exists ? state.filters.region : "IN";
 
-        if (hint) hint.textContent = `Auto: ${state.filters.region}`;
+            if (hint) hint.textContent = `Auto ${regionSel.value}`;
 
-        // Restore OTT checkbox state
+            regionSel.addEventListener("change", async () => {
+                state.filters.region = regionSel.value;
+                if (hint) hint.textContent = `Selected ${state.filters.region}`;
+                saveJson(LSFILTERS, state.filters);
+
+                await loadProviderIdsForRegion(state.filters.region);
+                scheduleCloudSave();
+                if (state.lastMode !== "trending") doSearch(1);
+            });
+        } else {
+            // No region UI: just lock to detected/saved region
+            state.filters.region = state.filters.region || detectRegionFromBrowser();
+        }
+
+        // Restore checkbox state from saved filters
         cbNetflix.checked = !!state.filters.ott?.netflix;
         cbPrime.checked = !!state.filters.ott?.prime;
         cbHotstar.checked = !!state.filters.ott?.hotstar;
-
         updateOttDropdownLabel();
 
-        // Load provider IDs for the selected region [web:29]
+        // IMPORTANT: load provider IDs so selectedProviderIds() returns real numbers
         await loadProviderIdsForRegion(state.filters.region);
-
-        regionSel.addEventListener("change", async () => {
-            state.filters.region = regionSel.value;
-            if (hint) hint.textContent = `Selected: ${state.filters.region}`;
-            saveJson(LSFILTERS, state.filters);
-
-            await loadProviderIdsForRegion(state.filters.region);
-            scheduleCloudSave();
-
-            if (state.lastMode !== "trending") doSearch(1);
-        });
 
         const onOttChange = () => {
             state.filters.ott = {
@@ -327,7 +333,6 @@
                 hotstar: cbHotstar.checked,
             };
             updateOttDropdownLabel();
-
             saveJson(LSFILTERS, state.filters);
             scheduleCloudSave();
 
@@ -339,6 +344,32 @@
         cbHotstar.addEventListener("change", onOttChange);
     }
 
+
+
+    async function filterResultsByOtt(kind, items) {
+        const providerIds = selectedProviderIds();
+        if (!providerIds.length) return items;
+
+        const region = (state.filters.region || "IN").toUpperCase();
+
+        // limit to avoid rate limits; you can tune this
+        const batch = items.slice(0, 20);
+
+        const checks = await Promise.allSettled(
+            batch.map(async (it) => {
+                const wp = await tmdb(`${kind}/${it.id}/watch/providers`, {});
+                const entry = wp?.results?.[region];
+                const flatrate = Array.isArray(entry?.flatrate) ? entry.flatrate : [];
+                const ids = new Set(flatrate.map((p) => p.provider_id));
+                const ok = providerIds.some((pid) => ids.has(pid));
+                return ok ? it : null;
+            })
+        );
+
+        return checks
+            .map((r) => (r.status === "fulfilled" ? r.value : null))
+            .filter(Boolean);
+    }
 
     function pickWatchCountry(wpResults) {
         // Prefer saved region if present, else try browser locale, else fallback IN/US
@@ -1484,6 +1515,9 @@
                     include_adult: false,
                     page
                 });
+                data.results = await filterResultsByOtt(kind, data.results || []);
+                data.total_pages = 1; // since we filtered client-side; keeps pager sane
+
             } else {
                 state.lastMode = "discover";
                 state.lastQuery = "";
@@ -1672,6 +1706,48 @@
     }
 
 
+    function bindDropdownRowToggle(menuId) {
+        const menu = document.getElementById(menuId);
+        if (!menu || menu.dataset.rowToggleBound) return;
+        menu.dataset.rowToggleBound = "1";
+
+        // Key part: ensure focus moves INTO the dropdown (checkbox),
+        // so daisyUI doesn't close the menu due to focus leaving.
+        menu.addEventListener("mousedown", (e) => {
+            const row = e.target.closest("label");
+            if (!row || !menu.contains(row)) return;
+
+            const cb = row.querySelector('input[type="checkbox"]');
+            if (!cb) return;
+
+            // If user didn't click the checkbox itself, force focus to checkbox.
+            if (e.target !== cb) {
+                e.preventDefault();
+                cb.focus({ preventScroll: true });
+            }
+        });
+
+        menu.addEventListener("click", (e) => {
+            const row = e.target.closest("label");
+            if (!row || !menu.contains(row)) return;
+
+            const cb = row.querySelector('input[type="checkbox"]');
+            if (!cb) return;
+
+            // Clicking the checkbox circle: let native behavior happen.
+            if (e.target === cb) return;
+
+            // Clicking the text/row: toggle once + keep focus inside menu.
+            e.preventDefault();
+            e.stopPropagation();
+
+            cb.checked = !cb.checked;
+            cb.dispatchEvent(new Event("change", { bubbles: true }));
+            cb.focus({ preventScroll: true });
+        });
+    }
+
+
     function resetAllFilters() {
         if (!requireLoginForRoomWrite()) return;
 
@@ -1732,6 +1808,9 @@
         initTheme();
         syncControls();
         await initWatchFiltersUI();
+        bindDropdownRowToggle("genreDropdownMenu");
+        bindDropdownRowToggle("ottDropdownMenu");
+
         await populateGenreSelect(state.filters.mediaType || "movie");
         renderPager();
         updateUserChip();

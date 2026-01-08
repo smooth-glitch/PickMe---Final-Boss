@@ -1621,3 +1621,63 @@ main.grid * {
         max-width: min(28rem, 92vw) !important;
     }
 }
+
+/* =========================================================
+   Make dropdown selections visible (Genres + OTT)
+   Paste at END of styles.css
+   ========================================================= */
+
+#genreDropdownMenu label,
+#ottDropdownMenu label {
+    border: 1px solid transparent;
+    border-radius: 0.75rem;
+    transition: filter 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+/* Hover feedback (optional, but makes it feel clickable) */
+#genreDropdownMenu label:hover,
+#ottDropdownMenu label:hover {
+    filter: brightness(1.05);
+}
+
+/* ✅ Selected state */
+#genreDropdownMenu label:has(input[type="checkbox"]:checked),
+#ottDropdownMenu label:has(input[type="checkbox"]:checked) {
+    border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
+    background: linear-gradient(135deg,
+            color-mix(in oklab, hsl(var(--p)) 45%, transparent),
+            color-mix(in oklab, hsl(var(--s)) 35%, transparent));
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* Make selected label text pop */
+#genreDropdownMenu label:has(input[type="checkbox"]:checked) span,
+#ottDropdownMenu label:has(input[type="checkbox"]:checked) span {
+    font-weight: 700;
+    color: hsl(var(--bc));
+}
+
+/* Keyboard + click focus visibility (when the checkbox gets focus) */
+#genreDropdownMenu label:focus-within,
+#ottDropdownMenu label:focus-within {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent),
+        0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* Make clicking on the option text toggle the checkbox */
+#genreDropdownMenu label span,
+#ottDropdownMenu label span {
+    pointer-events: none;
+}
+
+#genreDropdownMenu label,
+#ottDropdownMenu label {
+    cursor: pointer;
+}
+
+#genreDropdownMenu label,
+#ottDropdownMenu label {
+    width: 100%;
+    cursor: pointer;
+}
