@@ -59,16 +59,18 @@ export function startMembersListener() {
             if (!membersInitDone) {
                 membersInitDone = true;
             } else {
-                const selfUid = authState.user?.uid || null;
+                const selfUid = authState.user?.uid ?? null;
 
                 for (const ch of snap.docChanges()) {
-                    if (ch.type !== "added") continue;          // only new joins
-                    if (selfUid && ch.doc.id === selfUid) continue; // ignore your own join
-
-                    const data = ch.doc.data() || {};
+                    const data = ch.doc.data?.() ?? {};
                     const label = data.name || data.email || ch.doc.id;
-                    toast(`${label} joined`, "info");
+
+                    if (selfUid && ch.doc.id === selfUid) continue;
+
+                    if (ch.type === "added") toast(`${label} joined`, "info");
+                    if (ch.type === "removed") toast(`${label} left`, "info");
                 }
+
             }
 
             // 2) Your existing list rendering (unchanged)
@@ -404,7 +406,22 @@ export function joinRoom(roomId) {
     startHeartbeat();
 }
 
-export function leaveRoom() {
+export async function leaveRoom() {
+    const fs = window.firebaseStore;
+    const uid = authState.user?.uid;
+    const rid = roomState.id;
+
+    if (fs && uid && rid) {
+        try {
+            await fs.deleteDoc(fs.doc(fs.db, "rooms", rid, "members", uid));
+        } catch (e) {
+            console.warn("Failed to delete member doc", e);
+        }
+    }
+
+    stopRoomListener();
+    stopMembersListener();
+    stopHeartbeat();
     stopRoomListener();
     stopMembersListener();
     stopHeartbeat();
