@@ -53,7 +53,7 @@ import {
     joinRoom,
     registerReplyDraftSetter,
 } from "./rooms.js";
-import { setSyncControls, setReplyDraft } from "./rooms.js";
+import { setSyncControls } from "./rooms.js";
 import { searchGifs } from "./gif.js";
 
 let liveSearchTimer = null;
@@ -408,7 +408,7 @@ async function boot() {
         else doSearch(nextPage);
     });
 
-    // Chat form + GIF + reply wiring
+    // Chat form + GIF + reply + mentions + stickers
     const chatForm = id("roomChatForm");
     const chatInput = id("roomChatInput");
     const gifBtn = id("roomGifBtn");
@@ -515,25 +515,6 @@ async function boot() {
         });
     }
 
-    registerReplyDraftSetter((msg) => {
-        currentReplyTarget = msg || null;
-        if (!msg) {
-            if (replyPreview) replyPreview.classList.add("hidden");
-            return;
-        }
-        if (replyPreview) replyPreview.classList.remove("hidden");
-        if (replyToName) replyToName.textContent = msg.userName || "Anon";
-        if (replyToSnippet) {
-            if (msg.type === "gif") {
-                replyToSnippet.textContent = "GIF";
-            } else {
-                const t = msg.text || "";
-                replyToSnippet.textContent =
-                    t.length > 30 ? t.slice(0, 30) + "…" : t || "";
-            }
-        }
-    });
-
     if (chatForm && chatInput) {
         chatForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -623,7 +604,7 @@ async function boot() {
         }
     }
 
-    // GIF picker (unchanged logic, but replyTo gains stickerUrl if present)
+    // GIF picker
     if (gifBtn && gifDialog && gifSearchInput && gifResults) {
         gifBtn.addEventListener("click", async () => {
             gifSearchInput.value = "";
@@ -719,7 +700,7 @@ async function boot() {
         }
     }
 
-    // Sticker picker wiring (new)
+    // Sticker picker
     const stickerBtn = id("roomStickerBtn");
     const stickerDialog = id("dlgStickerPicker");
     const stickerResults = id("stickerResults");
