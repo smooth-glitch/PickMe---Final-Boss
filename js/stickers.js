@@ -1,6 +1,7 @@
 // js/stickers.js
-import { GIPHY_API_KEY } from "./config.js"; // or wherever you keep it
-// If you already use GIPHY in gif.js, reuse that same key.
+
+// config.js runs before this and sets window.APPCONFIG.GIPHY_API_KEY
+const GIPHY_API_KEY = window.APPCONFIG?.GIPHY_API_KEY || "";
 
 const BASE = "https://api.giphy.com/v1/stickers";
 
@@ -8,7 +9,8 @@ function mapGiphySticker(item) {
     const id = item.id;
     const title = item.title || "";
     const images = item.images || {};
-    const fixed = images.fixed_height_small || images.fixed_height || images.original || {};
+    const fixed =
+        images.fixed_height_small || images.fixed_height || images.original || {};
     const url = fixed.url || "";
     const thumb = fixed.url || "";
     return { id, title, url, thumb };
