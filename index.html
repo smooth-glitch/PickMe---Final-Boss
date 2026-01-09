@@ -64,7 +64,6 @@
                         </span>
                     </button>
 
-
                     <!-- Make it look like your filter dropdowns -->
                     <ul id="userDropdownMenu" tabindex="0"
                         class="dropdown-content z-50 mt-2 w-64 max-w-[92vw] p-2 rounded-xl border border-base-300 bg-base-100 shadow-xl menu menu-sm">
@@ -96,12 +95,10 @@
                             </button>
                         </li>
                     </ul>
-
                 </div>
-
-
             </div>
         </header>
+
         <div id="roomPickBanner" class="alert alert-info hidden">
             <span id="roomPickText">Tonight’s pick: —</span>
             <button id="btnOpenPicked" class="btn btn-xs btn-ghost">Open</button>
@@ -125,9 +122,7 @@
 
                             <button id="btnSearch" class="btn btn-secondary ...">Search</button>
                             <button id="btnTrending" class="btn btn-ghost ...">Trending</button>
-
                         </div>
-
 
                         <!-- Row 2: 3 left + 3 right -->
                         <div id="filtersGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
@@ -170,8 +165,6 @@
                                 </div>
                             </div>
 
-
-
                             <!-- Left column (2/3) -->
                             <div class="flex flex-col gap-2">
                                 <input id="yearFilter" type="number" class="input input-bordered input-sm w-full"
@@ -201,7 +194,6 @@
                                         <!-- checkboxes injected here -->
                                     </div>
                                 </div>
-
                             </div>
                         </div>
 
@@ -211,10 +203,8 @@
                                 Reset filters
                             </button>
                         </div>
-
                     </div>
                 </div>
-
 
                 <div id="resultsEmpty" class="text-base-content/60 hidden text-sm">
                     No results yet. Try Trending.
@@ -236,57 +226,80 @@
                         Next »
                     </button>
                 </div>
-    </div>
-    </section>
+            </section>
 
-    <!-- Right: pool/filters -->
-    <section class="card bg-base-100 shadow-xl border border-base-300">
-        <div class="card-body gap-4">
-            <div class="flex items-center justify-between gap-2">
-                <h2 class="card-title text-base">Your pool</h2>
+            <!-- Right: pool/filters -->
+            <section class="card bg-base-100 shadow-xl border border-base-300">
+                <div class="card-body gap-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <h2 class="card-title text-base">Your pool</h2>
 
-                <div class="flex items-center gap-2">
-                    <button id="btnImportList" class="btn btn-xs btn-primary hidden">Import</button>
+                        <div class="flex items-center gap-2">
+                            <button id="btnImportList" class="btn btn-xs btn-primary hidden">Import</button>
 
-                    <!-- New: Pick button inside pool -->
-                    <!-- Min rating (styled like Exclude watched) -->
-                    <div id="minRatingChip"
-                        class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-base-200 text-xs text-base-content/80 border border-base-300">
-                        <span class="opacity-80">Min</span>
-                        <input id="minRatingPool" type="number" min="0" max="10" step="0.5"
-                            class="w-12 bg-transparent border-none focus:outline-none text-xs text-right" value="6" />
+                            <!-- Min rating chip -->
+                            <div id="minRatingChip"
+                                class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-base-200 text-xs text-base-content/80 border border-base-300">
+                                <span class="opacity-80">Min</span>
+                                <input id="minRatingPool" type="number" min="0" max="10" step="0.5"
+                                    class="w-12 bg-transparent border-none focus:outline-none text-xs text-right"
+                                    value="6" />
+                            </div>
+
+                            <label id="btnExcludeWatchedPool" class="btn btn-xs btn-primary">
+                                <input id="excludeWatched" type="checkbox" class="sr-only" checked />
+                                <span>Exclude watched</span>
+                            </label>
+                            <button id="btnToggleHiddenPool" class="btn btn-xs btn-primary" disabled>
+                                Show hidden
+                            </button>
+
+                            <button id="btnPickPool" class="btn btn-xs btn-primary">Pick</button>
+
+                            <button id="btnShareList" class="btn btn-xs btn-outline">Share</button>
+                            <button id="btnClearPool" class="btn btn-xs btn-ghost">Clear</button>
+                        </div>
                     </div>
 
-                    <label id="btnExcludeWatchedPool" class="btn btn-xs btn-primary">
-                        <input id="excludeWatched" type="checkbox" class="sr-only" checked />
-                        <span>Exclude watched</span>
-                    </label>
-                    <button id="btnToggleHiddenPool" class="btn btn-xs btn-primary" disabled>
-                        Show hidden
-                    </button>
-
-                    <button id="btnPickPool" class="btn btn-xs btn-primary">Pick</button>
-
-                    <button id="btnShareList" class="btn btn-xs btn-outline">Share</button>
-                    <button id="btnClearPool" class="btn btn-xs btn-ghost">Clear</button>
-                </div>
-
-            </div>
-
-            <div id="roomMembersWrap" class="card bg-base-100 shadow-xl border border-base-300 hidden">
-                <div class="card-body gap-3">
-                    <div class="flex items-center justify-between">
-                        <h3 class="font-bold text-sm">Room members</h3>
+                    <div id="roomMembersWrap" class="card bg-base-100 shadow-xl border border-base-300 hidden">
+                        <div class="card-body gap-3">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-bold text-sm">Room members</h3>
+                            </div>
+                            <div id="roomMembersList" class="space-y-2 text-sm"></div>
+                        </div>
                     </div>
-                    <div id="roomMembersList" class="space-y-2 text-sm"></div>
-                </div>
-            </div>
-        </div>
 
-        <div id="pool" class="space-y-2"></div>
-        </div>
-    </section>
-    </main>
+                    <!-- Pool + Chat responsive layout -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                        <!-- Left: pool -->
+                        <div>
+                            <div id="poolEmpty" class="text-xs text-base-content/60">
+                                Add movies from results to build your pool.
+                            </div>
+                            <div id="pool" class="space-y-2"></div>
+                        </div>
+
+                        <!-- Right: chat -->
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-center justify-between text-xs text-base-content/70">
+                                <span class="font-semibold">Room chat</span>
+                            </div>
+
+                            <div id="roomChatMessages"
+                                class="h-48 md:h-64 rounded-xl border border-base-300 bg-base-200/40 overflow-y-auto px-2 py-2 space-y-1 text-xs">
+                            </div>
+
+                            <form id="roomChatForm" class="flex items-center gap-2">
+                                <input id="roomChatInput" type="text" class="input input-bordered input-xs flex-1"
+                                    placeholder="Message everyone…" autocomplete="off" />
+                                <button type="submit" class="btn btn-xs btn-primary">Send</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
     <!-- Details dialog -->
@@ -302,7 +315,6 @@
                     <button class="btn btn-sm">Close</button>
                 </form>
             </div>
-
         </div>
     </dialog>
 
@@ -319,7 +331,6 @@
             </form>
         </div>
     </dialog>
-
 
     <!-- Auth dialog -->
     <dialog id="dlgAuth" class="modal">

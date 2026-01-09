@@ -33,6 +33,19 @@ import {
 } from "./rooms.js";
 import { setSyncControls } from "./rooms.js";
 let liveSearchTimer = null;
+const chatForm = id("roomChatForm");
+const chatInput = id("roomChatInput");
+const chatMessages = id("roomChatMessages");
+
+if (chatForm && chatInput && chatMessages) {
+    chatForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const text = chatInput.value.trim();
+        if (!text) return;
+        // TODO: send to Firestore messages subcollection
+        chatInput.value = "";
+    });
+}
 
 function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
