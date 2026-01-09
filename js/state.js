@@ -1,6 +1,6 @@
 import { loadJson, LSFILTERS } from "./storage.js";
 
-export const API = "https://api.themoviedb.org/3";
+export const API = "https://tmdb-proxy.idrisshakir445.workers.dev/tmdb";
 
 export const DEFAULTFILTERS = {
     excludeWatched: true,
