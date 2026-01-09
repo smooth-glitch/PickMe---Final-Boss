@@ -249,6 +249,10 @@
                     <button id="btnImportList" class="btn btn-xs btn-primary hidden">Import</button>
 
                     <!-- New: Pick button inside pool -->
+                    <label id="btnExcludeWatchedPool" class="btn btn-xs btn-primary">
+                        <input id="excludeWatched" type="checkbox" class="sr-only" checked />
+                        <span>Exclude watched</span>
+                    </label>
                     <button id="btnToggleHiddenPool" class="btn btn-xs btn-primary" disabled>
                         Show hidden
                     </button>
@@ -272,10 +276,6 @@
         </div>
 
         <div class="flex items-center gap-3 text-xs">
-            <label class="flex items-center gap-2 cursor-pointer">
-                <input id="excludeWatched" type="checkbox" class="checkbox checkbox-xs" checked />
-                <span>Exclude watched</span>
-            </label>
 
             <div class="flex items-center gap-2">
                 <span>Min rating</span>

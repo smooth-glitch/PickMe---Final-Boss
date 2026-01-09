@@ -154,6 +154,9 @@ export function renderResults(list) {
 
 export function renderPool() {
   const btnHidden = id("btnToggleHiddenPool");
+  const ex = id("excludeWatched");
+  const exBtn = id("btnExcludeWatchedPool");
+
   const wrap = id("pool");
   const empty = id("poolEmpty");
   if (!wrap) return;
@@ -163,65 +166,55 @@ export function renderPool() {
   const minRating = Number(state.filters.minRating ?? 0);
   const excludeWatched = !!state.filters.excludeWatched;
 
-  // Which items are hidden by filters?
+  // Keep the header checkbox in sync with state (in case syncControls isn't called yet)
+  if (ex) ex.checked = excludeWatched;
+
+  // Style Exclude watched like a toggle-button
+  if (exBtn) {
+    exBtn.classList.toggle("btn-primary", excludeWatched);
+    exBtn.classList.toggle("btn-outline", !excludeWatched);
+  }
+
+  // Split pool into visible vs hidden-by-filters
   const hidden = [];
   const visible = [];
 
   for (const m of state.pool) {
     const okRating = Number(m.vote_average ?? 0) >= minRating;
     const okWatched = excludeWatched ? !state.watched.has(m.id) : true;
-    const passes = okRating && okWatched;
-
-    if (passes) visible.push(m);
-    else hidden.push(m);
+    (okRating && okWatched ? visible : hidden).push(m);
   }
 
+  // Update "Show hidden" button (always present in header now)
   if (btnHidden) {
     const n = hidden.length;
     btnHidden.disabled = n === 0;
     btnHidden.textContent = showHiddenPoolItems ? `Hide hidden (${n})` : `Show hidden (${n})`;
     if (n === 0) showHiddenPoolItems = false;
   }
-  // Decide what we actually render
+
   const listToRender = showHiddenPoolItems ? [...visible, ...hidden] : visible;
 
-  if (!listToRender.length) {
+  // Empty states
+  if (!state.pool.length) {
     if (empty) {
-      empty.textContent = state.pool.length
-        ? "No movies match your filters."
-        : "Add movies from results to build your pool.";
+      empty.textContent = "Add movies from results to build your pool.";
       empty.classList.remove("hidden");
     }
     return;
   }
-  empty?.classList.add("hidden");
-
-  // Banner that explains hidden items + toggle button
-  if (hidden.length > 0) {
-    const banner = document.createElement("div");
-    banner.className =
-      "mb-3 flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-base-200/40 border border-base-300";
-    banner.addEventListener("click", (e) => {
-      const btn = e.target.closest('button[data-action="toggleHidden"]');
-      if (!btn) return;
-      showHiddenPoolItems = !showHiddenPoolItems;
-      renderPool();
-    });
-
-    wrap.appendChild(banner);
-  }
 
   if (!listToRender.length) {
     if (empty) {
-      empty.textContent = state.pool.length
-        ? "No movies match your filters."
-        : "Add movies from results to build your pool.";
+      empty.textContent = "No movies match your filters.";
       empty.classList.remove("hidden");
     }
     return;
   }
+
   empty?.classList.add("hidden");
 
+  // Render rows
   for (const m of listToRender) {
     const p = posterUrl(m.poster_path);
     const thumb = p
@@ -230,7 +223,7 @@ export function renderPool() {
 
     const isWatched = state.watched.has(m.id);
 
-    // Mark items that are hidden by current filters (only matters when showHiddenPoolItems = true)
+    // For dimming/labeling hidden ones when showHiddenPoolItems=true
     const okRating = Number(m.vote_average ?? 0) >= minRating;
     const okWatched = excludeWatched ? !isWatched : true;
     const isHiddenByFilters = !(okRating && okWatched);
@@ -262,6 +255,7 @@ export function renderPool() {
     row.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-action]");
       if (!btn) return;
+
       const mid = Number(btn.dataset.id);
       const action = btn.dataset.action;
 
