@@ -274,7 +274,7 @@ export function renderRoomMessages(list) {
             const img = document.createElement("img");
             img.src = m.gifUrl;
             img.alt = m.text || "GIF";
-            img.className = "max-w-full rounded-md mt-1";
+            img.className = "max-w-full rounded-md mt-1 mb-0.5";
             img.loading = "lazy";
             bubble.appendChild(img);
         } else if (m.type === "sticker" && m.stickerUrl) {
@@ -330,16 +330,35 @@ export function renderRoomMessages(list) {
         }
 
         const meta = document.createElement("div");
-        meta.className = "chat-footer opacity-50 text-[0.6rem] mt-0.5";
+        meta.className =
+            "chat-footer opacity-60 text-[0.6rem] mt-0.5 flex items-center gap-1";
 
+        // sent by
+        const who = document.createElement("span");
+        who.textContent = m.userName || (isMe ? "You" : "Anon");
+
+        // dot separator
+        const dot = document.createElement("span");
+        dot.textContent = "•";
+
+        // time
         const ts =
-            m.createdAt && typeof m.createdAt.toDate === "function" ? m.createdAt.toDate() : null;
+            m.createdAt && typeof m.createdAt.toDate === "function"
+                ? m.createdAt.toDate()
+                : null;
         const timeLabel = ts
             ? ts.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
             : "";
+        const when = document.createElement("span");
+        when.textContent = timeLabel;
 
-        meta.textContent = timeLabel;
+        meta.appendChild(who);
+        if (timeLabel) {
+            meta.appendChild(dot);
+            meta.appendChild(when);
+        }
         row.appendChild(meta);
+
 
         wrap.appendChild(row);
     }

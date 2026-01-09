@@ -688,6 +688,23 @@ async function boot() {
     const gifBtn = id("roomGifBtn");
     const stickerBtn = id("roomStickerBtn");
     const emojiBtn = id("roomEmojiBtn");
+    const gifTab = document.getElementById("chatTrayTabGif");
+    const stickerTab = document.getElementById("chatTrayTabSticker");
+    const emojiTab = document.getElementById("chatTrayTabEmoji");
+
+    function linkTrayHover(tabEl, btnEl) {
+        if (!tabEl || !btnEl) return;
+        tabEl.addEventListener("mouseenter", () => {
+            btnEl.classList.add("chat-tray-pulse");
+        });
+        tabEl.addEventListener("mouseleave", () => {
+            btnEl.classList.remove("chat-tray-pulse");
+        });
+    }
+
+    linkTrayHover(gifTab, gifBtn);
+    linkTrayHover(stickerTab, stickerBtn);
+    linkTrayHover(emojiTab, emojiBtn);
 
     const tray = id("chatTray");
     const trayGrid = id("chatTrayGrid");

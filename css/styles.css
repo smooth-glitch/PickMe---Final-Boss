@@ -1556,7 +1556,7 @@ html[data-reduce-motion] *::after {
 
 #roomGifBtn:hover,
 #roomStickerBtn:hover,
-#roomEmojiBtn {
+#roomEmojiBtn:hover {
   transform: translateY(-1px) scale(1.04);
   background-color: color-mix(in oklab, hsl(var(--b3)) 60%, transparent);
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
@@ -1859,3 +1859,33 @@ html[data-theme="synthwave"] .chat-bubble-neutral {
 }
 
 /* Input + send polish you already added works with the boxy style */
+
+/* Tiny bump when tray tab is hovered and we “mirror” it on toolbar buttons */
+.chat-tray-pulse {
+  transform: translateY(-1px) scale(1.06);
+  background-color: color-mix(in oklab, hsl(var(--b3)) 70%, transparent);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.55);
+}
+
+/* Reactions context menu – use theme surface instead of transparent */
+.reaction-menu,
+#reactionMenu {
+  background-color: hsl(var(--b1));
+  color: hsl(var(--bc));
+  border: 1px solid hsl(var(--b3));
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
+  border-radius: 0.45rem;
+}
+
+/* Optional: reaction items hover */
+.reaction-menu button,
+.reaction-menu .reaction-item {
+  border-radius: 999px;
+  transition: background-color 140ms ease, transform 120ms ease;
+}
+
+.reaction-menu button:hover,
+.reaction-menu .reaction-item:hover {
+  background-color: color-mix(in oklab, hsl(var(--b2)) 45%, transparent);
+  transform: translateY(-1px) scale(1.03);
+}
