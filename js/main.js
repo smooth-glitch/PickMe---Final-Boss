@@ -439,25 +439,22 @@ async function boot() {
         if (!mentionBox) return;
         mentionBox.innerHTML = "";
 
+        // solid background dropdown
         mentionBox.className =
             "absolute bottom-9 left-0 w-56 bg-base-100 border border-base-300 " +
-            "rounded-xl shadow-lg z-20 py-1"; // solid bg, rounded, padded
+            "rounded-xl shadow-lg z-20 py-1";
 
         for (const m of list) {
             const btn = document.createElement("button");
             btn.type = "button";
             btn.className =
-                "w-full text-left px-3 py-1.5 text-xs hover:bg-base-200 flex flex-col";
+                "w-full text-left px-3 py-1.5 text-xs hover:bg-base-200 flex items-center";
+
             const name = document.createElement("span");
             name.className = "font-semibold truncate";
             name.textContent = m.name || "Anon";
 
-            const sub = document.createElement("span");
-            sub.className = "text-[0.65rem] opacity-70 truncate";
-            sub.textContent = m.email || m.id || "";
-
             btn.appendChild(name);
-            if (sub.textContent) btn.appendChild(sub);
 
             btn.addEventListener("click", () => {
                 applyMention(m);
@@ -466,6 +463,7 @@ async function boot() {
         }
         mentionBox.classList.remove("hidden");
     }
+
 
 
     function applyMention(member) {
@@ -605,9 +603,12 @@ async function boot() {
                 const members = Array.isArray(roomState.members)
                     ? roomState.members
                     : [];
-                const candidates = members.filter((m) =>
-                    (m.name || "").toLowerCase().startsWith(query)
-                );
+                const selfUid = authState.user?.uid ?? null;
+
+                const candidates = members.filter((m) => {
+                    if (selfUid && m.id === selfUid) return false; // cannot tag yourself
+                    return (m.name || "").toLowerCase().startsWith(query);
+                });
 
                 if (!candidates.length) {
                     hideMentionBox();
@@ -623,6 +624,7 @@ async function boot() {
                 setTimeout(hideMentionBox, 150);
             });
         }
+
     }
 
     // GIF picker
