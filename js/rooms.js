@@ -286,7 +286,7 @@ export function stopRoomListener() {
 
 export function startRoomListener() {
     const fs = window.firebaseStore;
-    if (!fs || !inRoom()) return;
+    if (!fs || !inRoom()) return stopRoomListener();
 
     stopRoomListener();
 
@@ -309,12 +309,14 @@ export function startRoomListener() {
                 }
 
                 const pickedAtMs = typeof lp.pickedAt?.toMillis === "function" ? lp.pickedAt.toMillis() : 0;
-                const key = `${lp.movieId}_${pickedAtMs}`;
+                const key =
+                    lp.pickId ??
+                    `${lp.movieId}_${lp.clientPickedAt ?? 0}`; // fallback for older data
 
                 if (key && key !== lastAutoOpenedPickKey) {
                     setLastAutoOpenedPickKey(key);
                     setLastPickedMovieId(lp.movieId);
-                    openDetails(lp.movieId, { highlight: true, mediaType: lp.mediaType || "movie" });
+                    openDetails(lp.movieId, { highlight: true, mediaType: lp.mediaType ?? "movie" });
                 }
             }
 

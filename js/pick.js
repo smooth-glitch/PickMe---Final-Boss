@@ -48,15 +48,20 @@ export async function pickForMe(opts = {}) {
         }
 
         const fs = window.firebaseStore;
+        const pickId =
+            (globalThis.crypto?.randomUUID && globalThis.crypto.randomUUID()) ||
+            `${Date.now()}-${Math.random().toString(16).slice(2)}`;
         await fs.setDoc(
             activeDocRef(),
             {
                 lastPick: {
+                    pickId,                 // NEW stable id
+                    clientPickedAt: Date.now(), // optional, for debugging/fallback
                     movieId: chosen.id,
                     title: chosen.title ?? null,
                     mediaType,
                     pickedBy: authState.user.uid,
-                    pickedAt: fs.serverTimestamp(),
+                    pickedAt: fs.serverTimestamp(), // keep if you want server time
                 },
                 updatedAt: fs.serverTimestamp(),
             },
