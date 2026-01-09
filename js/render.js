@@ -201,16 +201,6 @@ export function renderPool() {
     const banner = document.createElement("div");
     banner.className =
       "mb-3 flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-base-200/40 border border-base-300";
-
-    banner.innerHTML = `
-      <div class="text-sm text-base-content/70">
-        ${hidden.length} hidden by filters (Min rating: ${minRating.toFixed(1)}${excludeWatched ? ", Exclude watched" : ""})
-      </div>
-      <button class="btn btn-xs btn-outline" data-action="toggleHidden">
-        ${showHiddenPoolItems ? "Hide hidden" : "Show hidden"}
-      </button>
-    `;
-
     banner.addEventListener("click", (e) => {
       const btn = e.target.closest('button[data-action="toggleHidden"]');
       if (!btn) return;
