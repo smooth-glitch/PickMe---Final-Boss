@@ -1545,3 +1545,22 @@ html[data-reduce-motion] *::after {
     transition: none !important;
     scroll-behavior: auto !important;
 }
+
+/* --- Settings toggles: always visible in light + dark --- */
+.toggle {
+    /* track color when OFF */
+    --tglbg: color-mix(in oklab, hsl(var(--b2)) 55%, hsl(var(--b1)) 45%);
+    border: 1px solid hsl(var(--b3));
+}
+
+/* track color when ON */
+.toggle:checked {
+    --tglbg: hsl(var(--p));
+    border-color: hsl(var(--p));
+}
+
+/* keyboard focus */
+.toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent);
+}
