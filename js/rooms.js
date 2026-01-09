@@ -143,25 +143,26 @@ export async function toggleReaction(messageId, emoji) {
     if (!fs || !roomState.id || !uid) return;
 
     const ref = messageDocRef(messageId);
-    await fs.runTransaction(async (tx) => {
-        const snap = await tx.get(ref);
-        if (!snap.exists()) return;
 
-        const data = snap.data() || {};
-        const reactions = { ...(data.reactions || {}) };
+    // Read, mutate, write – no runTransaction
+    const snap = await fs.getDoc(ref);
+    if (!snap.exists()) return;
 
-        const arr = Array.isArray(reactions[emoji]) ? reactions[emoji].slice() : [];
-        const idx = arr.indexOf(uid);
+    const data = snap.data() || {};
+    const reactions = { ...(data.reactions || {}) };
 
-        if (idx === -1) arr.push(uid);
-        else arr.splice(idx, 1);
+    const arr = Array.isArray(reactions[emoji]) ? reactions[emoji].slice() : [];
+    const idx = arr.indexOf(uid);
 
-        if (arr.length) reactions[emoji] = arr;
-        else delete reactions[emoji];
+    if (idx === -1) arr.push(uid);
+    else arr.splice(idx, 1);
 
-        tx.update(ref, { reactions });
-    });
+    if (arr.length) reactions[emoji] = arr;
+    else delete reactions[emoji];
+
+    await fs.updateDoc(ref, { reactions });
 }
+
 
 function removeEmojiPicker() {
     const existing = document.getElementById("msgEmojiPicker");
