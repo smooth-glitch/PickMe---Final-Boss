@@ -421,6 +421,10 @@ async function boot() {
     const gifSearchInput = id("gifSearchInput");
     const gifResults = id("gifResults");
 
+    const stickerBtn = id("roomStickerBtn");
+    const stickerDialog = id("dlgStickerPicker");
+    const stickerResults = id("stickerResults");
+    const stickerSearchInput = id("stickerSearchInput");
     const mentionBox = id("mentionSuggestions");
     let mentionActive = false;
     let mentionStartIndex = -1;
