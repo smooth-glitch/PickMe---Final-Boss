@@ -144,13 +144,14 @@ export async function toggleReaction(messageId, emoji) {
 
     const ref = messageDocRef(messageId);
 
-    // Read, mutate, write – no runTransaction
+    // 1) Read current reactions
     const snap = await fs.getDoc(ref);
     if (!snap.exists()) return;
 
     const data = snap.data() || {};
     const reactions = { ...(data.reactions || {}) };
 
+    // 2) Toggle this user in the emoji array
     const arr = Array.isArray(reactions[emoji]) ? reactions[emoji].slice() : [];
     const idx = arr.indexOf(uid);
 
@@ -160,7 +161,8 @@ export async function toggleReaction(messageId, emoji) {
     if (arr.length) reactions[emoji] = arr;
     else delete reactions[emoji];
 
-    await fs.updateDoc(ref, { reactions });
+    // 3) Write back using setDoc + merge (no updateDoc)
+    await fs.setDoc(ref, { reactions }, { merge: true });
 }
 
 
