@@ -36,6 +36,80 @@ let lastClientWriteId = 0;
 // Teleparty playback sync
 let lastPlaybackApplyTs = 0;
 
+let unsubMessages = null;
+
+function stopMessagesListener() {
+    if (unsubMessages) unsubMessages();
+    unsubMessages = null;
+}
+
+function startMessagesListener() {
+    const fs = window.firebaseStore;
+    if (!fs || !inRoom()) return stopMessagesListener();
+
+    const q = fs.query(
+        messagesColRef(),
+        fs.orderBy("createdAt", "asc"),
+        fs.limit(200)
+    );
+
+    unsubMessages = fs.onSnapshot(q, (snap) => {
+        const msgs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        renderRoomMessages(msgs);
+    }, (err) => {
+        console.warn("Messages listener failed", err);
+    });
+}
+
+export function renderRoomMessages(list) {
+    const wrap = document.getElementById("roomChatMessages");
+    if (!wrap) return;
+    wrap.innerHTML = "";
+
+    const myId = authState.user?.uid ?? null;
+
+    for (const m of list) {
+        const isMe = m.userId && m.userId === myId;
+
+        const row = document.createElement("div");
+        row.className = "chat " + (isMe ? "chat-end" : "chat-start");
+
+        // Name (tiny, above bubble)
+        const header = document.createElement("div");
+        header.className = "chat-header text-[0.65rem] opacity-70 mb-0.5";
+        header.textContent = m.userName || (isMe ? "You" : "Anon");
+        row.appendChild(header);
+
+        // Bubble
+        const bubble = document.createElement("div");
+        bubble.className =
+            "chat-bubble text-xs max-w-[80%] " +
+            (isMe ? "chat-bubble-primary" : "chat-bubble-neutral");
+        bubble.textContent = m.text || "";
+        row.appendChild(bubble);
+
+        // Footer time
+        const meta = document.createElement("div");
+        meta.className = "chat-footer opacity-50 text-[0.6rem] mt-0.5";
+
+        const ts =
+            m.createdAt && typeof m.createdAt.toDate === "function"
+                ? m.createdAt.toDate()
+                : null;
+        const timeLabel = ts
+            ? ts.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            : "";
+
+        meta.textContent = timeLabel;
+        row.appendChild(meta);
+
+        wrap.appendChild(row);
+    }
+
+    wrap.scrollTop = wrap.scrollHeight;
+}
+
+
 export async function updatePlaybackFromLocal({ mediaId, mediaType, position, isPlaying }) {
     if (!inRoom()) return;
     const fs = window.firebaseStore;
@@ -314,25 +388,47 @@ export function startUserDocListener() {
     );
 }
 
-export function updateRoomUI() {
-    const badge = id("roomBadge");
-    const btnCreate = id("btnCreateRoom");
-    const btnCopy = id("btnCopyRoomLink");
-    const btnLeave = id("btnLeaveRoom");
+function updateRoomUI() {
+    const badge = roomBadge;
+    const btnCreate = btnCreateRoom;
+    const btnCopy = btnCopyRoomLink;
+    const btnLeave = btnLeaveRoom;
+
+    const hasRoom = inRoom();
 
     if (badge) {
-        badge.classList.toggle("hidden", !inRoom());
-        badge.textContent = inRoom() ? `Room ${roomState.id}` : "Room";
+        badge.classList.toggle("hidden", !hasRoom);
+        badge.textContent = hasRoom ? `Room: ${roomState.id}` : "Room: —";
     }
+    if (btnCreate) btnCreate.classList.toggle("hidden", hasRoom);
+    if (btnCopy) btnCopy.classList.toggle("hidden", !hasRoom);
+    if (btnLeave) btnLeave.classList.toggle("hidden", !hasRoom);
 
-    btnCreate?.classList.toggle("hidden", inRoom());
-    btnCopy?.classList.toggle("hidden", !inRoom());
-    btnLeave?.classList.toggle("hidden", !inRoom());
+    // NEW: toggle pool/chat layout
+    const wrap = document.getElementById("poolChatWrap");
+    const chatCol = document.getElementById("roomChatColumn");
+    if (wrap && chatCol) {
+        if (hasRoom) {
+            wrap.classList.add("md:grid-cols-2");
+            chatCol.classList.remove("hidden");
+            chatCol.classList.add("flex");
+        } else {
+            wrap.classList.remove("md:grid-cols-2");
+            chatCol.classList.add("hidden");
+            chatCol.classList.remove("flex");
+        }
+    }
 }
+
 
 export function stopRoomListener() {
     if (roomState.unsub) roomState.unsub();
     roomState.unsub = null;
+}
+
+function messagesColRef() {
+    const fs = window.firebaseStore;
+    return fs.collection(fs.db, "rooms", roomState.id, "messages");
 }
 
 export function startRoomListener() {
@@ -525,6 +621,7 @@ export function joinRoom(roomId) {
     startRoomListener();
     startMembersListener();
     startHeartbeat();
+    startMessagesListener();
 }
 
 export async function leaveRoom() {
@@ -546,6 +643,7 @@ export async function leaveRoom() {
     stopRoomListener();
     stopMembersListener();
     stopHeartbeat();
+    stopMessagesListener(); // NEW
 
     id("roomMembersWrap")?.classList.add("hidden");
     id("roomPickBanner")?.classList.add("hidden");

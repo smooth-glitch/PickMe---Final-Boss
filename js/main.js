@@ -37,13 +37,28 @@ const chatForm = id("roomChatForm");
 const chatInput = id("roomChatInput");
 const chatMessages = id("roomChatMessages");
 
-if (chatForm && chatInput && chatMessages) {
-    chatForm.addEventListener("submit", (e) => {
+if (chatForm && chatInput) {
+    chatForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const text = chatInput.value.trim();
-        if (!text) return;
-        // TODO: send to Firestore messages subcollection
-        chatInput.value = "";
+        if (!text || !inRoom()) return;
+
+        const fs = window.firebaseStore;
+        if (!fs) return;
+
+        const u = authState.user;
+        try {
+            await fs.addDoc(messagesColRef(), {
+                text,
+                userId: u?.uid ?? null,
+                userName: u?.displayName ?? u?.email ?? "Anon",
+                createdAt: fs.serverTimestamp()
+            });
+            chatInput.value = "";
+        } catch (err) {
+            toast("Failed to send message.", "error");
+            console.warn(err);
+        }
     });
 }
 
@@ -267,6 +282,7 @@ async function boot() {
                 startRoomListener();
                 startMembersListener();
                 startHeartbeat();
+                startMessagesListener(); // NEW: chat listener
                 return;
             }
 
@@ -280,7 +296,6 @@ async function boot() {
 
     const qEl = id("q");
 
-
     // UI wiring
     id("excludeWatched")?.addEventListener("change", () => {
         state.filters.excludeWatched = id("excludeWatched").checked;
@@ -293,9 +308,8 @@ async function boot() {
         state.filters.minRating = Number.isFinite(v) ? v : 0;
         saveJson(LSFILTERS, state.filters);
         renderPool();
-        scheduleCloudSave?.(); // if you’re calling it in this module
+        scheduleCloudSave?.();
     });
-
 
     id("btnSearch")?.addEventListener("click", () => doSearch(1));
     id("btnTrending")?.addEventListener("click", () => loadTrending(1));
@@ -393,9 +407,38 @@ async function boot() {
         else doSearch(nextPage);
     });
 
+    // Chat form wiring
+    const chatForm = id("roomChatForm");
+    const chatInput = id("roomChatInput");
+    if (chatForm && chatInput) {
+        chatForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const text = chatInput.value;
+            if (!text.trim() || !inRoom()) return;
+
+            const fs = window.firebaseStore;
+            if (!fs) return;
+            const u = authState.user;
+
+            try {
+                await fs.addDoc(messagesColRef(), {
+                    text,
+                    userId: u?.uid ?? null,
+                    userName: u?.displayName ?? u?.email ?? "Anon",
+                    createdAt: fs.serverTimestamp(),
+                });
+                chatInput.value = "";
+            } catch (err) {
+                toast("Failed to send message.", "error");
+                console.warn(err);
+            }
+        });
+    }
+
     await loadTmdbConfig();
     await loadTrending(1);
 }
+
 
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
 else boot();

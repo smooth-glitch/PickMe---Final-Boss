@@ -271,7 +271,7 @@
                     </div>
 
                     <!-- Pool + Chat responsive layout -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                    <div id="poolChatWrap" class="grid grid-cols-1 gap-4 items-start">
                         <!-- Left: pool -->
                         <div>
                             <div id="poolEmpty" class="text-xs text-base-content/60">
@@ -280,8 +280,8 @@
                             <div id="pool" class="space-y-2"></div>
                         </div>
 
-                        <!-- Right: chat -->
-                        <div class="flex flex-col gap-2">
+                        <!-- Right: chat (hidden until in room) -->
+                        <div id="roomChatColumn" class="hidden flex-col gap-2">
                             <div class="flex items-center justify-between text-xs text-base-content/70">
                                 <span class="font-semibold">Room chat</span>
                             </div>
