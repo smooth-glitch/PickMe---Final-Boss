@@ -18,7 +18,14 @@ import {
 } from "./storage.js";
 import { toast, bindDropdownRowToggle } from "./ui.js";
 import { tmdb, loadTmdbConfig } from "./tmdb.js";
-import { renderPager, renderPool, toggleHiddenPoolItems } from "./render.js";
+import {
+    renderPager,
+    renderPool,
+    toggleHiddenPoolItems,
+    renderResults,
+    renderResultsLoading,
+    setBusy,
+} from "./render.js";
 import { openDetails, markCurrentWatched } from "./details.js";
 import { clearPool } from "./pool.js";
 import { loadTrending, doSearch } from "./search.js";
@@ -52,6 +59,12 @@ import { searchGifs } from "./gif.js";
 let liveSearchTimer = null;
 // reply draft for chat
 let currentReplyTarget = null;
+
+function setPageLoading(on) {
+    const el = document.getElementById("pageLoader");
+    if (!el) return;
+    el.classList.toggle("hidden", !on);
+}
 
 function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
@@ -407,12 +420,74 @@ async function boot() {
     const gifSearchInput = id("gifSearchInput");
     const gifResults = id("gifResults");
 
+    const mentionBox = id("mentionSuggestions");
+    let mentionActive = false;
+    let mentionStartIndex = -1;
+
+    function hideMentionBox() {
+        mentionActive = false;
+        mentionStartIndex = -1;
+        if (mentionBox) mentionBox.classList.add("hidden");
+    }
+
+    function renderMentionBox(list) {
+        if (!mentionBox) return;
+        mentionBox.innerHTML = "";
+        for (const m of list) {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className =
+                "w-full text-left px-3 py-2 text-sm hover:bg-base-200 flex items-center gap-2";
+            btn.textContent = m.name || "Anon";
+            btn.addEventListener("click", () => {
+                applyMention(m);
+            });
+            mentionBox.appendChild(btn);
+        }
+        mentionBox.classList.remove("hidden");
+    }
+
+    function applyMention(member) {
+        if (!mentionActive || mentionStartIndex < 0 || !chatInput) return;
+        const value = chatInput.value;
+        const caret = chatInput.selectionStart ?? value.length;
+        const before = value.slice(0, mentionStartIndex);
+        const after = value.slice(caret);
+        const mentionText = "@" + (member.name || "Anon") + " ";
+        chatInput.value = before + mentionText + after;
+        const newCaret = before.length + mentionText.length;
+        chatInput.focus();
+        chatInput.setSelectionRange(newCaret, newCaret);
+        hideMentionBox();
+    }
+
+    function extractMentions(text) {
+        const names = new Set();
+        const regex = /@([^\s@]+)/g;
+        let m;
+        while ((m = regex.exec(text))) {
+            names.add(m[1]);
+        }
+
+        const members = roomState.members || [];
+        const result = [];
+        for (const name of names) {
+            const match = members.find((u) => {
+                const n = (u.name || "").split(" ")[0];
+                return n === name || (u.name || "") === name;
+            });
+            if (match) {
+                result.push({ userId: match.id, name: match.name });
+            }
+        }
+        return result;
+    }
+
     function clearReplyDraft() {
         currentReplyTarget = null;
         if (replyPreview) replyPreview.classList.add("hidden");
     }
 
-    // inside boot(), after defining clearReplyDraft:
     registerReplyDraftSetter((msg) => {
         currentReplyTarget = msg || null;
         if (!msg) {
@@ -424,6 +499,8 @@ async function boot() {
         if (replyToSnippet) {
             if (msg.type === "gif") {
                 replyToSnippet.textContent = "GIF";
+            } else if (msg.type === "sticker") {
+                replyToSnippet.textContent = "Sticker";
             } else {
                 const t = msg.text || "";
                 replyToSnippet.textContent =
@@ -438,7 +515,6 @@ async function boot() {
         });
     }
 
-    // allow rooms.js to set reply target when user clicks a message
     registerReplyDraftSetter((msg) => {
         currentReplyTarget = msg || null;
         if (!msg) {
@@ -468,10 +544,14 @@ async function boot() {
             if (!fs) return;
             const u = authState.user;
 
+            const mentions = extractMentions(text);
+
             const payload = {
                 type: "text",
                 text,
                 gifUrl: null,
+                stickerUrl: null,
+                mentions,
                 userId: u?.uid ?? null,
                 userName: u?.displayName ?? u?.email ?? "Anon",
                 createdAt: fs.serverTimestamp(),
@@ -484,6 +564,7 @@ async function boot() {
                     type: currentReplyTarget.type || "text",
                     text: currentReplyTarget.text || null,
                     gifUrl: currentReplyTarget.gifUrl || null,
+                    stickerUrl: currentReplyTarget.stickerUrl || null,
                 };
             }
 
@@ -494,13 +575,55 @@ async function boot() {
                 );
                 chatInput.value = "";
                 clearReplyDraft();
+                hideMentionBox();
             } catch (err) {
                 toast("Failed to send message.", "error");
                 console.warn(err);
             }
         });
+
+        if (mentionBox) {
+            chatInput.addEventListener("input", () => {
+                const value = chatInput.value;
+                const caret = chatInput.selectionStart ?? value.length;
+
+                const atIndex = value.lastIndexOf("@", caret - 1);
+                if (atIndex === -1) {
+                    hideMentionBox();
+                    return;
+                }
+
+                const afterAt = value.slice(atIndex + 1, caret);
+                if (/\s/.test(afterAt)) {
+                    hideMentionBox();
+                    return;
+                }
+
+                const query = afterAt.toLowerCase();
+                const members = Array.isArray(roomState.members)
+                    ? roomState.members
+                    : [];
+                const candidates = members.filter((m) =>
+                    (m.name || "").toLowerCase().startsWith(query)
+                );
+
+                if (!candidates.length) {
+                    hideMentionBox();
+                    return;
+                }
+
+                mentionActive = true;
+                mentionStartIndex = atIndex;
+                renderMentionBox(candidates);
+            });
+
+            chatInput.addEventListener("blur", () => {
+                setTimeout(hideMentionBox, 150);
+            });
+        }
     }
 
+    // GIF picker (unchanged logic, but replyTo gains stickerUrl if present)
     if (gifBtn && gifDialog && gifSearchInput && gifResults) {
         gifBtn.addEventListener("click", async () => {
             gifSearchInput.value = "";
@@ -543,6 +666,8 @@ async function boot() {
                 type: "gif",
                 text: null,
                 gifUrl: gif.url,
+                stickerUrl: null,
+                mentions: [],
                 userId: u?.uid ?? null,
                 userName: u?.displayName ?? u?.email ?? "Anon",
                 createdAt: fs.serverTimestamp(),
@@ -555,6 +680,7 @@ async function boot() {
                     type: currentReplyTarget.type || "text",
                     text: currentReplyTarget.text || null,
                     gifUrl: currentReplyTarget.gifUrl || null,
+                    stickerUrl: currentReplyTarget.stickerUrl || null,
                 };
             }
 
@@ -582,7 +708,8 @@ async function boot() {
                 btn.type = "button";
                 btn.className =
                     "relative w-full aspect-[4/3] overflow-hidden rounded-lg border border-base-300";
-                btn.innerHTML = `<img src="${g.thumb}" alt="${g.title || ""}" class="w-full h-full object-cover" loading="lazy" />`;
+                btn.innerHTML = `<img src="${g.thumb}" alt="${g.title || ""
+                    }" class="w-full h-full object-cover" loading="lazy" />`;
                 btn.addEventListener("click", async () => {
                     await sendGifMessage(g);
                     gifDialog.close();
@@ -592,7 +719,79 @@ async function boot() {
         }
     }
 
+    // Sticker picker wiring (new)
+    const stickerBtn = id("roomStickerBtn");
+    const stickerDialog = id("dlgStickerPicker");
+    const stickerResults = id("stickerResults");
+
+    const STICKERS = [
+        { url: "/stickers/lol.png", name: "LOL" },
+        { url: "/stickers/sad.png", name: "Sad" },
+        { url: "/stickers/gg.png", name: "GG" },
+    ];
+
+    if (stickerBtn && stickerDialog && stickerResults) {
+        stickerBtn.addEventListener("click", () => {
+            stickerResults.innerHTML = "";
+            for (const s of STICKERS) {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className =
+                    "relative w-full aspect-square overflow-hidden rounded-lg border border-base-300 bg-base-200";
+                btn.innerHTML = `<img src="${s.url}" alt="${s.name
+                    }" class="w-full h-full object-contain p-2" loading="lazy" />`;
+                btn.addEventListener("click", async () => {
+                    await sendStickerMessage(s);
+                    stickerDialog.close();
+                });
+                stickerResults.appendChild(btn);
+            }
+            stickerDialog.showModal();
+        });
+
+        async function sendStickerMessage(sticker) {
+            if (!roomState.id) return;
+            const fs = window.firebaseStore;
+            if (!fs) return;
+            const u = authState.user;
+
+            const payload = {
+                type: "sticker",
+                text: null,
+                gifUrl: null,
+                stickerUrl: sticker.url,
+                mentions: [],
+                userId: u?.uid ?? null,
+                userName: u?.displayName ?? u?.email ?? "Anon",
+                createdAt: fs.serverTimestamp(),
+            };
+
+            if (currentReplyTarget) {
+                payload.replyTo = {
+                    id: currentReplyTarget.id,
+                    userName: currentReplyTarget.userName || "Anon",
+                    type: currentReplyTarget.type || "text",
+                    text: currentReplyTarget.text || null,
+                    gifUrl: currentReplyTarget.gifUrl || null,
+                    stickerUrl: currentReplyTarget.stickerUrl || null,
+                };
+            }
+
+            try {
+                await fs.addDoc(
+                    fs.collection(fs.db, "rooms", roomState.id, "messages"),
+                    payload
+                );
+                clearReplyDraft();
+            } catch (err) {
+                toast("Failed to send sticker.", "error");
+                console.warn(err);
+            }
+        }
+    }
+
     await loadTmdbConfig();
+    renderResultsLoading();
     await loadTrending(1);
 }
 

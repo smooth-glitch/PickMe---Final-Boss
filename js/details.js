@@ -63,6 +63,16 @@ export async function openDetails(idNum, opts = {}) {
     try {
         setBusy(true);
 
+        dlgTitle.textContent = "Loading…";
+        dlgMeta.textContent = "";
+        box.innerHTML = `
+      <div class="flex items-center justify-center py-10">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    `; // daisyUI loading spinner [web:151]
+
+        dlg.showModal();
+
         const kind = opts?.mediaType || state.filters?.mediaType || "movie";
 
         const data = await tmdb(`${kind}/${idNum}`, {

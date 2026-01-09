@@ -44,6 +44,64 @@ export function registerReplyDraftSetter(fn) {
     setReplyDraft = typeof fn === "function" ? fn : null;
 }
 
+// --- new helpers for mentions + reply preview ---
+
+function renderTextWithMentions(text, mentions) {
+    const root = document.createElement("span");
+    const parts = String(text || "").split(/(\s+)/); // keep spaces
+
+    const mentionNames = new Set(
+        (Array.isArray(mentions) ? mentions : [])
+            .map((m) => (m?.name || "").toLowerCase())
+            .filter(Boolean)
+    );
+
+    for (const part of parts) {
+        if (part.startsWith("@")) {
+            const name = part.slice(1);
+            const key = name.toLowerCase();
+            const span = document.createElement("span");
+            span.textContent = part;
+            if (mentionNames.has(key)) {
+                span.className = "text-primary font-semibold";
+            }
+            root.appendChild(span);
+        } else {
+            root.appendChild(document.createTextNode(part));
+        }
+    }
+    return root;
+}
+
+function renderReplyPreview(replyTo) {
+    if (!replyTo || (!replyTo.text && !replyTo.gifUrl && !replyTo.stickerUrl)) {
+        return null;
+    }
+    const box = document.createElement("div");
+    box.className =
+        "mb-1 px-2 py-1 rounded bg-base-100/40 border border-base-300 text-[0.65rem] opacity-80";
+
+    const rName = replyTo.userName || "Anon";
+    const label = document.createElement("div");
+    label.className = "font-semibold";
+    label.textContent = rName;
+    box.appendChild(label);
+
+    const content = document.createElement("div");
+    if (replyTo.type === "gif" && replyTo.gifUrl) {
+        content.textContent = "GIF";
+    } else if (replyTo.type === "sticker" && replyTo.stickerUrl) {
+        content.textContent = "Sticker";
+    } else {
+        const t = replyTo.text || "";
+        content.textContent = t.length > 40 ? t.slice(0, 40) + "…" : t || "";
+    }
+    box.appendChild(content);
+
+    return box;
+}
+
+// --- messages ---
 
 export function stopMessagesListener() {
     if (unsubMessages) unsubMessages();
@@ -100,29 +158,10 @@ export function renderRoomMessages(list) {
             (isMe ? "chat-bubble-primary" : "chat-bubble-neutral");
 
         // reply preview inside bubble (top)
-        if (m.replyTo && (m.replyTo.text || m.replyTo.gifUrl)) {
-            const replyBox = document.createElement("div");
-            replyBox.className =
-                "mb-1 px-2 py-1 rounded bg-base-100/40 border border-base-300 text-[0.65rem] opacity-80";
-            const rName = m.replyTo.userName || "Anon";
-            const label = document.createElement("div");
-            label.className = "font-semibold";
-            label.textContent = rName;
-            replyBox.appendChild(label);
+        const replyBox = renderReplyPreview(m.replyTo);
+        if (replyBox) bubble.appendChild(replyBox);
 
-            const content = document.createElement("div");
-            if (m.replyTo.type === "gif" && m.replyTo.gifUrl) {
-                content.textContent = "GIF";
-            } else {
-                const t = m.replyTo.text || "";
-                content.textContent = t.length > 40 ? t.slice(0, 40) + "…" : t || "";
-            }
-            replyBox.appendChild(content);
-
-            bubble.appendChild(replyBox);
-        }
-
-        // main content: text or gif
+        // main content: text, gif, or sticker
         if (m.type === "gif" && m.gifUrl) {
             const img = document.createElement("img");
             img.src = m.gifUrl;
@@ -130,10 +169,16 @@ export function renderRoomMessages(list) {
             img.className = "max-w-full rounded-md mt-1";
             img.loading = "lazy";
             bubble.appendChild(img);
+        } else if (m.type === "sticker" && m.stickerUrl) {
+            const img = document.createElement("img");
+            img.src = m.stickerUrl;
+            img.alt = "Sticker";
+            img.className = "h-24 w-24 object-contain mt-1";
+            img.loading = "lazy";
+            bubble.appendChild(img);
         } else {
-            const span = document.createElement("span");
-            span.textContent = m.text || "";
-            bubble.appendChild(span);
+            const body = renderTextWithMentions(m.text || "", m.mentions || []);
+            bubble.appendChild(body);
         }
 
         row.appendChild(bubble);
@@ -243,13 +288,16 @@ export function startMembersListener() {
                             : 0;
                     return {
                         id: d.id,
-                        name: m.name,
+                        name: m.name || m.email || d.id,
                         email: m.email,
                         lastSeenMs: ms,
                         online: ms && now - ms < ONLINEWINDOWMS,
                     };
                 })
                 .sort((a, b) => (b.lastSeenMs || 0) - (a.lastSeenMs || 0));
+
+            // Store for @-mention feature
+            roomState.members = members;
 
             const onlineCount = members.filter((x) => x.online).length;
             if (roomOnlineCount) roomOnlineCount.textContent = `Online ${onlineCount}`;
@@ -261,11 +309,11 @@ export function startMembersListener() {
                     const badge = m.online ? "badge-success" : "badge-ghost";
                     const status = m.online ? "online" : "offline";
                     return `
-          <div class="flex items-center justify-between p-2 rounded-xl bg-base-200/40 border border-base-300">
-            <div class="truncate">${label}</div>
-            <span class="badge badge-sm ${badge}">${status}</span>
-          </div>
-        `;
+        <div class="flex items-center justify-between p-2 rounded-xl bg-base-200/40 border border-base-300">
+          <div class="truncate">${label}</div>
+          <span class="badge badge-sm ${badge}">${status}</span>
+        </div>
+      `;
                 })
                 .join("");
         },

@@ -33,14 +33,21 @@ export const state = {
 
 export const authState = { user: null };
 
-export const roomState = { id: null, unsub: null };
+export const roomState = {
+    id: null,
+    unsub: null,
+    members: [], // for @-mentions
+};
 
 export function inRoom() {
     return !!roomState.id;
 }
 
 export function detectRegionFromBrowser() {
-    const loc = Intl.DateTimeFormat().resolvedOptions().locale || navigator.language || "en-IN";
+    const loc =
+        Intl.DateTimeFormat().resolvedOptions().locale ||
+        navigator.language ||
+        "en-IN";
     try {
         const r = new Intl.Locale(loc).region;
         if (r && /^[A-Z]{2}$/.test(r)) return r;
@@ -54,7 +61,6 @@ export function detectRegionFromBrowser() {
 
 export function ensureWatchFilterDefaults() {
     state.filters = normalizeFilters(state.filters);
-
     if (!state.filters.region) state.filters.region = detectRegionFromBrowser();
     if (!state.filters.ott || typeof state.filters.ott !== "object") {
         state.filters.ott = { netflix: false, prime: false, hotstar: false };
@@ -67,6 +73,7 @@ export let lastPickedMovieId = null;
 export function setLastAutoOpenedPickKey(v) {
     lastAutoOpenedPickKey = v;
 }
+
 export function setLastPickedMovieId(v) {
     lastPickedMovieId = v;
 }

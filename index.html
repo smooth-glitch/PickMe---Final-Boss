@@ -105,6 +105,14 @@
             <button id="btnOpenPicked" class="btn btn-xs btn-ghost">Open</button>
         </div>
 
+        <div id="pageLoader"
+            class="fixed inset-0 z-50 hidden bg-base-100/90 backdrop-blur-sm flex items-center justify-center">
+            <div class="flex flex-col items-center gap-3">
+                <span class="loading loading-spinner loading-lg text-primary"></span>
+                <div class="text-sm opacity-70">Loading recommendations…</div>
+            </div>
+        </div>
+
         <main class="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1.1fr)] items-start flex-1 min-h-0">
             <!-- Left: search/results -->
             <section class="card bg-base-100 shadow-xl border border-base-300">
@@ -318,6 +326,14 @@
                                 <button type="submit" class="btn btn-xs btn-primary">
                                     Send
                                 </button>
+                                <div class="relative w-full">
+                                    <input id="roomChatInput" type="text" class="input input-bordered input-sm w-full"
+                                        placeholder="Type a message" />
+                                    <div id="mentionSuggestions"
+                                        class="absolute bottom-9 left-0 w-56 bg-base-100 border border-base-300 rounded-lg shadow-lg hidden z-20">
+                                    </div>
+                                </div>
+
                             </form>
 
                             <!-- GIF picker -->
@@ -333,6 +349,24 @@
                                     </form>
                                 </div>
                             </dialog>
+                            <dialog id="dlgStickerPicker" class="modal">
+                                <div class="modal-box">
+                                    <h3 class="font-semibold mb-2 text-sm">Choose a sticker</h3>
+                                    <div id="stickerResults" class="grid grid-cols-3 gap-2"></div>
+                                    <div class="modal-action">
+                                        <form method="dialog">
+                                            <button class="btn btn-sm">Close</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </dialog>
+
+                            <div class="flex items-center gap-2 mt-2">
+                                <button id="roomGifBtn" class="btn btn-xs btn-ghost">GIF</button>
+                                <button id="roomStickerBtn" class="btn btn-xs btn-ghost">Sticker</button>
+                                <button class="btn btn-xs btn-primary ml-auto" type="submit">Send</button>
+                            </div>
+
                         </div>
                     </div>
                 </div>
