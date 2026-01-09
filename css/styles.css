@@ -1527,16 +1527,16 @@ html[data-reduce-motion] *::after {
   box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent);
 }
 
-/* My messages (right side) */
+/* My messages (right side) – black bubble with white text */
 .chat-bubble-primary {
-  background-color: hsl(var(--b1)); /* light / white-ish */
-  color: hsl(var(--bc)); /* normal text */
+  background-color: #000; /* black bubble */
+  color: #fff; /* white text */
   border-radius: 9999px;
 }
 
-/* Other people's messages (left side) */
+/* Other people's messages (left side) – white bubble with black text */
 .chat-bubble-neutral {
-  background-color: hsl(var(--n)); /* dark / black-ish */
-  color: hsl(var(--nc)); /* contrasting text */
+  background-color: #fff; /* white bubble */
+  color: #000; /* black text */
   border-radius: 9999px;
 }

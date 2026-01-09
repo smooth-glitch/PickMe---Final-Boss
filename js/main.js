@@ -555,6 +555,7 @@ async function boot() {
                 userId: u?.uid ?? null,
                 userName: u?.displayName ?? u?.email ?? "Anon",
                 createdAt: fs.serverTimestamp(),
+                reactions: {},
             };
 
             if (currentReplyTarget) {
@@ -675,6 +676,7 @@ async function boot() {
                 userId: u?.uid ?? null,
                 userName: u?.displayName ?? u?.email ?? "Anon",
                 createdAt: fs.serverTimestamp(),
+                reactions: {},
             };
 
             if (currentReplyTarget) {
@@ -771,6 +773,7 @@ async function boot() {
                 userId: u?.uid ?? null,
                 userName: u?.displayName ?? u?.email ?? "Anon",
                 createdAt: fs.serverTimestamp(),
+                reactions: {},
             };
 
             if (currentReplyTarget) {

@@ -127,12 +127,53 @@ export function startMessagesListener() {
     );
 }
 
+// --- reactions ---
+
+function messageDocRef(messageId) {
+    const fs = window.firebaseStore;
+    return fs.doc(fs.db, "rooms", roomState.id, "messages", messageId);
+}
+
+export async function toggleReaction(messageId, emoji) {
+    const fs = window.firebaseStore;
+    const uid = authState.user?.uid ?? null;
+    if (!fs || !roomState.id || !uid) return;
+
+    const ref = messageDocRef(messageId);
+    await fs.runTransaction(async (tx) => {
+        const snap = await tx.get(ref);
+        if (!snap.exists()) return;
+
+        const data = snap.data() || {};
+        const reactions = { ...(data.reactions || {}) };
+
+        const arr = Array.isArray(reactions[emoji]) ? reactions[emoji].slice() : [];
+        const idx = arr.indexOf(uid);
+
+        if (idx === -1) arr.push(uid);
+        else arr.splice(idx, 1);
+
+        if (arr.length) reactions[emoji] = arr;
+        else delete reactions[emoji];
+
+        tx.update(ref, { reactions });
+    });
+}
+
+function removeEmojiPicker() {
+    const existing = document.getElementById("msgEmojiPicker");
+    if (existing) existing.remove();
+}
+
 export function renderRoomMessages(list) {
     const wrap = document.getElementById("roomChatMessages");
     if (!wrap) return;
     wrap.innerHTML = "";
 
     const myId = authState.user?.uid ?? null;
+
+    // Quick reactions like Discord
+    const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
 
     for (const m of list) {
         const isMe = m.userId && m.userId === myId;
@@ -142,6 +183,7 @@ export function renderRoomMessages(list) {
 
         // clickable area to set reply
         row.addEventListener("click", () => {
+            removeEmojiPicker();
             if (typeof setReplyDraft === "function") {
                 setReplyDraft(m);
             }
@@ -149,13 +191,62 @@ export function renderRoomMessages(list) {
 
         const header = document.createElement("div");
         header.className = "chat-header text-[0.65rem] opacity-70 mb-0.5";
-        header.textContent = m.userName || (isMe ? "You" : "Anon");
+
+        // Show "You" for your own messages, actual name/email for others
+        if (isMe) header.textContent = "You";
+        else header.textContent = m.userName || "Anon";
+
         row.appendChild(header);
 
         const bubble = document.createElement("div");
         bubble.className =
             "chat-bubble text-xs max-w-[80%] " +
             (isMe ? "chat-bubble-primary" : "chat-bubble-neutral");
+
+        // Right-click reactions picker
+        bubble.addEventListener("contextmenu", (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+
+            removeEmojiPicker();
+
+            const picker = document.createElement("div");
+            picker.id = "msgEmojiPicker";
+            picker.className =
+                "fixed z-[9999] flex items-center gap-1 px-2 py-1 rounded-full " +
+                "bg-base-100 border border-base-300 shadow-lg";
+
+            for (const emoji of QUICK_EMOJIS) {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className =
+                    "w-8 h-8 rounded-full hover:bg-base-200 grid place-items-center text-lg";
+                btn.textContent = emoji;
+                btn.addEventListener("click", async (e2) => {
+                    e2.preventDefault();
+                    e2.stopPropagation();
+                    await toggleReaction(m.id, emoji);
+                    removeEmojiPicker();
+                });
+                picker.appendChild(btn);
+            }
+
+            document.body.appendChild(picker);
+
+            // position near cursor
+            const pad = 8;
+            const x = Math.min(window.innerWidth - picker.offsetWidth - pad, ev.clientX);
+            const y = Math.min(window.innerHeight - picker.offsetHeight - pad, ev.clientY);
+            picker.style.left = `${Math.max(pad, x)}px`;
+            picker.style.top = `${Math.max(pad, y)}px`;
+
+            const close = () => removeEmojiPicker();
+            setTimeout(() => {
+                document.addEventListener("click", close, { once: true });
+                document.addEventListener("scroll", close, { once: true, passive: true });
+                window.addEventListener("resize", close, { once: true });
+            }, 0);
+        });
 
         // reply preview inside bubble (top)
         const replyBox = renderReplyPreview(m.replyTo);
@@ -183,13 +274,46 @@ export function renderRoomMessages(list) {
 
         row.appendChild(bubble);
 
+        // Reactions bar under bubble (if any)
+        if (m.reactions && typeof m.reactions === "object") {
+            const emojis = Object.keys(m.reactions);
+            if (emojis.length) {
+                const reactionsBar = document.createElement("div");
+                reactionsBar.className =
+                    "mt-1 flex flex-wrap gap-1 text-[0.7rem] items-center";
+
+                for (const emoji of emojis) {
+                    const users = Array.isArray(m.reactions[emoji]) ? m.reactions[emoji] : [];
+                    if (!users.length) continue;
+
+                    const mine = myId ? users.includes(myId) : false;
+
+                    const pill = document.createElement("button");
+                    pill.type = "button";
+                    pill.className =
+                        "px-2 py-0.5 rounded-full border text-[0.7rem] flex items-center gap-1 " +
+                        (mine
+                            ? "bg-primary text-black border-primary"
+                            : "bg-base-100/70 text-base-content border-base-300/80");
+
+                    pill.textContent = `${emoji} ${users.length}`;
+                    pill.addEventListener("click", (ev) => {
+                        ev.stopPropagation();
+                        toggleReaction(m.id, emoji);
+                    });
+
+                    reactionsBar.appendChild(pill);
+                }
+
+                row.appendChild(reactionsBar);
+            }
+        }
+
         const meta = document.createElement("div");
         meta.className = "chat-footer opacity-50 text-[0.6rem] mt-0.5";
 
         const ts =
-            m.createdAt && typeof m.createdAt.toDate === "function"
-                ? m.createdAt.toDate()
-                : null;
+            m.createdAt && typeof m.createdAt.toDate === "function" ? m.createdAt.toDate() : null;
         const timeLabel = ts
             ? ts.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
             : "";
@@ -283,9 +407,7 @@ export function startMembersListener() {
                 .map((d) => {
                     const m = d.data();
                     const ms =
-                        typeof m.lastSeenAt?.toMillis === "function"
-                            ? m.lastSeenAt.toMillis()
-                            : 0;
+                        typeof m.lastSeenAt?.toMillis === "function" ? m.lastSeenAt.toMillis() : 0;
                     return {
                         id: d.id,
                         name: m.name || m.email || d.id,
@@ -451,17 +573,13 @@ export function startUserDocListener() {
                 if (typeof s.textScale === "number") {
                     document.documentElement.style.fontSize = `${s.textScale * 100}%`;
                 }
-                document.documentElement.toggleAttribute(
-                    "data-reduce-motion",
-                    !!s.reduceMotion
-                );
+                document.documentElement.toggleAttribute("data-reduce-motion", !!s.reduceMotion);
             }
 
             applyingRemote = true;
             try {
                 if (Array.isArray(data.pool)) state.pool = data.pool;
-                if (Array.isArray(data.watched))
-                    state.watched = new Set(data.watched);
+                if (Array.isArray(data.watched)) state.watched = new Set(data.watched);
                 if (data.filters && typeof data.filters === "object")
                     state.filters = normalizeFilters(data.filters);
 
@@ -548,17 +666,12 @@ export function startRoomListener() {
                 if (banner2 && text2) {
                     const title = lp.title ? String(lp.title) : "";
                     banner2.classList.remove("hidden");
-                    text2.textContent = title
-                        ? `Tonight's pick: ${title}`
-                        : "Tonight's pick";
+                    text2.textContent = title ? `Tonight's pick: ${title}` : "Tonight's pick";
                 }
 
                 const pickedAtMs =
-                    typeof lp.pickedAt?.toMillis === "function"
-                        ? lp.pickedAt.toMillis()
-                        : 0;
-                const key =
-                    lp.pickId ?? `${lp.movieId}_${lp.clientPickedAt ?? 0}`;
+                    typeof lp.pickedAt?.toMillis === "function" ? lp.pickedAt.toMillis() : 0;
+                const key = lp.pickId ?? `${lp.movieId}_${lp.clientPickedAt ?? 0}`;
 
                 if (key && key !== lastAutoOpenedPickKey) {
                     setLastAutoOpenedPickKey(key);
@@ -585,15 +698,12 @@ export function startRoomListener() {
 
             const playback = data.playback || null;
             if (playback) {
-                const { mediaId, mediaType, position, isPlaying, updatedBy, updatedAt } =
-                    playback;
+                const { mediaId, mediaType, position, isPlaying, updatedBy, updatedAt } = playback;
 
                 const myUid = authState.user?.uid ?? null;
 
                 const tsMs =
-                    typeof updatedAt?.toMillis === "function"
-                        ? updatedAt.toMillis()
-                        : 0;
+                    typeof updatedAt?.toMillis === "function" ? updatedAt.toMillis() : 0;
                 if (!myUid || !updatedBy || updatedBy !== myUid) {
                     if (tsMs && tsMs > lastPlaybackApplyTs) {
                         lastPlaybackApplyTs = tsMs;
@@ -605,8 +715,7 @@ export function startRoomListener() {
             applyingRemote = true;
             try {
                 if (Array.isArray(data.pool)) state.pool = data.pool;
-                if (Array.isArray(data.watched))
-                    state.watched = new Set(data.watched);
+                if (Array.isArray(data.watched)) state.watched = new Set(data.watched);
                 if (data.filters && typeof data.filters === "object")
                     state.filters = normalizeFilters(data.filters);
 
@@ -667,14 +776,10 @@ export function startHeartbeat() {
     if (!inRoom() || !authState.user) return;
 
     heartbeatOnce().catch(() => { });
-    heartbeatTimer = setInterval(
-        () => heartbeatOnce().catch(() => { }),
-        HEARTBEATMS
-    );
+    heartbeatTimer = setInterval(() => heartbeatOnce().catch(() => { }), HEARTBEATMS);
 
     document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible")
-            heartbeatOnce().catch(() => { });
+        if (document.visibilityState === "visible") heartbeatOnce().catch(() => { });
     });
 }
 
