@@ -233,11 +233,12 @@ export async function openDetails(idNum, opts = {}) {
                     language: "en-US",
                 });
                 const colSection = renderMovieCollectionSection(data, col);
-                if (colSection) right.appendChild(wrapInCollapse("Collection", colSection));
+                if (colSection) right.appendChild(colSection);
             } catch {
                 // ignore collection errors
             }
         }
+
 
         // TV recommendations/similar
         if (kind === "tv") {
@@ -506,6 +507,8 @@ function renderMovieCollectionSection(currentMovie, collection) {
         return da - db;
     });
 
+    const inner = renderMiniList(collection.name || "Collection", parts, "movie");
+    if (!inner) return null;
     const idx = parts.findIndex((p) => p.id === currentMovie.id);
     const prev = idx > 0 ? parts[idx - 1] : null;
     const next = idx >= 0 && idx < parts.length - 1 ? parts[idx + 1] : null;
@@ -552,5 +555,5 @@ function renderMovieCollectionSection(currentMovie, collection) {
             .join(" • ");
     wrap.appendChild(all);
 
-    return wrap;
+    return wrapInCollapse(collection.name || "Collection", inner);
 }
