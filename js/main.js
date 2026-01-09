@@ -360,16 +360,6 @@ async function boot() {
         }
     });
 
-    id("btnMenuSettings")?.addEventListener("click", () => {
-        id("dlgSettings")?.showModal();
-    });
-
-    id("btnSettingsToggleTheme")?.addEventListener("click", () => {
-        id("themeToggleBtn")?.click(); // reuse your existing theme button behavior [file:10]
-    });
-
-
-
     id("btnAuthSubmit")?.addEventListener("click", handleAuthSubmit);
     id("btnGoogleDemo")?.addEventListener("click", handleGoogleSignIn);
 

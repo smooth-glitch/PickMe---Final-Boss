@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en" data-theme="synthwave">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Settings • PickMe</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="css/styles.css" />
+    <script src="js/config.js"></script>
+    <script type="module" src="js/firebase-init.js"></script>
+</head>
+
+<body class="min-h-screen text-base-content">
+    <div class="max-w-5xl mx-auto px-3 py-6 space-y-4">
+        <header class="header-shell flex items-center justify-between gap-2 px-3 py-3 rounded-2xl border">
+            <div class="text-xl font-black tracking-tight">Settings</div>
+            <a class="btn btn-ghost btn-sm" href="index.html">Back</a>
+        </header>
+
+        <main class="card bg-base-100 shadow-xl border border-base-300">
+            <div class="card-body gap-6">
+
+                <!-- Appearance -->
+                <section class="space-y-3">
+                    <h2 class="font-bold text-base">Appearance</h2>
+
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <div class="font-semibold text-sm">Theme</div>
+                            <div class="text-xs text-base-content60">Switch between synthwave/cupcake.</div>
+                        </div>
+                        <select id="setTheme" class="select select-bordered select-sm w-40">
+                            <option value="synthwave">Synthwave</option>
+                            <option value="cupcake">Cupcake</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <div class="font-semibold text-sm">Text size</div>
+                            <div class="text-xs text-base-content60">Scale the UI for readability.</div>
+                        </div>
+                        <select id="setTextScale" class="select select-bordered select-sm w-40">
+                            <option value="1">Default</option>
+                            <option value="1.1">Large</option>
+                            <option value="1.2">Extra large</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Accessibility -->
+                <section class="space-y-3">
+                    <h2 class="font-bold text-base">Accessibility</h2>
+
+                    <label class="flex items-center justify-between gap-3 cursor-pointer">
+                        <div>
+                            <div class="font-semibold text-sm">Reduce motion</div>
+                            <div class="text-xs text-base-content60">Minimize animations/transitions.</div>
+                        </div>
+                        <input id="setReduceMotion" type="checkbox" class="toggle toggle-sm" />
+                    </label>
+                </section>
+
+                <!-- Defaults -->
+                <section class="space-y-3">
+                    <h2 class="font-bold text-base">Defaults</h2>
+
+                    <label class="flex items-center justify-between gap-3 cursor-pointer">
+                        <div>
+                            <div class="font-semibold text-sm">Exclude watched by default</div>
+                            <div class="text-xs text-base-content60">Used when you open the app.</div>
+                        </div>
+                        <input id="setDefaultExcludeWatched" type="checkbox" class="toggle toggle-sm" />
+                    </label>
+
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <div class="font-semibold text-sm">Default min rating</div>
+                            <div class="text-xs text-base-content60">Used when you open the app.</div>
+                        </div>
+                        <input id="setDefaultMinRating" type="number" min="0" max="10" step="0.5"
+                            class="input input-bordered input-sm w-24" />
+                    </div>
+                </section>
+
+                <div class="flex flex-wrap gap-2 justify-end">
+                    <button id="btnResetSettings" class="btn btn-outline btn-sm">Reset settings</button>
+                    <button id="btnSaveSettings" class="btn btn-primary btn-sm">Save</button>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="js/settings.js"></script>
+</body>
+
+</html>
