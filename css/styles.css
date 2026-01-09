@@ -5,1027 +5,983 @@
    - Consistent buttons/inputs + no overlaps in pool/results/members
    ========================================================= */
 
-
 /* =========================================================
    Background + global polish
    ========================================================= */
 
-
 /* Peppy background + subtle grain */
 body {
-    background: radial-gradient(900px 500px at 15% -10%,
-            rgba(255, 0, 170, 0.28),
-            transparent 55%),
-        radial-gradient(800px 520px at 90% 0%,
-            rgba(0, 255, 230, 0.22),
-            transparent 55%),
-        radial-gradient(900px 520px at 60% 110%,
-            rgba(120, 90, 255, 0.24),
-            transparent 55%),
-        hsl(var(--b2));
+  background: radial-gradient(
+      900px 500px at 15% -10%,
+      rgba(255, 0, 170, 0.28),
+      transparent 55%
+    ),
+    radial-gradient(
+      800px 520px at 90% 0%,
+      rgba(0, 255, 230, 0.22),
+      transparent 55%
+    ),
+    radial-gradient(
+      900px 520px at 60% 110%,
+      rgba(120, 90, 255, 0.24),
+      transparent 55%
+    ),
+    hsl(var(--b2));
 }
 
 /* ✅ Prevent “cut off” by blocking accidental horizontal overflow */
 html,
 body {
-    max-width: 100%;
-    overflow-x: hidden;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.08;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
 }
-
 
 /* Better scrollbar (Chrome/Edge) */
 ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: color-mix(in oklab, hsl(var(--p)) 42%, transparent);
-    border-radius: 999px;
+  background: color-mix(in oklab, hsl(var(--p)) 42%, transparent);
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-track {
-    background: transparent;
+  background: transparent;
 }
-
 
 /* Accessibility: reduce motion */
 @media (prefers-reduced-motion: reduce) {
-    * {
-        animation: none !important;
-        transition: none !important;
-        scroll-behavior: auto !important;
-    }
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }
-
 
 /* =========================================================
      Theme variables (daisyUI overrides)
      ========================================================= */
 
-
 /* Synthwave (default) – deep neon night */
 html[data-theme="synthwave"] {
-    /* surfaces */
-    --b1: 240 29% 16%;
-    /* card bg */
-    --b2: 248 38% 10%;
-    /* page bg */
-    --b3: 248 40% 8%;
-    /* borders */
+  /* surfaces */
+  --b1: 240 29% 16%;
+  /* card bg */
+  --b2: 248 38% 10%;
+  /* page bg */
+  --b3: 248 40% 8%;
+  /* borders */
 
-    /* accents */
-    --p: 315 93% 63%;
-    /* primary */
-    --s: 184 100% 60%;
-    /* secondary */
-    --a: 52 100% 63%;
-    /* accent */
+  /* accents */
+  --p: 315 93% 63%;
+  /* primary */
+  --s: 184 100% 60%;
+  /* secondary */
+  --a: 52 100% 63%;
+  /* accent */
 
-    /* content */
-    --bc: 210 32% 92%;
+  /* content */
+  --bc: 210 32% 92%;
 
-    /* feedback */
-    --su: 145 72% 55%;
-    --er: 0 83% 64%;
+  /* feedback */
+  --su: 145 72% 55%;
+  --er: 0 83% 64%;
 }
-
 
 /* Cupcake (light) – pastel cyberpunk */
 html[data-theme="cupcake"] {
-    --b1: 220 40% 99%;
-    --b2: 220 45% 96%;
-    --b3: 220 30% 92%;
+  --b1: 220 40% 99%;
+  --b2: 220 45% 96%;
+  --b3: 220 30% 92%;
 
-    --p: 283 84% 62%;
-    --s: 192 94% 62%;
-    --a: 46 98% 64%;
+  --p: 283 84% 62%;
+  --s: 192 94% 62%;
+  --a: 46 98% 64%;
 
-    --bc: 222 18% 18%;
-    --su: 145 64% 40%;
-    --er: 0 76% 55%;
+  --bc: 222 18% 18%;
+  --su: 145 64% 40%;
+  --er: 0 76% 55%;
 }
-
 
 /* Ensure readable text in both themes */
 html[data-theme="synthwave"] body,
 html[data-theme="synthwave"] .card,
 html[data-theme="synthwave"] .navbar {
-    color: hsl(var(--bc));
+  color: hsl(var(--bc));
 }
 
 html[data-theme="cupcake"] body,
 html[data-theme="cupcake"] .card,
 html[data-theme="cupcake"] .navbar {
-    color: hsl(var(--bc));
+  color: hsl(var(--bc));
 }
-
 
 /* =========================================================
      Small UI animations/icons
      ========================================================= */
 
-
 /* Theme icon animation */
 .theme-ico {
-    transition: transform 260ms ease, color 260ms ease, stroke 260ms ease;
+  transition: transform 260ms ease, color 260ms ease, stroke 260ms ease;
 }
-
 
 /* Dark synthwave: neon magenta camera with slight tilt */
 html[data-theme="synthwave"] .theme-ico {
-    color: hsl(315 93% 63%);
-    stroke: currentColor;
-    transform: rotate(-8deg) scale(1);
+  color: hsl(315 93% 63%);
+  stroke: currentColor;
+  transform: rotate(-8deg) scale(1);
 }
-
 
 /* Light cupcake: teal camera, opposite tilt */
 html[data-theme="cupcake"] .theme-ico {
-    color: hsl(192 94% 62%);
-    stroke: currentColor;
-    transform: rotate(8deg) scale(1.05);
+  color: hsl(192 94% 62%);
+  stroke: currentColor;
+  transform: rotate(8deg) scale(1.05);
 }
-
 
 /* Press feedback */
 button:active .theme-ico,
 .btn:active .theme-ico {
-    transform: scale(0.94) translateY(1px);
+  transform: scale(0.94) translateY(1px);
 }
-
 
 /* A tiny “pop” for Tonight’s pick badge */
 @keyframes pop {
-    0% {
-        transform: scale(0.96);
-        opacity: 0.7;
-    }
+  0% {
+    transform: scale(0.96);
+    opacity: 0.7;
+  }
 
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .badge-primary {
-    animation: pop 220ms ease-out;
+  animation: pop 220ms ease-out;
 }
-
 
 /* =========================================================
      Core components (cards, header, modals)
      ========================================================= */
 
-
 /* Cards */
 .card {
-    background-color: hsl(var(--b1));
-    border-radius: 0.9rem;
-    border: 1px solid hsl(var(--b3));
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.48),
-        0 0 0 1px rgba(255, 255, 255, 0.02);
-    overflow: hidden;
-    transition: transform 160ms ease, box-shadow 160ms ease;
+  background-color: hsl(var(--b1));
+  border-radius: 0.9rem;
+  border: 1px solid hsl(var(--b3));
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.48),
+    0 0 0 1px rgba(255, 255, 255, 0.02);
+  overflow: hidden;
+  transition: transform 160ms ease, box-shadow 160ms ease;
 }
-
 
 /* Make posters feel snappy on hover */
 .card img {
-    transition: transform 160ms ease, filter 160ms ease;
+  transition: transform 160ms ease, filter 160ms ease;
 }
 
 .card:hover img {
-    transform: translateY(-2px) scale(1.02);
-    filter: saturate(1.1) contrast(1.05);
+  transform: translateY(-2px) scale(1.02);
+  filter: saturate(1.1) contrast(1.05);
 }
-
 
 /* Card hover: gentle lift */
 .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.6),
-        0 0 0 1px rgba(255, 255, 255, 0.04);
+  transform: translateY(-2px);
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
 }
-
 
 /* Card poster area */
 .card figure {
-    padding: 0.75rem 0.75rem 0;
+  padding: 0.75rem 0.75rem 0;
 }
 
 .card img {
-    border-radius: 0.7rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  border-radius: 0.7rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
 }
-
 
 /* Card body spacing / typography */
 .card-body {
-    padding: 0.75rem 0.9rem 0.9rem;
-    gap: 0.4rem;
+  padding: 0.75rem 0.9rem 0.9rem;
+  gap: 0.4rem;
 }
 
 .card-title {
-    font-size: 0.96rem;
-    letter-spacing: 0.01em;
+  font-size: 0.96rem;
+  letter-spacing: 0.01em;
 }
-
 
 /* Rating badge more “pro” */
 .badge-primary {
-    border-radius: 999px;
-    padding-inline: 0.55rem;
-    font-weight: 600;
+  border-radius: 999px;
+  padding-inline: 0.55rem;
+  font-weight: 600;
 }
-
 
 /* Header shell that follows theme */
 .header-shell {
-    background-color: hsl(var(--b1));
-    border-color: hsl(var(--b3));
-    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45),
-        0 0 0 1px rgba(255, 255, 255, 0.02);
+  background-color: hsl(var(--b1));
+  border-color: hsl(var(--b3));
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.02);
 }
 
 .header-shell,
 .header-shell span {
-    color: hsl(var(--bc));
+  color: hsl(var(--bc));
 }
-
 
 /* Make buttons not shrink too small in header */
 .header-shell .btn {
-    min-width: 2.25rem;
+  min-width: 2.25rem;
 }
-
 
 /* Modals: ensure auth dialog text and fields are visible */
 html[data-theme="synthwave"] .modal-box,
 html[data-theme="cupcake"] .modal-box {
-    background-color: hsl(var(--b1));
-    color: hsl(var(--bc));
+  background-color: hsl(var(--b1));
+  color: hsl(var(--bc));
 }
 
 .modal-box .label-text,
 .modal-box p,
 .modal-box h3 {
-    color: hsl(var(--bc));
+  color: hsl(var(--bc));
 }
 
 .modal-box .input,
 .modal-box .btn,
 .modal-box .divider {
-    color: hsl(var(--bc));
+  color: hsl(var(--bc));
 }
-
 
 /* =========================================================
      Layout: results grid
      ========================================================= */
 
-
 #results {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
 }
 
 /* =========================================================
      Unified controls (buttons + inputs)
      ========================================================= */
 
-
 :root {
-    --ui-radius: 0.7rem;
-    --ui-radius-sm: 0.65rem;
-    --ui-radius-xs: 0.6rem;
-    --ui-radius-pill: 999px;
+  --ui-radius: 0.7rem;
+  --ui-radius-sm: 0.65rem;
+  --ui-radius-xs: 0.6rem;
+  --ui-radius-pill: 999px;
 
-    --ui-border: 1px solid hsl(var(--b3));
+  --ui-border: 1px solid hsl(var(--b3));
 
-    --ui-shadow: 0 10px 24px rgba(0, 0, 0, 0.45),
-        0 0 0 1px rgba(255, 255, 255, 0.05);
-    --ui-shadow-soft: 0 6px 16px rgba(0, 0, 0, 0.35),
-        0 0 0 1px rgba(255, 255, 255, 0.03);
+  --ui-shadow: 0 10px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  --ui-shadow-soft: 0 6px 16px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
 * {
-    -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .truncate {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-
 
 /* Fallback if color-mix isn't supported */
 .bg-base-20040 {
-    background-color: rgba(255, 255, 255, 0.06);
+  background-color: rgba(255, 255, 255, 0.06);
 }
 
 @supports (background-color: color-mix(in oklab, black, white)) {
-    .bg-base-20040 {
-        background-color: color-mix(in oklab, hsl(var(--b2)) 40%, transparent);
-    }
+  .bg-base-20040 {
+    background-color: color-mix(in oklab, hsl(var(--b2)) 40%, transparent);
+  }
 }
-
 
 /* Base control sizing */
 .btn,
 .input,
 .select {
-    min-height: 2.4rem;
-    height: 2.4rem;
-    border-radius: var(--ui-radius);
-    font-size: 0.9rem;
-    padding-inline: 0.85rem;
+  min-height: 2.4rem;
+  height: 2.4rem;
+  border-radius: var(--ui-radius);
+  font-size: 0.9rem;
+  padding-inline: 0.85rem;
 }
-
 
 /* Small variants */
 .btn-sm,
 .input-sm,
 .select-sm {
-    min-height: 2.1rem;
-    height: 2.1rem;
-    font-size: 0.82rem;
-    border-radius: var(--ui-radius-sm);
+  min-height: 2.1rem;
+  height: 2.1rem;
+  font-size: 0.82rem;
+  border-radius: var(--ui-radius-sm);
 }
-
 
 /* XS variants */
 .btn-xs,
 .input-xs,
 .select-xs {
-    min-height: 1.8rem;
-    height: 1.8rem;
-    font-size: 0.78rem;
-    border-radius: var(--ui-radius-xs);
+  min-height: 1.8rem;
+  height: 1.8rem;
+  font-size: 0.78rem;
+  border-radius: var(--ui-radius-xs);
 }
-
 
 /* Buttons: shared behavior */
 .btn {
-    line-height: 1;
-    border-width: 1px;
-    border-color: transparent;
-    transition: transform 120ms ease, filter 160ms ease, box-shadow 160ms ease,
-        background-color 160ms ease, border-color 160ms ease;
+  line-height: 1;
+  border-width: 1px;
+  border-color: transparent;
+  transition: transform 120ms ease, filter 160ms ease, box-shadow 160ms ease,
+    background-color 160ms ease, border-color 160ms ease;
 }
 
 .btn:active {
-    transform: translateY(1px);
+  transform: translateY(1px);
 }
 
 .btn:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent),
-        var(--ui-shadow);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent),
+    var(--ui-shadow);
 }
-
 
 /* Primary / secondary gradients (base look) */
 .btn-primary {
-    background: linear-gradient(135deg,
-            hsl(var(--p)),
-            color-mix(in oklab, hsl(var(--p)) 80%, hsl(var(--s)) 20%));
-    border-color: transparent;
-    color: hsl(0 0% 5%);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(255, 255, 255, 0.05);
+  background: linear-gradient(
+    135deg,
+    hsl(var(--p)),
+    color-mix(in oklab, hsl(var(--p)) 80%, hsl(var(--s)) 20%)
+  );
+  border-color: transparent;
+  color: hsl(0 0% 5%);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .btn-primary:hover {
-    filter: brightness(1.05);
+  filter: brightness(1.05);
 }
 
 .btn-secondary {
-    background: linear-gradient(135deg,
-            hsl(var(--s)),
-            color-mix(in oklab, hsl(var(--s)) 75%, hsl(var(--p)) 25%));
-    border-color: transparent;
-    color: hsl(0 0% 5%);
-    box-shadow: var(--ui-shadow);
+  background: linear-gradient(
+    135deg,
+    hsl(var(--s)),
+    color-mix(in oklab, hsl(var(--s)) 75%, hsl(var(--p)) 25%)
+  );
+  border-color: transparent;
+  color: hsl(0 0% 5%);
+  box-shadow: var(--ui-shadow);
 }
 
 .btn-secondary:hover {
-    filter: brightness(1.06);
+  filter: brightness(1.06);
 }
-
 
 /* Ensure Add button is visible on dark synthwave */
 html[data-theme="synthwave"] .btn-secondary {
-    background-color: hsl(var(--s));
-    color: hsl(0 0% 5%);
-    border-color: transparent;
+  background-color: hsl(var(--s));
+  color: hsl(0 0% 5%);
+  border-color: transparent;
 }
 
 html[data-theme="synthwave"] .btn-secondary:hover {
-    filter: brightness(1.1);
+  filter: brightness(1.1);
 }
-
 
 /* Ghost buttons (header/login, details) */
 .btn-ghost {
-    border-radius: var(--ui-radius-pill);
-    border-color: transparent;
-    background-color: transparent;
-    box-shadow: none;
+  border-radius: var(--ui-radius-pill);
+  border-color: transparent;
+  background-color: transparent;
+  box-shadow: none;
 }
 
 .btn-ghost:hover {
-    background-color: color-mix(in oklab, hsl(var(--b3)) 60%, transparent);
+  background-color: color-mix(in oklab, hsl(var(--b3)) 60%, transparent);
 }
-
 
 /* Outline buttons (for safety) */
 .btn-outline {
-    background-color: transparent;
-    border: var(--ui-border);
-    color: hsl(var(--bc));
+  background-color: transparent;
+  border: var(--ui-border);
+  color: hsl(var(--bc));
 }
 
 .btn-outline:hover {
-    background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
+  background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
 }
-
 
 /* Danger button: consistent shadow */
 .btn-error {
-    box-shadow: var(--ui-shadow-soft);
+  box-shadow: var(--ui-shadow-soft);
 }
-
 
 /* Disabled states */
 .btn[disabled],
 .btn.btn-disabled,
 .btn:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-    filter: none;
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  filter: none;
 }
-
 
 /* Inputs/selects: consistent look */
 .input,
 .select {
-    border-width: 1px;
-    border-color: hsl(var(--b3));
-    background-color: hsl(var(--b1));
-    box-shadow: var(--ui-shadow-soft);
-    color: hsl(var(--bc));
+  border-width: 1px;
+  border-color: hsl(var(--b3));
+  background-color: hsl(var(--b1));
+  box-shadow: var(--ui-shadow-soft);
+  color: hsl(var(--bc));
 }
 
 .input:focus,
 .select:focus {
-    outline: none;
-    border-color: hsl(var(--p));
-    box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55);
+  outline: none;
+  border-color: hsl(var(--p));
+  box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55);
 }
 
 .input:disabled,
 .select:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
+  opacity: 0.65;
+  cursor: not-allowed;
 }
-
 
 /* Select option readability */
 select option {
-    color: hsl(var(--bc));
-    background-color: hsl(var(--b1));
+  color: hsl(var(--bc));
+  background-color: hsl(var(--b1));
 }
-
 
 /* Result sort dropdown text contrast */
 #resultSort.select {
-    color: hsl(var(--bc));
+  color: hsl(var(--bc));
 }
 
 #resultSort.select option {
-    color: hsl(var(--bc));
-    background-color: hsl(var(--b1));
+  color: hsl(var(--bc));
+  background-color: hsl(var(--b1));
 }
-
 
 /* Theme toggle (if used) */
 .theme-toggle__dark-inner {
-    transition: transform 260ms ease, color 260ms ease;
+  transition: transform 260ms ease, color 260ms ease;
 }
 
 html[data-theme="synthwave"] .theme-toggle__dark-inner {
-    color: hsl(315 93% 63%);
-    transform: rotate(-10deg);
+  color: hsl(315 93% 63%);
+  transform: rotate(-10deg);
 }
 
 html[data-theme="cupcake"] .theme-toggle__dark-inner {
-    color: hsl(192 94% 62%);
-    transform: rotate(10deg);
+  color: hsl(192 94% 62%);
+  transform: rotate(10deg);
 }
 
 .theme-toggle:active .theme-toggle__dark-inner {
-    transform: scale(0.92) translateY(1px);
+  transform: scale(0.92) translateY(1px);
 }
-
 
 /* Theme button harmonization (as in your file) */
 html[data-theme="synthwave"] .btn-primary,
 html[data-theme="synthwave"] .btn-secondary,
 html[data-theme="synthwave"] .btn-accent {
-    background: linear-gradient(135deg,
-            hsl(var(--p)),
-            color-mix(in oklab, hsl(var(--p)) 80%, hsl(var(--s)) 20%));
-    border-color: transparent;
-    color: hsl(0 0% 5%);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(255, 255, 255, 0.06);
+  background: linear-gradient(
+    135deg,
+    hsl(var(--p)),
+    color-mix(in oklab, hsl(var(--p)) 80%, hsl(var(--s)) 20%)
+  );
+  border-color: transparent;
+  color: hsl(0 0% 5%);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 html[data-theme="synthwave"] .btn-primary:hover,
 html[data-theme="synthwave"] .btn-secondary:hover,
 html[data-theme="synthwave"] .btn-accent:hover {
-    filter: brightness(1.06);
+  filter: brightness(1.06);
 }
 
 html[data-theme="cupcake"] .btn-primary,
 html[data-theme="cupcake"] .btn-secondary,
 html[data-theme="cupcake"] .btn-accent {
-    background: linear-gradient(135deg,
-            hsl(var(--s)),
-            color-mix(in oklab, hsl(var(--s)) 80%, hsl(var(--p)) 20%));
-    border-color: transparent;
-    color: hsl(0 0% 5%);
-    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.3),
-        0 0 0 1px rgba(15, 23, 42, 0.06);
+  background: linear-gradient(
+    135deg,
+    hsl(var(--s)),
+    color-mix(in oklab, hsl(var(--s)) 80%, hsl(var(--p)) 20%)
+  );
+  border-color: transparent;
+  color: hsl(0 0% 5%);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.3),
+    0 0 0 1px rgba(15, 23, 42, 0.06);
 }
 
 html[data-theme="cupcake"] .btn-primary:hover,
 html[data-theme="cupcake"] .btn-secondary:hover,
 html[data-theme="cupcake"] .btn-accent:hover {
-    filter: brightness(1.04);
+  filter: brightness(1.04);
 }
-
 
 /* Typography helper in your file */
 .card-body p,
 .text-base-content\/60 {
-    font-weight: 400;
+  font-weight: 400;
 }
-
 
 /* =========================================================
      App.js fallback utilities (in case CDN Tailwind misses them)
      ========================================================= */
 
-
 .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .aspect-23 {
-    aspect-ratio: 2 / 3;
+  aspect-ratio: 2 / 3;
 }
 
 .text-base-content60 {
-    color: color-mix(in oklab, hsl(var(--bc)) 60%, transparent);
+  color: color-mix(in oklab, hsl(var(--bc)) 60%, transparent);
 }
 
 .text-base-content70 {
-    color: color-mix(in oklab, hsl(var(--bc)) 70%, transparent);
+  color: color-mix(in oklab, hsl(var(--bc)) 70%, transparent);
 }
-
 
 /* Toast wrapper created by app.js uses z-999 */
 .z-999 {
-    z-index: 999;
+  z-index: 999;
 }
 
 #toasts.toast {
-    z-index: 9999;
+  z-index: 9999;
 }
-
 
 /* =========================================================
      Mobile layout safety (header + modals + pager)
      ========================================================= */
 
-
 @media (max-width: 640px) {
-    header.header-shell {
-        flex-wrap: wrap;
-        row-gap: 0.5rem;
-    }
+  header.header-shell {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
 
-    /* second header row becomes full width and wraps */
-    header.header-shell>div:last-child {
-        width: 100%;
-        flex-wrap: wrap;
-        justify-content: flex-start;
-    }
+  /* second header row becomes full width and wraps */
+  header.header-shell > div:last-child {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
 
-    /* make “Pick for me” easy to tap */
-    #btnPick {
-        width: 100%;
-    }
+  /* make “Pick for me” easy to tap */
+  #btnPick {
+    width: 100%;
+  }
 }
 
 /* Pager can wrap on small screens */
 #pagerWrap {
-    flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
 /* Room pick banner: match your “card-ish” look */
 #roomPickBanner {
-    border: 1px solid hsl(var(--b3));
-    border-radius: 0.9rem;
+  border: 1px solid hsl(var(--b3));
+  border-radius: 0.9rem;
 }
 
 /* Modals: usable on very small screens */
 @media (max-width: 480px) {
-    .modal-box {
-        max-height: calc(100vh - 2rem);
-        overflow: auto;
-        padding: 1rem;
-    }
+  .modal-box {
+    max-height: calc(100vh - 2rem);
+    overflow: auto;
+    padding: 1rem;
+  }
 
-    .modal-action {
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
+  .modal-action {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
 
-    .modal-action .btn {
-        flex: 1 1 9rem;
-    }
+  .modal-action .btn {
+    flex: 1 1 9rem;
+  }
 }
-
 
 /* =========================================================
      Results card actions: never overlap
      ========================================================= */
 
-
 #results .card .card-body {
-    display: flex !important;
-    flex-direction: column !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 /* If app.js uses a flex row for title+badge, allow wrap */
-#results .card .card-body>.flex.items-start {
-    flex-wrap: wrap;
+#results .card .card-body > .flex.items-start {
+  flex-wrap: wrap;
 }
 
 #results .card .card-actions {
-    margin-top: auto !important;
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 0.5rem !important;
-    justify-content: flex-end !important;
-    align-items: center !important;
+  margin-top: auto !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
 }
 
 #results .card .card-actions .btn {
-    white-space: nowrap;
+  white-space: nowrap;
 }
 
 @media (max-width: 420px) {
-    #results .card .card-actions {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
+  #results .card .card-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
 
-    #results .card .card-actions .btn {
-        width: 100%;
-    }
+  #results .card .card-actions .btn {
+    width: 100%;
+  }
 }
-
 
 /* =========================================================
      Pool list + rows (grid so buttons never collide)
      ========================================================= */
 
-
 /* Cleaner chips */
 #pool .badge {
-    border-radius: 999px;
+  border-radius: 999px;
 }
 
 /* Each pool row is created by app.js as a direct child of #pool */
-#pool>div {
-    display: grid !important;
-    grid-template-columns: 3rem minmax(0, 1fr) auto !important;
-    align-items: center !important;
-    gap: 0.75rem !important;
+#pool > div {
+  display: grid !important;
+  grid-template-columns: 3rem minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
 
-    padding: 0.65rem 0.75rem;
-    border-radius: 0.7rem;
-    background-color: color-mix(in oklab, hsl(var(--b2)) 40%, transparent);
-    border: 1px solid hsl(var(--b3));
-    backdrop-filter: blur(6px);
-    transition: background-color 160ms ease;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.7rem;
+  background-color: color-mix(in oklab, hsl(var(--b2)) 40%, transparent);
+  border: 1px solid hsl(var(--b3));
+  backdrop-filter: blur(6px);
+  transition: background-color 160ms ease;
 }
 
-#pool>div:hover {
-    background-color: color-mix(in oklab, hsl(var(--b2)) 55%, transparent);
+#pool > div:hover {
+  background-color: color-mix(in oklab, hsl(var(--b2)) 55%, transparent);
 }
 
 /* Thumb slot: either <img> or placeholder div */
-#pool>div> :first-child {
-    width: 3rem !important;
-    height: 4rem !important;
-    border-radius: 0.6rem !important;
-    overflow: hidden !important;
+#pool > div > :first-child {
+  width: 3rem !important;
+  height: 4rem !important;
+  border-radius: 0.6rem !important;
+  overflow: hidden !important;
 }
 
 /* Info column */
-#pool>div> :nth-child(2) {
-    min-width: 0 !important;
+#pool > div > :nth-child(2) {
+  min-width: 0 !important;
 }
 
 /* Ensure long titles truncate instead of pushing buttons */
 #pool .font-semibold {
-    font-size: 0.9rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Actions column */
-#pool>div> :nth-child(3) {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 0.45rem !important;
-    justify-content: flex-end !important;
-    align-items: center !important;
+#pool > div > :nth-child(3) {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.45rem !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
 }
 
 @media (max-width: 640px) {
-    #pool>div {
-        grid-template-columns: 3rem minmax(0, 1fr) !important;
-        grid-template-rows: auto auto !important;
-    }
+  #pool > div {
+    grid-template-columns: 3rem minmax(0, 1fr) !important;
+    grid-template-rows: auto auto !important;
+  }
 
-    #pool>div> :nth-child(3) {
-        grid-column: 1 / -1 !important;
-        justify-content: flex-start !important;
-    }
+  #pool > div > :nth-child(3) {
+    grid-column: 1 / -1 !important;
+    justify-content: flex-start !important;
+  }
 
-    #pool .btn-xs {
-        flex: 1 1 auto;
-        min-width: 5.25rem;
-    }
+  #pool .btn-xs {
+    flex: 1 1 auto;
+    min-width: 5.25rem;
+  }
 }
 
 /* Keep pool usable when long */
 #pool {
-    max-height: 32rem;
-    overflow-y: auto;
+  max-height: 32rem;
+  overflow-y: auto;
 }
 
 @media (max-width: 768px) {
-    #pool {
-        max-height: 24rem;
-    }
+  #pool {
+    max-height: 24rem;
+  }
 }
-
 
 /* =========================================================
      Room members panel (nested card) – no clipping + clean rows
      ========================================================= */
 
-
 /* Allow nested card to show badge cleanly (global .card has overflow:hidden) */
 #roomMembersWrap.card {
-    overflow: visible !important;
+  overflow: visible !important;
 }
 
 #roomMembersWrap {
-    width: 100% !important;
-    display: block !important;
-    margin-top: 0.75rem !important;
+  width: 100% !important;
+  display: block !important;
+  margin-top: 0.75rem !important;
 
-    /* Remove double heavy shadow (it sits inside another card) */
-    box-shadow: none !important;
-    border: 1px solid hsl(var(--b3)) !important;
-    background: color-mix(in oklab, hsl(var(--b1)) 70%, transparent) !important;
-    border-radius: 0.9rem;
+  /* Remove double heavy shadow (it sits inside another card) */
+  box-shadow: none !important;
+  border: 1px solid hsl(var(--b3)) !important;
+  background: color-mix(in oklab, hsl(var(--b1)) 70%, transparent) !important;
+  border-radius: 0.9rem;
 }
 
 #roomMembersWrap .card-body {
-    padding: 0.9rem !important;
-    overflow: visible !important;
+  padding: 0.9rem !important;
+  overflow: visible !important;
 }
 
 /* Header row: “Room members” + Online badge */
-#roomMembersWrap .card-body>div:first-child {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) auto !important;
-    align-items: center !important;
-    gap: 0.75rem !important;
-    overflow: visible !important;
+#roomMembersWrap .card-body > div:first-child {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  overflow: visible !important;
 }
 
-#roomMembersWrap .card-body>div:first-child h3 {
-    min-width: 0 !important;
-    margin: 0 !important;
+#roomMembersWrap .card-body > div:first-child h3 {
+  min-width: 0 !important;
+  margin: 0 !important;
 }
 
 /* Online count badge spacing */
 #roomOnlineCount {
-    white-space: nowrap !important;
-    flex-shrink: 0 !important;
-    margin-right: 0.35rem !important;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    padding: 0.25rem 0.6rem;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  margin-right: 0.35rem !important;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
 }
 
 @media (max-width: 420px) {
-    #roomOnlineCount {
-        font-size: 0.7rem !important;
-        padding: 0.2rem 0.45rem !important;
-        margin-right: 0.25rem !important;
-    }
+  #roomOnlineCount {
+    font-size: 0.7rem !important;
+    padding: 0.2rem 0.45rem !important;
+    margin-right: 0.25rem !important;
+  }
 }
 
 /* Members list */
 #roomMembersList {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-    margin-top: 0.5rem !important;
-    max-height: 12rem;
-    overflow: auto;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.5rem !important;
+  margin-top: 0.5rem !important;
+  max-height: 12rem;
+  overflow: auto;
 }
 
 /* Each row (app.js uses bg-base-20040 etc.) */
-#roomMembersList>div {
-    width: 100% !important;
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) auto !important;
-    align-items: center !important;
-    column-gap: 0.6rem !important;
+#roomMembersList > div {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  column-gap: 0.6rem !important;
 
-    padding: 0.6rem 0.75rem !important;
-    border-radius: 0.75rem !important;
-    border: 1px solid hsl(var(--b3)) !important;
-    word-break: break-word;
+  padding: 0.6rem 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid hsl(var(--b3)) !important;
+  word-break: break-word;
 }
 
-#roomMembersList>div>.truncate {
-    min-width: 0 !important;
+#roomMembersList > div > .truncate {
+  min-width: 0 !important;
 }
 
-#roomMembersList>div>.badge {
-    justify-self: end !important;
-    white-space: nowrap !important;
+#roomMembersList > div > .badge {
+  justify-self: end !important;
+  white-space: nowrap !important;
 }
 
 /* Keep members list usable on mobile */
 @media (max-width: 768px) {
-    #roomMembersList {
-        max-height: 12rem;
-    }
+  #roomMembersList {
+    max-height: 12rem;
+  }
 }
 
 /* Prevent long room IDs from breaking header layout */
 #roomBadge {
-    max-width: 12rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 0.8rem;
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem;
 }
 
 @media (max-width: 640px) {
-    #roomBadge {
-        max-width: 8rem;
-    }
+  #roomBadge {
+    max-width: 8rem;
+  }
 }
-
 
 /* =========================================================
      Watch filters UI (Step 1)
      ========================================================= */
 
-
 #watchFilters {
-    padding: 0.75rem;
-    border-radius: 0.9rem;
-    border: 1px solid hsl(var(--b3));
-    background-color: color-mix(in oklab, hsl(var(--b2)) 30%, transparent);
+  padding: 0.75rem;
+  border-radius: 0.9rem;
+  border: 1px solid hsl(var(--b3));
+  background-color: color-mix(in oklab, hsl(var(--b2)) 30%, transparent);
 }
 
 .watch-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.35rem 0.6rem;
-    border-radius: 999px;
-    border: 1px solid hsl(var(--b3));
-    background-color: color-mix(in oklab, hsl(var(--b1)) 70%, transparent);
-    cursor: pointer;
-    user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--b3));
+  background-color: color-mix(in oklab, hsl(var(--b1)) 70%, transparent);
+  cursor: pointer;
+  user-select: none;
 }
 
 .watch-chip:hover {
-    filter: brightness(1.04);
+  filter: brightness(1.04);
 }
 
 #watchRegion {
-    width: 100%;
+  width: 100%;
 }
 
 @media (min-width: 1024px) {
-    #watchRegion {
-        height: 2.9rem !important;
-        border-radius: 0.95rem !important;
-    }
+  #watchRegion {
+    height: 2.9rem !important;
+    border-radius: 0.95rem !important;
+  }
 }
 
 .wp-pill span.opacity-70 {
-    margin-left: 0.25rem;
+  margin-left: 0.25rem;
 }
-
 
 /* 2) Make the search bar less wide (your input is #q with w-full) */
 #q {
-    max-width: 420px;
-    width: 100%;
+  max-width: 420px;
+  width: 100%;
 }
 
 /* 3) Result sort: prevent arrow overlapping text (your select is #resultSort) */
 #resultSort {
-    padding-right: 2.5rem !important;
-    /* space for arrow */
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
+  padding-right: 2.5rem !important;
+  /* space for arrow */
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 
-    /* make the arrow sit in the right padding area */
-    background-position: right 0.85rem center !important;
-    background-size: 1rem 1rem !important;
+  /* make the arrow sit in the right padding area */
+  background-position: right 0.85rem center !important;
+  background-size: 1rem 1rem !important;
 }
 
 /* Also ensure the select keeps a usable width */
 #resultSort {
-    min-width: 10.5rem;
+  min-width: 10.5rem;
 }
-
 
 /* 4) Exclude watched: make it visually obvious when ON (checkbox id = excludeWatched) */
 label:has(#excludeWatched) {
-    padding: 0.45rem 0.6rem;
-    border-radius: 999px;
-    border: 1px solid hsl(var(--b3));
-    background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
-    transition: filter 160ms ease, background-color 160ms ease,
-        border-color 160ms ease, box-shadow 160ms ease;
+  padding: 0.45rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--b3));
+  background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
+  transition: filter 160ms ease, background-color 160ms ease,
+    border-color 160ms ease, box-shadow 160ms ease;
 }
 
 label:has(#excludeWatched):hover {
-    filter: brightness(1.05);
+  filter: brightness(1.05);
 }
 
 label:has(#excludeWatched:checked) {
-    border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
-    background: linear-gradient(135deg,
-            color-mix(in oklab, hsl(var(--p)) 70%, transparent),
-            color-mix(in oklab, hsl(var(--s)) 55%, transparent));
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45),
-        0 0 0 1px rgba(255, 255, 255, 0.06);
+  border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, hsl(var(--p)) 70%, transparent),
+    color-mix(in oklab, hsl(var(--s)) 55%, transparent)
+  );
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 /* Make the text pop when enabled */
 label:has(#excludeWatched:checked) span {
-    color: hsl(var(--bc));
-    font-weight: 700;
+  color: hsl(var(--bc));
+  font-weight: 700;
 }
 
 /* Make the checkbox itself match the "enabled" state better */
 #excludeWatched.checkbox:checked {
-    background-color: hsl(var(--p));
-    border-color: transparent;
+  background-color: hsl(var(--p));
+  border-color: transparent;
 }
-
 
 /* ---------- 2) Exclude watched + OTT accounts: same pill UI + theme-aware ON state ---------- */
 /* Your Exclude watched is a checkbox (#excludeWatched) inside a label in index.html. */
@@ -1035,19 +991,19 @@ label:has(#excludeWatched),
 #watchFilters label:has(input[type="radio"]),
 /* If OTT toggles are buttons/chips, style them too */
 #watchFilters .watch-chip {
-    padding: 0.45rem 0.65rem;
-    border-radius: 999px;
-    border: 1px solid hsl(var(--b3));
-    background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
-    transition: filter 160ms ease, background-color 160ms ease,
-        border-color 160ms ease, box-shadow 160ms ease, transform 120ms ease;
+  padding: 0.45rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--b3));
+  background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
+  transition: filter 160ms ease, background-color 160ms ease,
+    border-color 160ms ease, box-shadow 160ms ease, transform 120ms ease;
 }
 
 label:has(#excludeWatched):hover,
 #watchFilters label:has(input[type="checkbox"]):hover,
 #watchFilters label:has(input[type="radio"]):hover,
 #watchFilters .watch-chip:hover {
-    filter: brightness(1.05);
+  filter: brightness(1.05);
 }
 
 label:has(#excludeWatched:checked),
@@ -1058,12 +1014,14 @@ label:has(#excludeWatched:checked),
 #watchFilters .watch-chip.active,
 #watchFilters .watch-chip[aria-pressed="true"],
 #watchFilters .watch-chip[data-active="true"] {
-    border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
-    background: linear-gradient(135deg,
-            color-mix(in oklab, hsl(var(--p)) 70%, transparent),
-            color-mix(in oklab, hsl(var(--s)) 55%, transparent));
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45),
-        0 0 0 1px rgba(255, 255, 255, 0.06);
+  border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, hsl(var(--p)) 70%, transparent),
+    color-mix(in oklab, hsl(var(--s)) 55%, transparent)
+  );
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 label:has(#excludeWatched:checked) span,
@@ -1073,160 +1031,157 @@ label:has(#excludeWatched:checked) span,
 #watchFilters .watch-chip.active,
 #watchFilters .watch-chip[aria-pressed="true"],
 #watchFilters .watch-chip[data-active="true"] {
-    font-weight: 700;
-    color: hsl(var(--bc));
+  font-weight: 700;
+  color: hsl(var(--bc));
 }
 
 /* Keep the actual checkbox visible and theme-consistent when checked */
 #excludeWatched.checkbox:checked,
 #watchFilters input[type="checkbox"].checkbox:checked,
 #watchFilters input[type="radio"].radio:checked {
-    background-color: hsl(var(--p));
-    border-color: transparent;
+  background-color: hsl(var(--p));
+  border-color: transparent;
 }
 
 /* Optional: make the pill feel clickable */
 #watchFilters label:has(input[type="checkbox"]),
 #watchFilters label:has(input[type="radio"]) {
-    cursor: pointer;
-    user-select: none;
+  cursor: pointer;
+  user-select: none;
 }
-
 
 /* =========================================================
   FINAL GENRE DROPDOWN STYLE (multi-select)
   ========================================================= */
 
-
 /* Exact element:
   <select id="genreFilter" class="select select-bordered select-sm" multiple size="5"></select>
 */
 #genreFilter {
-    /* Override any generic .select / .select-sm / .select-bordered */
-    border-radius: 0.75rem !important;
-    border-width: 1px !important;
-    border-style: solid !important;
-    border-color: hsl(var(--b3)) !important;
+  /* Override any generic .select / .select-sm / .select-bordered */
+  border-radius: 0.75rem !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: hsl(var(--b3)) !important;
 
-    background-color: hsl(var(--b1)) !important;
-    color: hsl(var(--bc)) !important;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35),
-        0 0 0 1px rgba(255, 255, 255, 0.03) !important;
+  background-color: hsl(var(--b1)) !important;
+  color: hsl(var(--bc)) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.03) !important;
 
-    /* Multi-select should look like a scrollable list, not a single-select */
-    padding: 0.5rem 0.6rem !important;
-    min-height: 11rem !important;
-    /* matches size="5" */
+  /* Multi-select should look like a scrollable list, not a single-select */
+  padding: 0.5rem 0.6rem !important;
+  min-height: 11rem !important;
+  /* matches size="5" */
 
-    /* Remove the dropdown chevron that .select normally adds */
-    background-image: none !important;
-    background-position: initial !important;
-    background-repeat: initial !important;
+  /* Remove the dropdown chevron that .select normally adds */
+  background-image: none !important;
+  background-position: initial !important;
+  background-repeat: initial !important;
 }
 
 /* Options inside genres list */
 #genreFilter option {
-    color: hsl(var(--bc)) !important;
-    background-color: hsl(var(--b1)) !important;
+  color: hsl(var(--bc)) !important;
+  background-color: hsl(var(--b1)) !important;
 }
 
 /* Make genreFilter behave like other selects on focus */
 #genreFilter:focus {
-    outline: none;
-    border-color: hsl(var(--p));
-    box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55);
+  outline: none;
+  border-color: hsl(var(--p));
+  box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55);
 }
-
 
 /* Bigger + standout search input */
 #q {
-    max-width: 520px;
-    min-height: 3rem;
-    height: 3rem;
-    font-size: 1rem;
-    border-width: 2px;
-    border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45),
-        0 0 0 1px rgba(255, 255, 255, 0.06);
+  max-width: 520px;
+  min-height: 3rem;
+  height: 3rem;
+  font-size: 1rem;
+  border-width: 2px;
+  border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 #q:focus {
-    border-color: hsl(var(--p));
-    box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 55%, transparent),
-        0 14px 34px rgba(0, 0, 0, 0.55);
+  border-color: hsl(var(--p));
+  box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 55%, transparent),
+    0 14px 34px rgba(0, 0, 0, 0.55);
 }
 
 /* Prevent select arrow overlapping text (mediaType) */
 #mediaType {
-    padding-right: 2.5rem !important;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    background-position: right 0.85rem center !important;
-    background-size: 1rem 1rem !important;
+  padding-right: 2.5rem !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  background-position: right 0.85rem center !important;
+  background-size: 1rem 1rem !important;
 }
 
 /* Genres dropdown (button + menu) should match other selects */
 #genreDropdownBtn {
-    border: 1px solid hsl(var(--b3)) !important;
-    background-color: hsl(var(--b1)) !important;
-    color: hsl(var(--bc)) !important;
-    box-shadow: var(--ui-shadow-soft) !important;
+  border: 1px solid hsl(var(--b3)) !important;
+  background-color: hsl(var(--b1)) !important;
+  color: hsl(var(--bc)) !important;
+  box-shadow: var(--ui-shadow-soft) !important;
 }
 
 #genreDropdownBtn:hover {
-    background-color: color-mix(in oklab,
-            hsl(var(--b2)) 35%,
-            transparent) !important;
+  background-color: color-mix(
+    in oklab,
+    hsl(var(--b2)) 35%,
+    transparent
+  ) !important;
 }
 
 #genreDropdownBtn:focus-visible {
-    outline: none !important;
-    box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55) !important;
 }
 
 /* Menu surface matches your select dropdown surface */
 #genreDropdownMenu {
-    border-color: hsl(var(--b3)) !important;
-    background-color: hsl(var(--b1)) !important;
-    color: hsl(var(--bc)) !important;
+  border-color: hsl(var(--b3)) !important;
+  background-color: hsl(var(--b1)) !important;
+  color: hsl(var(--bc)) !important;
 }
 
 /* Make Genres dropdown menu always readable */
 #genreDropdownMenu {
-    min-width: 100%;
-    max-width: min(28rem, 92vw);
+  min-width: 100%;
+  max-width: min(28rem, 92vw);
 }
 
 #genreDropdownMenu label {
-    width: 100%;
+  width: 100%;
 }
 
 #genreDropdownMenu span {
-    white-space: normal;
+  white-space: normal;
 }
 
 :root {
-    --filterW: 11.5rem;
-    /* change once to resize all filters/buttons */
+  --filterW: 11.5rem;
+  /* change once to resize all filters/buttons */
 }
 
-
 :root {
-    --ctrlW: 11.25rem;
-    /* width for Type/Year/Genres/Sort + buttons */
-    --searchMin: 22rem;
-    /* search bar minimum width */
-    --searchMax: 34rem;
-    /* search bar maximum width */
+  --ctrlW: 11.25rem;
+  /* width for Type/Year/Genres/Sort + buttons */
+  --searchMin: 22rem;
+  /* search bar minimum width */
+  --searchMax: 34rem;
+  /* search bar maximum width */
 }
 
-
 :root {
-    --ctrlW: 11.25rem;
-    /* fixed width for all non-search controls */
-    --searchMin: 24rem;
-    /* search bar minimum */
+  --ctrlW: 11.25rem;
+  /* fixed width for all non-search controls */
+  --searchMin: 24rem;
+  /* search bar minimum */
 }
 
 /* =========================================================
@@ -1237,54 +1192,54 @@ label:has(#excludeWatched:checked) span,
 
 /* Full-width + full-height app wrapper (your wrapper uses .max-w-5xl) */
 .max-w-5xl {
-    max-width: 100% !important;
-    width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Main should consume remaining height under header/banner */
 main.grid {
-    flex: 1 1 auto;
-    min-height: 0;
-    align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  align-items: stretch;
 }
 
 /* Let both cards stretch and allow inner scrolling areas */
-main.grid>section {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
+main.grid > section {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
-main.grid>section>.card-body {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    min-height: 0;
+main.grid > section > .card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* Scroll inside results/pool instead of growing the whole page */
 #results {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
 }
 
 #pool {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: auto;
-    max-height: none !important;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  max-height: none !important;
 }
 
 /* Safety: prevent accidental horizontal overflow from long flex children */
 main.grid * {
-    min-width: 0;
+  min-width: 0;
 }
 
 /* =========================================================
@@ -1294,37 +1249,41 @@ main.grid * {
 
 /* Button surface matches other selects */
 #ottDropdownBtn {
-    border: 1px solid hsl(var(--b3)) !important;
-    background-color: hsl(var(--b1)) !important;
-    color: hsl(var(--bc)) !important;
-    box-shadow: var(--ui-shadow-soft) !important;
+  border: 1px solid hsl(var(--b3)) !important;
+  background-color: hsl(var(--b1)) !important;
+  color: hsl(var(--bc)) !important;
+  box-shadow: var(--ui-shadow-soft) !important;
 }
 
 #ottDropdownBtn:hover {
-    background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent) !important;
+  background-color: color-mix(
+    in oklab,
+    hsl(var(--b2)) 35%,
+    transparent
+  ) !important;
 }
 
 #ottDropdownBtn:focus-visible {
-    outline: none !important;
-    box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55) !important;
 }
 
 /* Menu surface matches genre dropdown menu */
 #ottDropdownMenu {
-    border-color: hsl(var(--b3)) !important;
-    background-color: hsl(var(--b1)) !important;
-    color: hsl(var(--bc)) !important;
+  border-color: hsl(var(--b3)) !important;
+  background-color: hsl(var(--b1)) !important;
+  color: hsl(var(--bc)) !important;
 
-    min-width: 100%;
-    max-width: min(28rem, 92vw);
+  min-width: 100%;
+  max-width: min(28rem, 92vw);
 }
 
 #ottDropdownMenu label {
-    width: 100%;
+  width: 100%;
 }
 
 #ottDropdownMenu span {
-    white-space: normal;
+  white-space: normal;
 }
 
 /* =========================================================
@@ -1334,233 +1293,250 @@ main.grid * {
 
 #genreDropdownMenu label,
 #ottDropdownMenu label {
-    border: 1px solid transparent;
-    border-radius: 0.75rem;
-    transition: filter 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  transition: filter 160ms ease, background-color 160ms ease,
+    border-color 160ms ease, box-shadow 160ms ease;
 }
 
 /* Hover feedback (optional, but makes it feel clickable) */
 #genreDropdownMenu label:hover,
 #ottDropdownMenu label:hover {
-    filter: brightness(1.05);
+  filter: brightness(1.05);
 }
 
 /* ✅ Selected state */
 #genreDropdownMenu label:has(input[type="checkbox"]:checked),
 #ottDropdownMenu label:has(input[type="checkbox"]:checked) {
-    border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
-    background: linear-gradient(135deg,
-            color-mix(in oklab, hsl(var(--p)) 45%, transparent),
-            color-mix(in oklab, hsl(var(--s)) 35%, transparent));
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, hsl(var(--p)) 45%, transparent),
+    color-mix(in oklab, hsl(var(--s)) 35%, transparent)
+  );
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 /* Make selected label text pop */
 #genreDropdownMenu label:has(input[type="checkbox"]:checked) span,
 #ottDropdownMenu label:has(input[type="checkbox"]:checked) span {
-    font-weight: 700;
-    color: hsl(var(--bc));
+  font-weight: 700;
+  color: hsl(var(--bc));
 }
 
 /* Keyboard + click focus visibility (when the checkbox gets focus) */
 #genreDropdownMenu label:focus-within,
 #ottDropdownMenu label:focus-within {
-    outline: none;
-    box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent),
-        0 10px 24px rgba(0, 0, 0, 0.45);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent),
+    0 10px 24px rgba(0, 0, 0, 0.45);
 }
 
 /* Make clicking on the option text toggle the checkbox */
 #genreDropdownMenu label span,
 #ottDropdownMenu label span {
-    pointer-events: none;
+  pointer-events: none;
 }
 
 #genreDropdownMenu label,
 #ottDropdownMenu label {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 #genreDropdownMenu label,
 #ottDropdownMenu label {
-    width: 100%;
-    cursor: pointer;
+  width: 100%;
+  cursor: pointer;
 }
 
 /* Small laptops: grid-based filters, full-width controls */
 @media (min-width: 1024px) and (max-width: 1535px) {
+  #filtersBar #mediaType,
+  #filtersBar #yearFilter,
+  #filtersBar #resultSort,
+  #filtersBar #genreDropdownBtn,
+  #filtersBar #ottDropdownBtn,
+  #filtersBar #btnResetFilters {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+  }
 
-    #filtersBar #mediaType,
-    #filtersBar #yearFilter,
-    #filtersBar #resultSort,
-    #filtersBar #genreDropdownBtn,
-    #filtersBar #ottDropdownBtn,
-    #filtersBar #btnResetFilters {
-        width: 100% !important;
-        max-width: none !important;
-        min-width: 0 !important;
-    }
-
-    /* Keep Search input big */
-    #filtersBar #q {
-        max-width: none !important;
-    }
+  /* Keep Search input big */
+  #filtersBar #q {
+    max-width: none !important;
+  }
 }
 
 /* Make only Search + Trending slightly bigger than btn-sm (but not huge) */
 #btnSearch,
 #btnTrending {
-    min-height: 2.55rem;
-    /* between btn-sm (2.1) and default (2.4) / slightly above */
-    height: 2.55rem;
-    padding-inline: 1rem;
-    font-size: 0.9rem;
+  min-height: 2.55rem;
+  /* between btn-sm (2.1) and default (2.4) / slightly above */
+  height: 2.55rem;
+  padding-inline: 1rem;
+  font-size: 0.9rem;
 }
 
 /* Big monitors / TVs: everything in ONE row */
 @media (min-width: 1536px) {
-    #filtersBar {
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 0.75rem;
-        align-items: flex-end;
-    }
+  #filtersBar {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.75rem;
+    align-items: flex-end;
+  }
 
-    /* Flatten the two blocks so their children become direct flex items */
-    #searchRow,
-    #filtersGrid {
-        display: contents;
-    }
+  /* Flatten the two blocks so their children become direct flex items */
+  #searchRow,
+  #filtersGrid {
+    display: contents;
+  }
 
-    /* Let Search input take remaining space, keep other controls consistent */
-    #q {
-        flex: 1 1 28rem !important;
-        max-width: none !important;
-    }
+  /* Let Search input take remaining space, keep other controls consistent */
+  #q {
+    flex: 1 1 28rem !important;
+    max-width: none !important;
+  }
 
-    #mediaType,
-    #yearFilter,
-    #resultSort,
-    #genreDropdownBtn,
-    #ottDropdownBtn,
-    #btnSearch,
-    #btnTrending,
-    #btnResetFilters {
-        width: var(--ctrlW) !important;
-    }
+  #mediaType,
+  #yearFilter,
+  #resultSort,
+  #genreDropdownBtn,
+  #ottDropdownBtn,
+  #btnSearch,
+  #btnTrending,
+  #btnResetFilters {
+    width: var(--ctrlW) !important;
+  }
 }
 
 /* Remove unnecessary vertical space in the right "Your pool" card */
-main.grid>section:last-child {
-    align-self: flex-start !important;
-    /* don't stretch to match left column height */
+main.grid > section:last-child {
+  align-self: flex-start !important;
+  /* don't stretch to match left column height */
 }
 
-main.grid>section:last-child>.card-body {
-    flex: 0 0 auto !important;
-    min-height: auto !important;
+main.grid > section:last-child > .card-body {
+  flex: 0 0 auto !important;
+  min-height: auto !important;
 }
 
 /* Pool should size to content; only scroll if it becomes long */
-main.grid>section:last-child #pool {
-    flex: 0 0 auto !important;
-    max-height: 32rem;
-    overflow: auto;
+main.grid > section:last-child #pool {
+  flex: 0 0 auto !important;
+  max-height: 32rem;
+  overflow: auto;
 }
 
 @media (max-width: 768px) {
-    main.grid>section:last-child #pool {
-        max-height: 24rem;
-    }
+  main.grid > section:last-child #pool {
+    max-height: 24rem;
+  }
 }
 
 /* Allow dropdown menus to overflow the left card (fix mobile/tablet clipping) */
-main.grid>section:first-child.card,
-main.grid>section:first-child .card-body {
-    overflow: visible !important;
+main.grid > section:first-child.card,
+main.grid > section:first-child .card-body {
+  overflow: visible !important;
 }
 
 /* --- FIX: modal backdrop + box opacity (mobile-safe) --- */
 dialog.modal {
-    background: transparent;
+  background: transparent;
 }
 
 /* dialog element itself */
 
 dialog.modal::backdrop {
-    background: rgba(0, 0, 0, 0.68);
-    backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: blur(6px);
 }
 
 /* ensure the visible box is solid in both themes */
 .modal .modal-box {
-    background-color: hsl(var(--b1));
-    color: hsl(var(--bc));
-    border: 1px solid hsl(var(--b3));
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.60);
+  background-color: hsl(var(--b1));
+  color: hsl(var(--bc));
+  border: 1px solid hsl(var(--b3));
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
 }
 
 /* --- FIX: toast/notification opacity --- */
 #toasts.toast .alert {
-    opacity: 1 !important;
-    background-color: hsl(var(--b1) / 0.96);
-    color: hsl(var(--bc));
-    border: 1px solid hsl(var(--b3));
-    backdrop-filter: blur(8px);
+  opacity: 1 !important;
+  background-color: hsl(var(--b1) / 0.96);
+  color: hsl(var(--bc));
+  border: 1px solid hsl(var(--b3));
+  backdrop-filter: blur(8px);
 }
 
 /* User dropdown menu styling (match filter dropdown vibe) */
 #userDropdownMenu {
-    border-color: hsl(var(--b3)) !important;
-    background-color: hsl(var(--b1)) !important;
-    color: hsl(var(--bc)) !important;
+  border-color: hsl(var(--b3)) !important;
+  background-color: hsl(var(--b1)) !important;
+  color: hsl(var(--bc)) !important;
 }
 
 .user-menu-item {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    padding: 0.55rem 0.7rem;
-    border-radius: 0.75rem;
-    border: 1px solid transparent;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.75rem;
+  border: 1px solid transparent;
 }
 
 .user-menu-item:hover {
-    background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
-    border-color: color-mix(in oklab, hsl(var(--b3)) 70%, transparent);
+  background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
+  border-color: color-mix(in oklab, hsl(var(--b3)) 70%, transparent);
 }
 
 .user-menu-ico {
-    width: 1rem;
-    height: 1rem;
-    flex: 0 0 auto;
-    opacity: 0.9;
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  opacity: 0.9;
 }
 
 html[data-reduce-motion] *,
 html[data-reduce-motion] *::before,
 html[data-reduce-motion] *::after {
-    animation: none !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
 }
 
 /* --- Settings toggles: always visible in light + dark --- */
 .toggle {
-    /* track color when OFF */
-    --tglbg: color-mix(in oklab, hsl(var(--b2)) 55%, hsl(var(--b1)) 45%);
-    border: 1px solid hsl(var(--b3));
+  /* track color when OFF */
+  --tglbg: color-mix(in oklab, hsl(var(--b2)) 55%, hsl(var(--b1)) 45%);
+  border: 1px solid hsl(var(--b3));
 }
 
 /* track color when ON */
 .toggle:checked {
-    --tglbg: hsl(var(--p));
-    border-color: hsl(var(--p));
+  --tglbg: hsl(var(--p));
+  border-color: hsl(var(--p));
 }
 
 /* keyboard focus */
 .toggle:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent);
+}
+
+/* My messages (right side) */
+.chat-bubble-primary {
+  background-color: hsl(var(--b1)); /* light / white-ish */
+  color: hsl(var(--bc)); /* normal text */
+  border-radius: 9999px;
+}
+
+/* Other people's messages (left side) */
+.chat-bubble-neutral {
+  background-color: hsl(var(--n)); /* dark / black-ish */
+  color: hsl(var(--nc)); /* contrasting text */
+  border-radius: 9999px;
 }
