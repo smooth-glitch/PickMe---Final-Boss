@@ -176,6 +176,12 @@ export function renderPool() {
     else hidden.push(m);
   }
 
+  if (btnHidden) {
+    const n = hidden.length;
+    btnHidden.disabled = n === 0;
+    btnHidden.textContent = showHiddenPoolItems ? `Hide hidden (${n})` : `Show hidden (${n})`;
+    if (n === 0) showHiddenPoolItems = false;
+  }
   // Decide what we actually render
   const listToRender = showHiddenPoolItems ? [...visible, ...hidden] : visible;
 
