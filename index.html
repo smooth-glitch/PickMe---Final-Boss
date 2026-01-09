@@ -281,15 +281,45 @@
                                 <span class="font-semibold">Room chat</span>
                             </div>
 
-                            <div id="roomChatMessages"
-                                class="h-48 md:h-64 rounded-xl border border-base-300 bg-base-200/40 overflow-y-auto px-2 py-2 space-y-1 text-xs">
+                            <!-- Reply preview (hidden by default) -->
+                            <div id="roomReplyPreview"
+                                class="hidden text-[0.7rem] px-2 py-1 rounded-lg bg-base-200/70 border border-base-300 flex items-center justify-between gap-2">
+                                <div class="truncate">
+                                    <span class="opacity-70 mr-1">Replying to</span>
+                                    <span id="roomReplyToName" class="font-semibold"></span>
+                                    <span id="roomReplyToSnippet" class="ml-1 opacity-80"></span>
+                                </div>
+                                <button id="roomReplyClear" type="button"
+                                    class="btn btn-[0.6rem] btn-ghost btn-xs px-2">
+                                    ✕
+                                </button>
                             </div>
 
                             <form id="roomChatForm" class="flex items-center gap-2">
+                                <button id="roomGifBtn" type="button" class="btn btn-xs btn-ghost">
+                                    GIF
+                                </button>
                                 <input id="roomChatInput" type="text" class="input input-bordered input-xs flex-1"
                                     placeholder="Message everyone…" autocomplete="off" />
                                 <button type="submit" class="btn btn-xs btn-primary">Send</button>
                             </form>
+
+                            <!-- Simple GIF search modal -->
+                            <dialog id="dlgGifPicker" class="modal">
+                                <div class="modal-box max-w-sm space-y-3">
+                                    <h3 class="font-bold text-sm">Send a GIF</h3>
+                                    <input id="gifSearchInput" type="text" class="input input-bordered input-sm w-full"
+                                        placeholder="Search GIPHY…" />
+                                    <div id="gifResults"
+                                        class="mt-2 grid grid-cols-3 gap-2 max-h-64 overflow-y-auto text-xs">
+                                        <!-- thumbnails injected -->
+                                    </div>
+                                    <form method="dialog" class="modal-action">
+                                        <button class="btn btn-xs">Close</button>
+                                    </form>
+                                </div>
+                            </dialog>
+
                         </div>
                     </div>
                 </div>

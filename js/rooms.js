@@ -38,6 +38,12 @@ let lastPlaybackApplyTs = 0;
 
 // Messages
 let unsubMessages = null;
+// helper set from main.js (simple global)
+export let setReplyDraft = null;
+export function registerReplyDraftSetter(fn) {
+    setReplyDraft = typeof fn === "function" ? fn : null;
+}
+
 
 export function stopMessagesListener() {
     if (unsubMessages) unsubMessages();
@@ -76,6 +82,13 @@ export function renderRoomMessages(list) {
         const row = document.createElement("div");
         row.className = "chat " + (isMe ? "chat-end" : "chat-start");
 
+        // clickable area to set reply
+        row.addEventListener("click", () => {
+            if (typeof setReplyDraft === "function") {
+                setReplyDraft(m);
+            }
+        });
+
         const header = document.createElement("div");
         header.className = "chat-header text-[0.65rem] opacity-70 mb-0.5";
         header.textContent = m.userName || (isMe ? "You" : "Anon");
@@ -85,7 +98,44 @@ export function renderRoomMessages(list) {
         bubble.className =
             "chat-bubble text-xs max-w-[80%] " +
             (isMe ? "chat-bubble-primary" : "chat-bubble-neutral");
-        bubble.textContent = m.text || "";
+
+        // reply preview inside bubble (top)
+        if (m.replyTo && (m.replyTo.text || m.replyTo.gifUrl)) {
+            const replyBox = document.createElement("div");
+            replyBox.className =
+                "mb-1 px-2 py-1 rounded bg-base-100/40 border border-base-300 text-[0.65rem] opacity-80";
+            const rName = m.replyTo.userName || "Anon";
+            const label = document.createElement("div");
+            label.className = "font-semibold";
+            label.textContent = rName;
+            replyBox.appendChild(label);
+
+            const content = document.createElement("div");
+            if (m.replyTo.type === "gif" && m.replyTo.gifUrl) {
+                content.textContent = "GIF";
+            } else {
+                const t = m.replyTo.text || "";
+                content.textContent = t.length > 40 ? t.slice(0, 40) + "…" : t || "";
+            }
+            replyBox.appendChild(content);
+
+            bubble.appendChild(replyBox);
+        }
+
+        // main content: text or gif
+        if (m.type === "gif" && m.gifUrl) {
+            const img = document.createElement("img");
+            img.src = m.gifUrl;
+            img.alt = m.text || "GIF";
+            img.className = "max-w-full rounded-md mt-1";
+            img.loading = "lazy";
+            bubble.appendChild(img);
+        } else {
+            const span = document.createElement("span");
+            span.textContent = m.text || "";
+            bubble.appendChild(span);
+        }
+
         row.appendChild(bubble);
 
         const meta = document.createElement("div");

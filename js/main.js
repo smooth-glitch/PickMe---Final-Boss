@@ -8,7 +8,14 @@ import {
     normalizeFilters,
     lastPickedMovieId,
 } from "./state.js";
-import { LSPOOL, LSWATCHED, LSFILTERS, LSTHEME, loadJson, saveJson } from "./storage.js";
+import {
+    LSPOOL,
+    LSWATCHED,
+    LSFILTERS,
+    LSTHEME,
+    loadJson,
+    saveJson,
+} from "./storage.js";
 import { toast, bindDropdownRowToggle } from "./ui.js";
 import { tmdb, loadTmdbConfig } from "./tmdb.js";
 import { renderPager, renderPool, toggleHiddenPoolItems } from "./render.js";
@@ -37,10 +44,14 @@ import {
     startUserDocListener,
     copyRoomLink,
     joinRoom,
+    registerReplyDraftSetter,
 } from "./rooms.js";
-import { setSyncControls } from "./rooms.js";
+import { setSyncControls, registerReplyDraftSetter, setReplyDraft } from "./rooms.js";
+import { searchGifs } from "./gif.js";
 
 let liveSearchTimer = null;
+// reply draft for chat
+let currentReplyTarget = null;
 
 function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
@@ -54,7 +65,9 @@ function initTheme() {
 
 function updateGenreDropdownLabel() {
     const countEl = id("genreDropdownCount");
-    const n = Array.isArray(state.filters.genres) ? state.filters.genres.length : 0;
+    const n = Array.isArray(state.filters.genres)
+        ? state.filters.genres.length
+        : 0;
     if (countEl) countEl.textContent = n ? `${n} selected` : "";
 }
 
@@ -191,7 +204,8 @@ async function loadSharedListFromUrl() {
     const data = snap.data();
     if (Array.isArray(data.pool)) state.pool = data.pool;
     if (Array.isArray(data.watched)) state.watched = new Set(data.watched);
-    if (data.filters && typeof data.filters === "object") state.filters = data.filters;
+    if (data.filters && typeof data.filters === "object")
+        state.filters = data.filters;
 
     renderPool();
     syncControls();
@@ -381,35 +395,201 @@ async function boot() {
         else doSearch(nextPage);
     });
 
-    // Chat form wiring
+    // Chat form + GIF + reply wiring
     const chatForm = id("roomChatForm");
     const chatInput = id("roomChatInput");
+    const gifBtn = id("roomGifBtn");
+    const replyPreview = id("roomReplyPreview");
+    const replyToName = id("roomReplyToName");
+    const replyToSnippet = id("roomReplyToSnippet");
+    const replyClear = id("roomReplyClear");
+    const gifDialog = id("dlgGifPicker");
+    const gifSearchInput = id("gifSearchInput");
+    const gifResults = id("gifResults");
+
+    function clearReplyDraft() {
+        currentReplyTarget = null;
+        if (replyPreview) replyPreview.classList.add("hidden");
+    }
+
+    // inside boot(), after defining clearReplyDraft:
+    registerReplyDraftSetter((msg) => {
+        currentReplyTarget = msg || null;
+        if (!msg) {
+            if (replyPreview) replyPreview.classList.add("hidden");
+            return;
+        }
+        if (replyPreview) replyPreview.classList.remove("hidden");
+        if (replyToName) replyToName.textContent = msg.userName || "Anon";
+        if (replyToSnippet) {
+            if (msg.type === "gif") {
+                replyToSnippet.textContent = "GIF";
+            } else {
+                const t = msg.text || "";
+                replyToSnippet.textContent =
+                    t.length > 30 ? t.slice(0, 30) + "…" : t || "";
+            }
+        }
+    });
+
+    if (replyClear) {
+        replyClear.addEventListener("click", () => {
+            clearReplyDraft();
+        });
+    }
+
+    // allow rooms.js to set reply target when user clicks a message
+    registerReplyDraftSetter((msg) => {
+        currentReplyTarget = msg || null;
+        if (!msg) {
+            if (replyPreview) replyPreview.classList.add("hidden");
+            return;
+        }
+        if (replyPreview) replyPreview.classList.remove("hidden");
+        if (replyToName) replyToName.textContent = msg.userName || "Anon";
+        if (replyToSnippet) {
+            if (msg.type === "gif") {
+                replyToSnippet.textContent = "GIF";
+            } else {
+                const t = msg.text || "";
+                replyToSnippet.textContent =
+                    t.length > 30 ? t.slice(0, 30) + "…" : t || "";
+            }
+        }
+    });
+
     if (chatForm && chatInput) {
         chatForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const text = chatInput.value;
-            if (!text.trim() || !roomState.id) return;
+            const text = chatInput.value.trim();
+            if (!text || !roomState.id) return;
 
             const fs = window.firebaseStore;
             if (!fs) return;
             const u = authState.user;
 
+            const payload = {
+                type: "text",
+                text,
+                gifUrl: null,
+                userId: u?.uid ?? null,
+                userName: u?.displayName ?? u?.email ?? "Anon",
+                createdAt: fs.serverTimestamp(),
+            };
+
+            if (currentReplyTarget) {
+                payload.replyTo = {
+                    id: currentReplyTarget.id,
+                    userName: currentReplyTarget.userName || "Anon",
+                    type: currentReplyTarget.type || "text",
+                    text: currentReplyTarget.text || null,
+                    gifUrl: currentReplyTarget.gifUrl || null,
+                };
+            }
+
             try {
                 await fs.addDoc(
                     fs.collection(fs.db, "rooms", roomState.id, "messages"),
-                    {
-                        text,
-                        userId: u?.uid ?? null,
-                        userName: u?.displayName ?? u?.email ?? "Anon",
-                        createdAt: fs.serverTimestamp(),
-                    }
+                    payload
                 );
                 chatInput.value = "";
+                clearReplyDraft();
             } catch (err) {
                 toast("Failed to send message.", "error");
                 console.warn(err);
             }
         });
+    }
+
+    if (gifBtn && gifDialog && gifSearchInput && gifResults) {
+        gifBtn.addEventListener("click", async () => {
+            gifSearchInput.value = "";
+            gifResults.innerHTML = "";
+            try {
+                const gifs = await searchGifs("");
+                renderGifResults(gifs);
+            } catch (e) {
+                console.warn(e);
+                gifResults.innerHTML =
+                    '<div class="text-xs opacity-70 p-2">Failed to load GIFs.</div>';
+            }
+            gifDialog.showModal();
+            gifSearchInput.focus();
+        });
+
+        gifSearchInput.addEventListener("input", () => {
+            const q = gifSearchInput.value.trim();
+            if (!q) return;
+            if (gifSearchInput._timer) clearTimeout(gifSearchInput._timer);
+            gifSearchInput._timer = setTimeout(async () => {
+                try {
+                    const gifs = await searchGifs(q);
+                    renderGifResults(gifs);
+                } catch (e) {
+                    console.warn(e);
+                    gifResults.innerHTML =
+                        '<div class="text-xs opacity-70 p-2">Failed to load GIFs.</div>';
+                }
+            }, 300);
+        });
+
+        async function sendGifMessage(gif) {
+            if (!roomState.id) return;
+            const fs = window.firebaseStore;
+            if (!fs) return;
+            const u = authState.user;
+
+            const payload = {
+                type: "gif",
+                text: null,
+                gifUrl: gif.url,
+                userId: u?.uid ?? null,
+                userName: u?.displayName ?? u?.email ?? "Anon",
+                createdAt: fs.serverTimestamp(),
+            };
+
+            if (currentReplyTarget) {
+                payload.replyTo = {
+                    id: currentReplyTarget.id,
+                    userName: currentReplyTarget.userName || "Anon",
+                    type: currentReplyTarget.type || "text",
+                    text: currentReplyTarget.text || null,
+                    gifUrl: currentReplyTarget.gifUrl || null,
+                };
+            }
+
+            try {
+                await fs.addDoc(
+                    fs.collection(fs.db, "rooms", roomState.id, "messages"),
+                    payload
+                );
+                clearReplyDraft();
+            } catch (err) {
+                toast("Failed to send GIF.", "error");
+                console.warn(err);
+            }
+        }
+
+        function renderGifResults(list) {
+            gifResults.innerHTML = "";
+            if (!list.length) {
+                gifResults.innerHTML =
+                    '<div class="text-xs opacity-70 p-2 col-span-3">No GIFs found.</div>';
+                return;
+            }
+            for (const g of list) {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className =
+                    "relative w-full aspect-[4/3] overflow-hidden rounded-lg border border-base-300";
+                btn.innerHTML = `<img src="${g.thumb}" alt="${g.title || ""}" class="w-full h-full object-cover" loading="lazy" />`;
+                btn.addEventListener("click", async () => {
+                    await sendGifMessage(g);
+                    gifDialog.close();
+                });
+                gifResults.appendChild(btn);
+            }
+        }
     }
 
     await loadTmdbConfig();
