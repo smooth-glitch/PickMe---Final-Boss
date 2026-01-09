@@ -46,7 +46,7 @@ import {
     joinRoom,
     registerReplyDraftSetter,
 } from "./rooms.js";
-import { setSyncControls, registerReplyDraftSetter, setReplyDraft } from "./rooms.js";
+import { setSyncControls, setReplyDraft } from "./rooms.js";
 import { searchGifs } from "./gif.js";
 
 let liveSearchTimer = null;
