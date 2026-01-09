@@ -315,6 +315,35 @@
                                     ✕
                                 </button>
                             </div>
+                            <!-- Docked tray (Discord-style) -->
+                            <div id="chatTray" class="hidden chat-tray">
+                                <div class="flex items-center gap-2">
+                                    <button id="chatTrayTabGif" type="button"
+                                        class="btn btn-xs btn-ghost chat-tray-tab">
+                                        GIFs
+                                    </button>
+                                    <button id="chatTrayTabSticker" type="button"
+                                        class="btn btn-xs btn-ghost chat-tray-tab">
+                                        Stickers
+                                    </button>
+                                    <button id="chatTrayTabEmoji" type="button"
+                                        class="btn btn-xs btn-ghost chat-tray-tab">
+                                        Emoji
+                                    </button>
+
+                                    <div class="flex-1"></div>
+                                    <button id="chatTrayClose" type="button" class="btn btn-xs btn-ghost">✕</button>
+                                </div>
+
+                                <label class="input input-bordered input-sm w-full mt-2 flex items-center gap-2">
+                                    <span class="opacity-60 text-xs">Search</span>
+                                    <input id="chatTraySearch" type="text" class="grow" placeholder="Search…"
+                                        autocomplete="off" />
+                                </label>
+
+                                <div id="chatTrayGrid" class="mt-2 grid grid-cols-2 gap-2 max-h-72 overflow-y-auto">
+                                </div>
+                            </div>
 
                             <form id="roomChatForm" class="flex flex-col gap-2 mt-2">
                                 <div class="flex items-center gap-2">
@@ -346,7 +375,7 @@
                                             <path d="M10 16s.8 1 2 1c1.3 0 2-1 2-1" />
                                         </svg>
                                     </button>
-                                    
+
                                     <button id="roomEmojiBtn" type="button" class="btn btn-xs btn-ghost px-2"
                                         title="Emoji">
                                         <!-- simple smile icon -->

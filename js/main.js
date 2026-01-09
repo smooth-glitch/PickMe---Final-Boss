@@ -61,26 +61,9 @@ let liveSearchTimer = null;
 // reply draft for chat
 let currentReplyTarget = null;
 
-
-function positionPopupUnderChat(el) {
-    const form = document.getElementById("roomChatForm");
-    if (!form) return;
-
-    const rect = form.getBoundingClientRect();
-    const margin = 6;
-
-    // Left align with GIF button area
-    el.style.left = `${rect.left}px`;
-    el.style.top = `${rect.top - el.offsetHeight - margin + window.scrollY}px`;
-
-    // Clamp horizontally inside viewport
-    const maxRight = window.innerWidth - 8;
-    const right = rect.left + el.offsetWidth;
-    if (right > maxRight) {
-        const shift = right - maxRight;
-        el.style.left = `${rect.left - shift}px`;
-    }
-}
+// --------------------------------------------------
+// Utility
+// --------------------------------------------------
 
 function setPageLoading(on) {
     const el = document.getElementById("pageLoader");
@@ -225,6 +208,229 @@ function resetAllFilters() {
     toast("Filters reset.", "info");
 }
 
+// --------------------------------------------------
+// Docked tray (GIF / Sticker / Emoji)
+// --------------------------------------------------
+
+let trayMode = null;
+let traySearchTimer = null;
+let emojiCache = null;
+
+async function loadEmojis() {
+    if (emojiCache) return emojiCache;
+    try {
+        const res = await fetch("https://emojihub.yurace.pro/api/all");
+        if (!res.ok) throw new Error("Failed to load emojis");
+        const data = await res.json();
+        emojiCache = data.map((e) => {
+            const code = Array.isArray(e.htmlCode) ? e.htmlCode[0] : null;
+            const num = code ? Number(code.replace(/[&#;]/g, "")) : null;
+            return {
+                char: Number.isFinite(num) ? String.fromCodePoint(num) : null,
+                name: (e.name || "").toLowerCase(),
+            };
+        }).filter((x) => x.char);
+    } catch (e) {
+        console.warn("Emoji API failed", e);
+        emojiCache = [
+            { char: "😀", name: "grinning" },
+            { char: "😅", name: "sweat" },
+            { char: "😂", name: "joy" },
+            { char: "😍", name: "heart eyes" },
+            { char: "😎", name: "cool" },
+            { char: "😢", name: "cry" },
+            { char: "😡", name: "angry" },
+            { char: "👍", name: "thumbs up" },
+            { char: "👀", name: "eyes" },
+            { char: "🔥", name: "fire" },
+            { char: "🙏", name: "pray" },
+        ];
+    }
+    return emojiCache;
+}
+
+function setActiveTab(mode, tabGif, tabSticker, tabEmoji) {
+    [tabGif, tabSticker, tabEmoji].forEach((b) =>
+        b?.classList.remove("is-active")
+    );
+    if (mode === "gif") tabGif?.classList.add("is-active");
+    if (mode === "sticker") tabSticker?.classList.add("is-active");
+    if (mode === "emoji") tabEmoji?.classList.add("is-active");
+}
+
+function openTray(mode, tray, trayGrid, traySearch, tabGif, tabSticker, tabEmoji) {
+    if (!tray || !trayGrid || !traySearch) return;
+    trayMode = mode;
+    tray.classList.remove("hidden");
+    setActiveTab(mode, tabGif, tabSticker, tabEmoji);
+
+    traySearch.value = "";
+    traySearch.placeholder =
+        mode === "gif"
+            ? "Search GIFs…"
+            : mode === "sticker"
+                ? "Search stickers…"
+                : "Search emoji…";
+
+    renderTray(trayGrid, traySearch);
+    traySearch.focus();
+}
+
+function closeTray(tray) {
+    trayMode = null;
+    tray?.classList.add("hidden");
+}
+
+async function renderTrayGifs(q, trayGrid, sendGifMessage) {
+    if (!trayGrid) return;
+    trayGrid.innerHTML =
+        `<div class="col-span-2 text-xs opacity-70 p-2">Loading…</div>`;
+
+    try {
+        const gifs = await searchGifs(q);
+        if (!gifs.length) {
+            trayGrid.innerHTML =
+                `<div class="col-span-2 text-xs opacity-70 p-2">No GIFs found.</div>`;
+            return;
+        }
+
+        trayGrid.className =
+            "mt-2 grid grid-cols-2 gap-2 max-h-72 overflow-y-auto";
+        trayGrid.innerHTML = "";
+        for (const g of gifs) {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className =
+                "relative w-full aspect-[4/3] overflow-hidden rounded-lg border border-base-300";
+            btn.innerHTML = `<img src="${g.thumb}" alt="${g.title || "GIF"}" class="w-full h-full object-cover" loading="lazy">`;
+            btn.addEventListener("click", async () => {
+                await sendGifMessage(g);
+                // tray closed by caller
+            });
+            trayGrid.appendChild(btn);
+        }
+    } catch (e) {
+        console.warn(e);
+        trayGrid.innerHTML =
+            `<div class="col-span-2 text-xs opacity-70 p-2">Failed to load GIFs.</div>`;
+    }
+}
+
+async function renderTrayStickers(q, trayGrid, sendStickerMessage) {
+    if (!trayGrid) return;
+    trayGrid.innerHTML =
+        `<div class="col-span-3 text-xs opacity-70 p-2">Loading…</div>`;
+    trayGrid.className =
+        "mt-2 grid grid-cols-3 gap-2 max-h-72 overflow-y-auto";
+
+    try {
+        const stickers = await searchStickers(q || "");
+        if (!stickers.length) {
+            trayGrid.innerHTML =
+                `<div class="col-span-3 text-xs opacity-70 p-2">No stickers found.</div>`;
+            return;
+        }
+
+        trayGrid.innerHTML = "";
+        for (const s of stickers) {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className =
+                "relative w-full aspect-square overflow-hidden rounded-lg border border-base-300 " +
+                "bg-base-100 hover:bg-base-200 transition";
+            btn.innerHTML = `
+        <div class="w-full h-full flex items-center justify-center">
+          <img src="${s.thumb}" alt="${s.title || ""}"
+               class="max-w-[80%] max-h-[80%] object-contain" loading="lazy" />
+        </div>
+      `;
+            btn.addEventListener("click", async () => {
+                await sendStickerMessage(s);
+            });
+            trayGrid.appendChild(btn);
+        }
+    } catch (e) {
+        console.warn(e);
+        trayGrid.innerHTML =
+            `<div class="col-span-3 text-xs opacity-70 p-2">Failed to load stickers.</div>`;
+    }
+}
+
+async function renderTrayEmojis(q, trayGrid, chatInput, tray) {
+    if (!trayGrid) return;
+    trayGrid.innerHTML =
+        `<div class="col-span-2 text-xs opacity-70 p-2">Loading…</div>`;
+
+    try {
+        const all = await loadEmojis();
+        const query = (q || "").toLowerCase();
+        const list = query ? all.filter((x) => x.name.includes(query)) : all;
+        const subset = list.slice(0, 120);
+
+        trayGrid.className =
+            "mt-2 grid grid-cols-8 gap-1 max-h-72 overflow-y-auto";
+        trayGrid.innerHTML = "";
+
+        for (const e of subset) {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className =
+                "w-8 h-8 grid place-items-center rounded-lg hover:bg-base-200 text-lg";
+            btn.textContent = e.char;
+
+            btn.addEventListener("click", (ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                if (!chatInput) return;
+                const start = chatInput.selectionStart ?? chatInput.value.length;
+                const end = chatInput.selectionEnd ?? chatInput.value.length;
+                const v = chatInput.value;
+                chatInput.value = v.slice(0, start) + e.char + v.slice(end);
+                const caret = start + e.char.length;
+                chatInput.setSelectionRange(caret, caret);
+                chatInput.focus();
+                closeTray(tray);
+            });
+
+            trayGrid.appendChild(btn);
+        }
+    } catch (e) {
+        console.warn(e);
+        trayGrid.innerHTML =
+            `<div class="col-span-2 text-xs opacity-70 p-2">Failed to load emojis.</div>`;
+    }
+}
+
+function renderTray(trayGrid, traySearch) {
+    // no-op here: actual dispatch is wired inside boot where we know chatInput
+}
+
+// --------------------------------------------------
+// Shared Emoji popup helper (no longer used for tray)
+// --------------------------------------------------
+
+function positionPopupUnderChat(el) {
+    const form = document.getElementById("roomChatForm");
+    if (!form) return;
+
+    const rect = form.getBoundingClientRect();
+    const margin = 6;
+
+    el.style.left = `${rect.left}px`;
+    el.style.top = `${rect.top - el.offsetHeight - margin + window.scrollY}px`;
+
+    const maxRight = window.innerWidth - 8;
+    const right = rect.left + el.offsetWidth;
+    if (right > maxRight) {
+        const shift = right - maxRight;
+        el.style.left = `${rect.left - shift}px`;
+    }
+}
+
+// --------------------------------------------------
+// Boot
+// --------------------------------------------------
+
 async function loadSharedListFromUrl() {
     const fs = window.firebaseStore;
     if (!fs) return;
@@ -238,7 +444,8 @@ async function loadSharedListFromUrl() {
 
     const data = snap.data();
     if (Array.isArray(data.pool)) state.pool = data.pool;
-    if (Array.isArray(data.watched)) state.watched = new Set(data.watched);
+    if (Array.isArray(data.watched))
+        state.watched = new Set(data.watched);
     if (data.filters && typeof data.filters === "object")
         state.filters = data.filters;
 
@@ -255,31 +462,6 @@ function syncUserMenu() {
     id("btnMenuCopyUid")?.classList.toggle("hidden", !signedIn);
 }
 
-let emojiCache = null;
-
-async function loadEmojis() {
-    if (emojiCache) return emojiCache;
-    try {
-        const res = await fetch("https://emojihub.yurace.pro/api/all");
-        if (!res.ok) throw new Error("Failed to load emojis");
-        const data = await res.json();
-        // Convert to a simple array of strings like "😀"
-        emojiCache = data
-            .map((e) => (Array.isArray(e.htmlCode) ? e.htmlCode[0] : null))
-            .filter(Boolean)
-            .map((code) => {
-                // htmlCode like "&#128515;" -> actual char
-                const num = Number(code.replace(/[&#;]/g, ""));
-                return String.fromCodePoint(num);
-            });
-    } catch (e) {
-        console.warn("Emoji API failed", e);
-        emojiCache = ["😀", "😅", "😂", "😍", "😎", "😢", "😡", "👍", "👀", "🔥", "🙏"];
-    }
-    return emojiCache;
-}
-
-
 async function boot() {
     // persisted state
     state.pool = loadJson(LSPOOL, []);
@@ -287,7 +469,6 @@ async function boot() {
     state.filters = loadJson(LSFILTERS, { excludeWatched: true, minRating: 6 });
 
     ensureWatchFilterDefaults();
-
     initTheme();
     syncControls();
 
@@ -344,7 +525,7 @@ async function boot() {
 
     const qEl = id("q");
 
-    // UI wiring
+    // UI wiring (filters/search etc.)
     id("excludeWatched")?.addEventListener("change", () => {
         state.filters.excludeWatched = id("excludeWatched").checked;
         saveJson(LSFILTERS, state.filters);
@@ -455,22 +636,28 @@ async function boot() {
         else doSearch(nextPage);
     });
 
-    // Chat form + GIF + reply + mentions + stickers
+    // --------------------------------------------------
+    // Chat form + reply + mentions + tray wiring
+    // --------------------------------------------------
     const chatForm = id("roomChatForm");
     const chatInput = id("roomChatInput");
     const gifBtn = id("roomGifBtn");
+    const stickerBtn = id("roomStickerBtn");
+    const emojiBtn = id("roomEmojiBtn");
+
+    const tray = id("chatTray");
+    const trayGrid = id("chatTrayGrid");
+    const traySearch = id("chatTraySearch");
+    const trayClose = id("chatTrayClose");
+    const tabGif = id("chatTrayTabGif");
+    const tabSticker = id("chatTrayTabSticker");
+    const tabEmoji = id("chatTrayTabEmoji");
+
     const replyPreview = id("roomReplyPreview");
     const replyToName = id("roomReplyToName");
     const replyToSnippet = id("roomReplyToSnippet");
     const replyClear = id("roomReplyClear");
-    const gifDialog = id("dlgGifPicker");
-    const gifSearchInput = id("gifSearchInput");
-    const gifResults = id("gifResults");
 
-    const stickerBtn = id("roomStickerBtn");
-    const stickerDialog = id("dlgStickerPicker");
-    const stickerResults = id("stickerResults");
-    const stickerSearchInput = id("stickerSearchInput");
     const mentionBox = id("mentionSuggestions");
     let mentionActive = false;
     let mentionStartIndex = -1;
@@ -485,7 +672,6 @@ async function boot() {
         if (!mentionBox) return;
         mentionBox.innerHTML = "";
 
-        // solid background dropdown
         mentionBox.className =
             "absolute bottom-9 left-0 w-56 bg-base-100 border border-base-300 " +
             "rounded-xl shadow-lg z-20 py-1";
@@ -509,8 +695,6 @@ async function boot() {
         }
         mentionBox.classList.remove("hidden");
     }
-
-
 
     function applyMention(member) {
         if (!mentionActive || mentionStartIndex < 0 || !chatInput) return;
@@ -653,7 +837,7 @@ async function boot() {
                 const selfUid = authState.user?.uid ?? null;
 
                 const candidates = members.filter((m) => {
-                    if (selfUid && m.id === selfUid) return false; // cannot tag yourself
+                    if (selfUid && m.id === selfUid) return false;
                     return (m.name || "").toLowerCase().startsWith(query);
                 });
 
@@ -671,261 +855,171 @@ async function boot() {
                 setTimeout(hideMentionBox, 150);
             });
         }
-
     }
 
-    // GIF picker
-    if (gifBtn && gifDialog && gifSearchInput && gifResults) {
-        gifBtn.addEventListener("click", async () => {
-            gifSearchInput.value = "";
-            gifResults.innerHTML = "";
-            try {
-                const gifs = await searchGifs("");
-                renderGifResults(gifs);
-            } catch (e) {
-                console.warn(e);
-                gifResults.innerHTML =
-                    '<div class="text-xs opacity-70 p-2">Failed to load GIFs.</div>';
-            }
-            gifDialog.showModal();
-            gifSearchInput.focus();
-        });
+    // Send GIF / Sticker helpers used by tray
+    async function sendGifMessage(gif) {
+        if (!roomState.id) return;
+        const fs = window.firebaseStore;
+        if (!fs) return;
+        const u = authState.user;
 
-        gifSearchInput.addEventListener("input", () => {
-            const q = gifSearchInput.value.trim();
-            if (!q) return;
-            if (gifSearchInput._timer) clearTimeout(gifSearchInput._timer);
-            gifSearchInput._timer = setTimeout(async () => {
-                try {
-                    const gifs = await searchGifs(q);
-                    renderGifResults(gifs);
-                } catch (e) {
-                    console.warn(e);
-                    gifResults.innerHTML =
-                        '<div class="text-xs opacity-70 p-2">Failed to load GIFs.</div>';
+        const payload = {
+            type: "gif",
+            text: null,
+            gifUrl: gif.url,
+            stickerUrl: null,
+            mentions: [],
+            userId: u?.uid ?? null,
+            userName: u?.displayName ?? u?.email ?? "Anon",
+            createdAt: fs.serverTimestamp(),
+            reactions: {},
+        };
+
+        if (currentReplyTarget) {
+            payload.replyTo = {
+                id: currentReplyTarget.id,
+                userName: currentReplyTarget.userName || "Anon",
+                type: currentReplyTarget.type || "text",
+                text: currentReplyTarget.text || null,
+                gifUrl: currentReplyTarget.gifUrl || null,
+                stickerUrl: currentReplyTarget.stickerUrl || null,
+            };
+        }
+
+        try {
+            await fs.addDoc(
+                fs.collection(fs.db, "rooms", roomState.id, "messages"),
+                payload
+            );
+            clearReplyDraft();
+            closeTray(tray);
+        } catch (err) {
+            toast("Failed to send GIF.", "error");
+            console.warn(err);
+        }
+    }
+
+    async function sendStickerMessage(sticker) {
+        if (!roomState.id) return;
+        const fs = window.firebaseStore;
+        if (!fs) return;
+        const u = authState.user;
+
+        const payload = {
+            type: "sticker",
+            text: null,
+            gifUrl: null,
+            stickerUrl: sticker.url,
+            mentions: [],
+            userId: u?.uid ?? null,
+            userName: u?.displayName ?? u?.email ?? "Anon",
+            createdAt: fs.serverTimestamp(),
+            reactions: {},
+        };
+
+        if (currentReplyTarget) {
+            payload.replyTo = {
+                id: currentReplyTarget.id,
+                userName: currentReplyTarget.userName || "Anon",
+                type: currentReplyTarget.type || "text",
+                text: currentReplyTarget.text || null,
+                gifUrl: currentReplyTarget.gifUrl || null,
+                stickerUrl: currentReplyTarget.stickerUrl || null,
+            };
+        }
+
+        try {
+            await fs.addDoc(
+                fs.collection(fs.db, "rooms", roomState.id, "messages"),
+                payload
+            );
+            clearReplyDraft();
+            closeTray(tray);
+        } catch (err) {
+            toast("Failed to send sticker.", "error");
+            console.warn(err);
+        }
+    }
+
+    // Tray open/close + search
+    if (gifBtn && tray && trayGrid && traySearch) {
+        gifBtn.addEventListener("click", () =>
+            openTray("gif", tray, trayGrid, traySearch, tabGif, tabSticker, tabEmoji)
+        );
+    }
+    if (stickerBtn && tray && trayGrid && traySearch) {
+        stickerBtn.addEventListener("click", () =>
+            openTray(
+                "sticker",
+                tray,
+                trayGrid,
+                traySearch,
+                tabGif,
+                tabSticker,
+                tabEmoji
+            )
+        );
+    }
+    if (emojiBtn && tray && trayGrid && traySearch) {
+        emojiBtn.addEventListener("click", () =>
+            openTray(
+                "emoji",
+                tray,
+                trayGrid,
+                traySearch,
+                tabGif,
+                tabSticker,
+                tabEmoji
+            )
+        );
+    }
+
+    if (trayClose) {
+        trayClose.addEventListener("click", () => closeTray(tray));
+    }
+
+    if (traySearch) {
+        traySearch.addEventListener("input", () => {
+            if (traySearchTimer) clearTimeout(traySearchTimer);
+            traySearchTimer = setTimeout(async () => {
+                if (trayMode === "gif") {
+                    await renderTrayGifs(
+                        traySearch.value.trim(),
+                        trayGrid,
+                        sendGifMessage
+                    );
+                } else if (trayMode === "sticker") {
+                    await renderTrayStickers(
+                        traySearch.value.trim(),
+                        trayGrid,
+                        sendStickerMessage
+                    );
+                } else if (trayMode === "emoji") {
+                    await renderTrayEmojis(
+                        traySearch.value.trim(),
+                        trayGrid,
+                        chatInput,
+                        tray
+                    );
                 }
-            }, 300);
-        });
-
-        async function sendGifMessage(gif) {
-            if (!roomState.id) return;
-            const fs = window.firebaseStore;
-            if (!fs) return;
-            const u = authState.user;
-
-            const payload = {
-                type: "gif",
-                text: null,
-                gifUrl: gif.url,
-                stickerUrl: null,
-                mentions: [],
-                userId: u?.uid ?? null,
-                userName: u?.displayName ?? u?.email ?? "Anon",
-                createdAt: fs.serverTimestamp(),
-                reactions: {},
-            };
-
-            if (currentReplyTarget) {
-                payload.replyTo = {
-                    id: currentReplyTarget.id,
-                    userName: currentReplyTarget.userName || "Anon",
-                    type: currentReplyTarget.type || "text",
-                    text: currentReplyTarget.text || null,
-                    gifUrl: currentReplyTarget.gifUrl || null,
-                    stickerUrl: currentReplyTarget.stickerUrl || null,
-                };
-            }
-
-            try {
-                await fs.addDoc(
-                    fs.collection(fs.db, "rooms", roomState.id, "messages"),
-                    payload
-                );
-                clearReplyDraft();
-            } catch (err) {
-                toast("Failed to send GIF.", "error");
-                console.warn(err);
-            }
-        }
-
-        function renderGifResults(list) {
-            gifResults.innerHTML = "";
-            if (!list.length) {
-                gifResults.innerHTML =
-                    '<div class="text-xs opacity-70 p-2 col-span-3">No GIFs found.</div>';
-                return;
-            }
-            for (const g of list) {
-                const btn = document.createElement("button");
-                btn.type = "button";
-                btn.className =
-                    "relative w-full aspect-[4/3] overflow-hidden rounded-lg border border-base-300";
-                btn.innerHTML = `<img src="${g.thumb}" alt="${g.title || ""
-                    }" class="w-full h-full object-cover" loading="lazy" />`;
-                btn.addEventListener("click", async () => {
-                    await sendGifMessage(g);
-                    gifDialog.close();
-                });
-                gifResults.appendChild(btn);
-            }
-        }
-    }
-
-    if (stickerBtn && stickerDialog && stickerResults && chatInput) {
-        stickerBtn.addEventListener("click", async () => {
-            if (stickerSearchInput) stickerSearchInput.value = "";
-            stickerResults.innerHTML = "";
-            try {
-                const stickers = await searchStickers("");
-                renderStickerResults(stickers);
-            } catch (e) {
-                console.warn(e);
-                stickerResults.innerHTML =
-                    '<div class="text-xs opacity-70 p-2">Failed to load stickers.</div>';
-            }
-            stickerDialog.showModal();
-            if (stickerSearchInput) stickerSearchInput.focus();
-        });
-
-        if (stickerSearchInput) {
-            stickerSearchInput.addEventListener("input", () => {
-                const q = stickerSearchInput.value.trim();
-                if (stickerSearchInput._timer) clearTimeout(stickerSearchInput._timer);
-                stickerSearchInput._timer = setTimeout(async () => {
-                    try {
-                        const stickers = await searchStickers(q);
-                        renderStickerResults(stickers);
-                    } catch (e) {
-                        console.warn(e);
-                        stickerResults.innerHTML =
-                            '<div class="text-xs opacity-70 p-2">Failed to load stickers.</div>';
-                    }
-                }, 300);
-            });
-        }
-
-        async function sendStickerMessage(sticker) {
-            if (!roomState.id) return;
-            const fs = window.firebaseStore;
-            if (!fs) return;
-            const u = authState.user;
-
-            const payload = {
-                type: "sticker",
-                text: null,
-                gifUrl: null,
-                stickerUrl: sticker.url,
-                mentions: [],
-                userId: u?.uid ?? null,
-                userName: u?.displayName ?? u?.email ?? "Anon",
-                createdAt: fs.serverTimestamp(),
-                reactions: {},
-            };
-
-            if (currentReplyTarget) {
-                payload.replyTo = {
-                    id: currentReplyTarget.id,
-                    userName: currentReplyTarget.userName || "Anon",
-                    type: currentReplyTarget.type || "text",
-                    text: currentReplyTarget.text || null,
-                    gifUrl: currentReplyTarget.gifUrl || null,
-                    stickerUrl: currentReplyTarget.stickerUrl || null,
-                };
-            }
-
-            try {
-                await fs.addDoc(
-                    fs.collection(fs.db, "rooms", roomState.id, "messages"),
-                    payload
-                );
-                clearReplyDraft();
-            } catch (err) {
-                toast("Failed to send sticker.", "error");
-                console.warn(err);
-            }
-        }
-
-        function renderStickerResults(list) {
-            stickerResults.innerHTML = "";
-            if (!list.length) {
-                stickerResults.innerHTML =
-                    '<div class="text-xs opacity-70 p-2 col-span-3">No stickers found.</div>';
-                return;
-            }
-            for (const s of list) {
-                const btn = document.createElement("button");
-                btn.type = "button";
-                btn.className =
-                    "relative w-full aspect-square overflow-hidden rounded-lg border border-base-300 " +
-                    "bg-base-100 hover:bg-base-200 transition";
-                btn.innerHTML = `
-              <div class="w-full h-full flex items-center justify-center">
-                <img src="${s.thumb}" alt="${s.title || ""}"
-                     class="max-w-[80%] max-h-[80%] object-contain" loading="lazy" />
-              </div>
-            `;
-                btn.addEventListener("click", async () => {
-                    await sendStickerMessage(s);
-                    stickerDialog.close();
-                });
-                stickerResults.appendChild(btn);
-            }
-        }
-    }
-
-    const emojiBtn = id("roomEmojiBtn");
-
-    if (emojiBtn && chatInput) {
-        emojiBtn.addEventListener("click", async () => {
-            const menuId = "emojiQuickMenu";
-            const existing = document.getElementById(menuId);
-            if (existing) existing.remove();
-
-            const emojis = await loadEmojis();
-            // take a slice for performance; you can later add categories/search
-            const subset = emojis.slice(0, 60);
-
-            const menu = document.createElement("div");
-            menu.id = menuId;
-            menu.className =
-                "fixed z-[9999] grid grid-cols-8 gap-1 px-2 py-2 rounded-xl " +
-                "bg-base-100 border border-base-300 shadow-xl text-lg " +
-                "max-h-64 overflow-y-auto";
-
-
-            subset.forEach((e) => {
-                const btn = document.createElement("button");
-                btn.type = "button";
-                btn.className =
-                    "w-8 h-8 grid place-items-center rounded-lg hover:bg-base-200";
-                btn.textContent = e;
-                btn.addEventListener("click", (ev) => {
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    const start = chatInput.selectionStart ?? chatInput.value.length;
-                    const end = chatInput.selectionEnd ?? chatInput.value.length;
-                    const v = chatInput.value;
-                    chatInput.value = v.slice(0, start) + e + v.slice(end);
-                    const caret = start + e.length;
-                    chatInput.setSelectionRange(caret, caret);
-                    chatInput.focus();
-                    menu.remove();
-                });
-                menu.appendChild(btn);
-            });
-
-            document.body.appendChild(menu);
-            positionPopupUnderChat(menu);
-            const close = () => menu.remove();
-            setTimeout(() => {
-                document.addEventListener("click", close, { once: true });
-                window.addEventListener("resize", close, { once: true });
-                document.addEventListener("scroll", close, { once: true, passive: true });
-            }, 0);
+            }, 250);
         });
     }
 
-
+    // Initial render when opening
+    document.addEventListener(
+        "click",
+        (e) => {
+            if (!tray || tray.classList.contains("hidden")) return;
+            const t = e.target;
+            const insideTray = tray.contains(t);
+            const insideBtns =
+                gifBtn?.contains(t) || stickerBtn?.contains(t) || emojiBtn?.contains(t);
+            if (!insideTray && !insideBtns) closeTray(tray);
+        },
+        false
+    );
 }
 
 if (document.readyState === "loading")

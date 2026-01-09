@@ -1641,3 +1641,30 @@ html[data-theme="cupcake"] .chat-bubble-neutral {
     margin-inline: auto;
   }
 }
+
+/* The chat column must be a positioning context */
+#roomChatColumn {
+  position: relative;
+  overflow: visible;
+}
+
+/* Docked tray above input, aligned to the right */
+.chat-tray {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 2.6rem; /* sits above the input row */
+  width: min(26rem, 92vw);
+  padding: 0.75rem;
+  border-radius: 1rem;
+
+  background-color: hsl(var(--b1));
+  border: 1px solid hsl(var(--b3));
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+  z-index: 50;
+}
+
+/* Tabs feel “selected” */
+.chat-tray-tab.is-active {
+  background-color: color-mix(in oklab, hsl(var(--b2)) 60%, transparent);
+  border: 1px solid hsl(var(--b3));
+}
