@@ -79,7 +79,9 @@ function renderReplyPreview(replyTo) {
     }
     const box = document.createElement("div");
     box.className =
-        "mb-1 px-2 py-1 rounded bg-base-100/40 border border-base-300 text-[0.65rem] opacity-80";
+        "mb-1 px-2 py-1 rounded-lg bg-base-100/30 border border-base-300/80 " +
+        "text-[0.65rem] leading-snug";
+
 
     const rName = replyTo.userName || "Anon";
     const label = document.createElement("div");
@@ -93,9 +95,11 @@ function renderReplyPreview(replyTo) {
     } else if (replyTo.type === "sticker" && replyTo.stickerUrl) {
         content.textContent = "Sticker";
     } else {
-        const t = replyTo.text || "";
-        content.textContent = t.length > 40 ? t.slice(0, 40) + "…" : t || "";
+        const body = renderTextWithMentions(m.text || "", m.mentions || []);
+        body.classList.add("block", "mt-0.5");
+        bubble.appendChild(body);
     }
+
     box.appendChild(content);
 
     return box;
@@ -199,9 +203,13 @@ export function renderRoomMessages(list) {
         row.appendChild(header);
 
         const bubble = document.createElement("div");
-        bubble.className =
-            "chat-bubble text-xs max-w-[80%] " +
-            (isMe ? "chat-bubble-primary" : "chat-bubble-neutral");
+        const isMedia = m.type === "gif" || m.type === "sticker";
+
+        bubble.className = (isMedia
+            ? "text-xs max-w-[80%]" // no bubble for media
+            : "chat-bubble text-xs max-w-[80%] " +
+            (isMe ? "chat-bubble-primary" : "chat-bubble-neutral"));
+
 
         // Right-click reactions picker
         bubble.addEventListener("contextmenu", (ev) => {
@@ -274,7 +282,7 @@ export function renderRoomMessages(list) {
 
         row.appendChild(bubble);
 
-        // Reactions bar under bubble (if any)
+        // Reactions bar under bubble
         if (m.reactions && typeof m.reactions === "object") {
             const emojis = Object.keys(m.reactions);
             if (emojis.length) {
@@ -300,6 +308,7 @@ export function renderRoomMessages(list) {
                     pill.addEventListener("click", (ev) => {
                         ev.stopPropagation();
                         toggleReaction(m.id, emoji);
+                        removeEmojiPicker(); // close if open
                     });
 
                     reactionsBar.appendChild(pill);

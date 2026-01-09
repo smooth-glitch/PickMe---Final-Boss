@@ -1540,3 +1540,28 @@ html[data-reduce-motion] *::after {
   color: #000; /* black text */
   border-radius: 9999px;
 }
+
+#roomChatMessages {
+  position: relative;
+}
+
+/* Chat toolbar icon buttons */
+#roomGifBtn,
+#roomStickerBtn {
+  transition: transform 140ms ease, background-color 140ms ease,
+    box-shadow 140ms ease;
+  border-radius: 999px;
+}
+
+#roomGifBtn:hover,
+#roomStickerBtn:hover {
+  transform: translateY(-1px) scale(1.04);
+  background-color: color-mix(in oklab, hsl(var(--b3)) 60%, transparent);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+}
+
+#roomGifBtn:active,
+#roomStickerBtn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: none;
+}
