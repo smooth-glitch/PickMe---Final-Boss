@@ -6,8 +6,7 @@ import { setBusy, posterUrl, year } from "./render.js";
 import { renderWatchProvidersSection } from "./watchFilters.js";
 import { saveJson, LSWATCHED } from "./storage.js";
 import { renderPool } from "./render.js";
-import { updatePlaybackFromLocal } from "./rooms.js";
-
+import { updatePlaybackFromLocal, saveTelepartyUrl } from "./rooms.js";
 
 export async function loadBestVideos(kind, id) {
     const attempts = [{ language: "en-US" }, {}];
@@ -132,6 +131,31 @@ export async function openDetails(idNum, opts = {}) {
                 trailerWrap.appendChild(none);
             }
 
+            // NEW: Watch together (Teleparty help) — only in rooms
+            if (inRoom()) {
+                const sep = document.createElement("span");
+                sep.className = "opacity-40 text-xs";
+                sep.textContent = "·";
+                trailerWrap.appendChild(sep);
+
+                const wtBtn = document.createElement("button");
+                wtBtn.className = "btn btn-sm btn-outline";
+                wtBtn.textContent = "Watch together";
+                wtBtn.addEventListener("click", async () => {
+                    const existing = prompt(
+                        "Paste your Teleparty link here (or install the Teleparty extension, start a party on Netflix/Disney+, then paste the link):",
+                        ""
+                    );
+                    if (!existing) return;
+                    try {
+                        await saveTelepartyUrl(existing.trim());
+                        toast("Teleparty link saved for this room.", "success");
+                    } catch {
+                        toast("Failed to save Teleparty link.", "error");
+                    }
+                });
+                trailerWrap.appendChild(wtBtn);
+            }
             right.appendChild(trailerWrap);
         } catch { }
 

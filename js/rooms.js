@@ -348,6 +348,15 @@ export function startRoomListener() {
 
             const data = snap.data();
 
+            const tpUrl = data.telepartyUrl || null;
+            const banner = id("roomPickBanner");
+            const text = id("roomPickText");
+
+            if (banner && tpUrl) {
+                banner.classList.remove("hidden");
+                text.textContent = text.textContent + " · Teleparty ready";
+            }
+
             // Handle last pick banner + auto-open once per pick
             const lp = data.lastPick;
             if (lp?.movieId) {
@@ -421,6 +430,22 @@ export function startRoomListener() {
             console.warn("Room listener failed", err);
             toast(err?.message || "Failed to load room.", "error");
         }
+    );
+}
+
+// rooms.js
+export async function saveTelepartyUrl(url) {
+    if (!inRoom()) return;
+    const fs = window.firebaseStore;
+    if (!fs || !authState.user) return;
+
+    await fs.setDoc(
+        roomDocRef(),
+        {
+            telepartyUrl: url,
+            updatedAt: fs.serverTimestamp(),
+        },
+        { merge: true }
     );
 }
 
