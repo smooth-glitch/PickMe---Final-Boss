@@ -65,7 +65,10 @@ export async function openDetails(idNum, opts = {}) {
         const data = await tmdb(`${kind}/${idNum}`, { language: "en-US" });
         state.currentDetails = { ...data, mediaType: kind };
 
-        const title = kind === "tv" ? (data.name || data.original_name || "Untitled") : (data.title || data.original_title || "Untitled");
+        const title =
+            kind === "tv"
+                ? data.name || data.original_name || "Untitled"
+                : data.title || data.original_title || "Untitled";
         const dateStr = kind === "tv" ? data.first_air_date : data.release_date;
 
         dlgTitle.textContent = title;
@@ -74,13 +77,21 @@ export async function openDetails(idNum, opts = {}) {
         parts.push(year(dateStr));
 
         if (kind === "movie") {
-            if (typeof data.runtime === "number" && data.runtime > 0) parts.push(`${data.runtime} min`);
+            if (typeof data.runtime === "number" && data.runtime > 0) {
+                parts.push(`${data.runtime} min`);
+            }
         } else {
-            const rt = Array.isArray(data.episode_run_time) ? data.episode_run_time[0] : null;
-            if (typeof rt === "number" && rt > 0) parts.push(`${rt} min/ep`);
+            const rt = Array.isArray(data.episode_run_time)
+                ? data.episode_run_time[0]
+                : null;
+            if (typeof rt === "number" && rt > 0) {
+                parts.push(`${rt} min/ep`);
+            }
         }
 
-        if (Array.isArray(data.genres) && data.genres.length) parts.push(data.genres.map((g) => g.name).join(", "));
+        if (Array.isArray(data.genres) && data.genres.length) {
+            parts.push(data.genres.map((g) => g.name).join(", "));
+        }
         parts.push(Number(data.vote_average ?? 0).toFixed(1));
 
         dlgMeta.textContent = parts.filter(Boolean).join(" • ");
@@ -94,16 +105,18 @@ export async function openDetails(idNum, opts = {}) {
         left.className = "sm:w-40";
         const p = posterUrl(data.poster_path);
         left.innerHTML = p
-            ? `<img class="rounded-xl w-full aspect-23 object-cover" src="${p}" alt="" loading="lazy" />`
-            : `<div class="rounded-xl bg-base-200 aspect-23 grid place-items-center text-base-content/60">No poster</div>`;
+            ? `<img class="rounded-xl w-full aspect-[2/3] object-cover" src="${p}" alt="" loading="lazy" />`
+            : `<div class="rounded-xl bg-base-200 aspect-[2/3] grid place-items-center text-base-content/60">No poster</div>`;
 
         const right = document.createElement("div");
         right.className = "flex-1";
+
         const ov = document.createElement("p");
         ov.className = "leading-relaxed";
         ov.textContent = data.overview || "No overview available.";
         right.appendChild(ov);
 
+        // Trailer + Teleparty + Play together row
         try {
             const videos = await loadBestVideos(kind, idNum);
             const best = pickBestTrailer(videos);
@@ -111,16 +124,17 @@ export async function openDetails(idNum, opts = {}) {
 
             const trailerWrap = document.createElement("div");
             trailerWrap.className = "mt-3 flex flex-wrap items-center gap-2";
+            
 
-
+            // Watch trailer button
             if (url) {
-                const btn = document.createElement("a");
-                btn.className = "btn btn-sm btn-primary";
-                btn.href = url;
-                btn.target = "_blank";
-                btn.rel = "noopener noreferrer";
-                btn.textContent = "Watch trailer";
-                trailerWrap.appendChild(btn);
+                const btnTrailer = document.createElement("a");
+                btnTrailer.className = "btn btn-sm btn-primary";
+                btnTrailer.href = url;
+                btnTrailer.target = "_blank";
+                btnTrailer.rel = "noopener noreferrer";
+                btnTrailer.textContent = "Watch trailer";
+                trailerWrap.appendChild(btnTrailer);
             } else {
                 const none = document.createElement("div");
                 none.className = "text-sm opacity-60";
@@ -128,16 +142,17 @@ export async function openDetails(idNum, opts = {}) {
                 trailerWrap.appendChild(none);
             }
 
-            // NEW: Watch together (Teleparty help) — only in rooms
+            // Teleparty + Play together (room only)
             if (inRoom()) {
-                // Teleparty icon button, same style as Watch trailer
+                // Teleparty icon button, same base style as Watch trailer
                 const btnTeleparty = document.createElement("button");
-                btnTeleparty.className = "btn btn-sm btn-primary flex items-center gap-2";
                 btnTeleparty.type = "button";
+                btnTeleparty.className =
+                    "btn btn-sm btn-primary flex items-center gap-2";
 
-                // Icon – simple 'TP' pill, replace with SVG/logo later
                 const icon = document.createElement("span");
-                icon.className = "inline-flex items-center justify-center w-5 h-5 rounded-full bg-base-100 text-xs font-semibold";
+                icon.className =
+                    "inline-flex items-center justify-center w-5 h-5 rounded-full bg-base-100 text-xs font-semibold";
                 icon.textContent = "TP";
 
                 const text = document.createElement("span");
@@ -162,16 +177,20 @@ export async function openDetails(idNum, opts = {}) {
 
                 trailerWrap.appendChild(btnTeleparty);
 
-                // Optional: Play together button in the same row
+                // Play together button, same size + primary style
                 const btnPlayTogether = document.createElement("button");
-                btnPlayTogether.className = "btn btn-sm btn-outline";
                 btnPlayTogether.type = "button";
+                btnPlayTogether.className = "btn btn-sm btn-primary";
                 btnPlayTogether.textContent = "Play together";
+
                 btnPlayTogether.addEventListener("click", () => {
                     const cur = state.currentDetails;
                     if (!cur) return;
+
                     const mediaId = cur.id;
-                    const mediaType = cur.mediaType || state.filters.mediaType || "movie";
+                    const mediaType =
+                        cur.mediaType || state.filters.mediaType || "movie";
+
                     updatePlaybackFromLocal({
                         mediaId,
                         mediaType,
@@ -179,17 +198,23 @@ export async function openDetails(idNum, opts = {}) {
                         isPlaying: true,
                     });
                 });
+
                 trailerWrap.appendChild(btnPlayTogether);
             }
 
             right.appendChild(trailerWrap);
-        } catch { }
+        } catch {
+            // ignore trailer errors, details still show
+        }
 
+        // Where to watch section
         try {
             const wp = await tmdb(`${kind}/${idNum}/watch/providers`, {});
             const wpSection = renderWatchProvidersSection(wp);
             if (wpSection) right.appendChild(wpSection);
-        } catch { }
+        } catch {
+            // ignore provider errors
+        }
 
         if (opts.highlight) {
             const hint = document.createElement("div");
@@ -198,39 +223,7 @@ export async function openDetails(idNum, opts = {}) {
             right.appendChild(hint);
         }
 
-        // Teleparty: Play together button (room mode only)
-        if (inRoom()) {
-            const tpWrap = document.createElement("div");
-            tpWrap.className = "mt-3 flex flex-wrap items-center gap-2";
-
-            const label = document.createElement("div");
-            label.className = "text-sm opacity-70";
-            label.textContent = "Watch together";
-            tpWrap.appendChild(label);
-
-            const btn = document.createElement("button");
-            btn.className = "btn btn-sm btn-primary";
-            btn.textContent = "Play together";
-            btn.addEventListener("click", () => {
-                const cur = state.currentDetails;
-                if (!cur) return;
-
-                const mediaId = cur.id;
-                const mediaType = cur.mediaType || state.filters.mediaType || "movie";
-
-                // No real player yet, start at 0s and mark as playing
-                updatePlaybackFromLocal({
-                    mediaId,
-                    mediaType,
-                    position: 0,
-                    isPlaying: true,
-                });
-            });
-
-            tpWrap.appendChild(btn);
-            right.appendChild(tpWrap);
-        }
-
+        // NO extra Play-together block here anymore
 
         wrap.appendChild(left);
         wrap.appendChild(right);
