@@ -36,6 +36,7 @@ import {
     ensureUserDoc,
     startUserDocListener,
     copyRoomLink,
+    joinRoom,
 } from "./rooms.js";
 import { setSyncControls } from "./rooms.js";
 
@@ -75,7 +76,8 @@ async function populateGenreSelect(kind) {
 
     for (const g of genres) {
         const row = document.createElement("label");
-        row.className = "flex items-center gap-2 p-2 rounded-lg hover:bg-base-200/40 cursor-pointer";
+        row.className =
+            "flex items-center gap-2 p-2 rounded-lg hover:bg-base-200/40 cursor-pointer";
 
         const cb = document.createElement("input");
         cb.type = "checkbox";
@@ -126,7 +128,7 @@ function updateSignOutLabel() {
     if (!el) return;
 
     const u = authState.user;
-    const name = u ? (u.displayName || u.email || "Signed in") : "";
+    const name = u ? u.displayName || u.email || "Signed in" : "";
 
     el.textContent = u ? `Sign out (${name})` : "Sign out";
 }
@@ -250,15 +252,11 @@ async function boot() {
             updateUserChip();
             syncUserMenu();
             updateSignOutLabel();
+
             const url = new URL(window.location.href);
             const roomId = url.searchParams.get("room");
             if (roomId) {
-                roomState.id = roomId;
-                updateRoomUI();
-                startRoomListener();
-                startMembersListener();
-                startHeartbeat();
-                // startMessagesListener is called from joinRoom in rooms.js, not here
+                joinRoom(roomId);
                 return;
             }
 
@@ -284,7 +282,6 @@ async function boot() {
         state.filters.minRating = Number.isFinite(v) ? v : 0;
         saveJson(LSFILTERS, state.filters);
         renderPool();
-        scheduleCloudSave?.();
     });
 
     id("btnSearch")?.addEventListener("click", () => doSearch(1));
@@ -348,7 +345,8 @@ async function boot() {
     });
 
     id("themeToggleBtn")?.addEventListener("click", () => {
-        const current = document.documentElement.getAttribute("data-theme") || "synthwave";
+        const current =
+            document.documentElement.getAttribute("data-theme") || "synthwave";
         applyTheme(current === "synthwave" ? "cupcake" : "synthwave");
     });
 
@@ -397,12 +395,15 @@ async function boot() {
             const u = authState.user;
 
             try {
-                await fs.addDoc(fs.collection(fs.db, "rooms", roomState.id, "messages"), {
-                    text,
-                    userId: u?.uid ?? null,
-                    userName: u?.displayName ?? u?.email ?? "Anon",
-                    createdAt: fs.serverTimestamp(),
-                });
+                await fs.addDoc(
+                    fs.collection(fs.db, "rooms", roomState.id, "messages"),
+                    {
+                        text,
+                        userId: u?.uid ?? null,
+                        userName: u?.displayName ?? u?.email ?? "Anon",
+                        createdAt: fs.serverTimestamp(),
+                    }
+                );
                 chatInput.value = "";
             } catch (err) {
                 toast("Failed to send message.", "error");
@@ -415,5 +416,6 @@ async function boot() {
     await loadTrending(1);
 }
 
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", boot);
 else boot();

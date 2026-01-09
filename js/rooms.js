@@ -36,8 +36,8 @@ let lastClientWriteId = 0;
 // Teleparty playback sync
 let lastPlaybackApplyTs = 0;
 
+// Messages
 let unsubMessages = null;
-
 
 export function stopMessagesListener() {
     if (unsubMessages) unsubMessages();
@@ -51,12 +51,9 @@ export function startMessagesListener() {
     const colRef = fs.collection(fs.db, "rooms", roomState.id, "messages");
     const q = fs.query(colRef, fs.orderBy("createdAt", "asc"), fs.limit(200));
 
-    console.log("Starting messages listener for room", roomState.id);
-
     unsubMessages = fs.onSnapshot(
         q,
         (snap) => {
-            console.log("Messages snapshot size:", snap.size);
             const msgs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
             renderRoomMessages(msgs);
         },
@@ -65,8 +62,6 @@ export function startMessagesListener() {
         }
     );
 }
-
-
 
 export function renderRoomMessages(list) {
     const wrap = document.getElementById("roomChatMessages");
@@ -81,13 +76,11 @@ export function renderRoomMessages(list) {
         const row = document.createElement("div");
         row.className = "chat " + (isMe ? "chat-end" : "chat-start");
 
-        // Name (tiny, above bubble)
         const header = document.createElement("div");
         header.className = "chat-header text-[0.65rem] opacity-70 mb-0.5";
         header.textContent = m.userName || (isMe ? "You" : "Anon");
         row.appendChild(header);
 
-        // Bubble
         const bubble = document.createElement("div");
         bubble.className =
             "chat-bubble text-xs max-w-[80%] " +
@@ -95,7 +88,6 @@ export function renderRoomMessages(list) {
         bubble.textContent = m.text || "";
         row.appendChild(bubble);
 
-        // Footer time
         const meta = document.createElement("div");
         meta.className = "chat-footer opacity-50 text-[0.6rem] mt-0.5";
 
@@ -116,8 +108,12 @@ export function renderRoomMessages(list) {
     wrap.scrollTop = wrap.scrollHeight;
 }
 
-
-export async function updatePlaybackFromLocal({ mediaId, mediaType, position, isPlaying }) {
+export async function updatePlaybackFromLocal({
+    mediaId,
+    mediaType,
+    position,
+    isPlaying,
+}) {
     if (!inRoom()) return;
     const fs = window.firebaseStore;
     if (!fs) return;
@@ -143,8 +139,6 @@ export async function updatePlaybackFromLocal({ mediaId, mediaType, position, is
 
 /**
  * Called when Firestore playback payload changes.
- * For now, just auto-open details + highlight.
- * Later you can hook this into a real video player.
  */
 function onPlaybackChange({ mediaId, mediaType }) {
     if (!mediaId) return;
@@ -154,8 +148,6 @@ function onPlaybackChange({ mediaId, mediaType }) {
 export function stopMembersListener() {
     if (unsubMembers) unsubMembers();
     unsubMembers = null;
-
-    // Reset so next room join doesn't suppress notifications forever
     membersInitDone = false;
 }
 
@@ -174,7 +166,6 @@ export function startMembersListener() {
     unsubMembers = fs.onSnapshot(
         membersColRef(),
         (snap) => {
-            // 1) Join notifications (skip the initial snapshot)
             if (!membersInitDone) {
                 membersInitDone = true;
             } else {
@@ -189,16 +180,17 @@ export function startMembersListener() {
                     if (ch.type === "added") toast(`${label} joined`, "info");
                     if (ch.type === "removed") toast(`${label} left`, "info");
                 }
-
             }
 
-            // 2) Your existing list rendering (unchanged)
             const now = Date.now();
 
             const members = snap.docs
                 .map((d) => {
                     const m = d.data();
-                    const ms = typeof m.lastSeenAt?.toMillis === "function" ? m.lastSeenAt.toMillis() : 0;
+                    const ms =
+                        typeof m.lastSeenAt?.toMillis === "function"
+                            ? m.lastSeenAt.toMillis()
+                            : 0;
                     return {
                         id: d.id,
                         name: m.name,
@@ -219,11 +211,11 @@ export function startMembersListener() {
                     const badge = m.online ? "badge-success" : "badge-ghost";
                     const status = m.online ? "online" : "offline";
                     return `
-            <div class="flex items-center justify-between p-2 rounded-xl bg-base-200/40 border border-base-300">
-              <div class="truncate">${label}</div>
-              <span class="badge badge-sm ${badge}">${status}</span>
-            </div>
-          `;
+          <div class="flex items-center justify-between p-2 rounded-xl bg-base-200/40 border border-base-300">
+            <div class="truncate">${label}</div>
+            <span class="badge badge-sm ${badge}">${status}</span>
+          </div>
+        `;
                 })
                 .join("");
         },
@@ -296,7 +288,6 @@ export function scheduleCloudSave() {
         try {
             const fs = window.firebaseStore;
 
-            // NEW: monotonically increasing id for "my latest write"
             lastClientWriteId = Date.now();
 
             await fs.setDoc(
@@ -305,11 +296,8 @@ export function scheduleCloudSave() {
                     pool: state.pool,
                     watched: Array.from(state.watched),
                     filters: state.filters,
-
-                    // NEW: versioning fields
                     updatedBy: authState.user.uid,
                     clientWriteId: lastClientWriteId,
-
                     updatedAt: fs.serverTimestamp(),
                 },
                 { merge: true }
@@ -319,7 +307,6 @@ export function scheduleCloudSave() {
         }
     }, delay);
 }
-
 
 export async function ensureUserDoc() {
     if (!fsReady()) return;
@@ -366,17 +353,20 @@ export function startUserDocListener() {
                 if (typeof s.textScale === "number") {
                     document.documentElement.style.fontSize = `${s.textScale * 100}%`;
                 }
-                document.documentElement.toggleAttribute("data-reduce-motion", !!s.reduceMotion);
+                document.documentElement.toggleAttribute(
+                    "data-reduce-motion",
+                    !!s.reduceMotion
+                );
             }
-
 
             applyingRemote = true;
             try {
                 if (Array.isArray(data.pool)) state.pool = data.pool;
-                if (Array.isArray(data.watched)) state.watched = new Set(data.watched);
-                if (data.filters && typeof data.filters === "object") state.filters = normalizeFilters(data.filters);
+                if (Array.isArray(data.watched))
+                    state.watched = new Set(data.watched);
+                if (data.filters && typeof data.filters === "object")
+                    state.filters = normalizeFilters(data.filters);
 
-                // persist locally too
                 saveJson(LSPOOL, state.pool);
                 saveJson(LSWATCHED, Array.from(state.watched));
                 saveJson(LSFILTERS, state.filters);
@@ -396,10 +386,10 @@ export function startUserDocListener() {
 }
 
 export function updateRoomUI() {
-    const badge = roomBadge;
-    const btnCreate = btnCreateRoom;
-    const btnCopy = btnCopyRoomLink;
-    const btnLeave = btnLeaveRoom;
+    const badge = id("roomBadge");
+    const btnCreate = id("btnCreateRoom");
+    const btnCopy = id("btnCopyRoomLink");
+    const btnLeave = id("btnLeaveRoom");
 
     const hasRoom = inRoom();
 
@@ -411,7 +401,6 @@ export function updateRoomUI() {
     if (btnCopy) btnCopy.classList.toggle("hidden", !hasRoom);
     if (btnLeave) btnLeave.classList.toggle("hidden", !hasRoom);
 
-    // NEW: toggle pool/chat layout
     const wrap = document.getElementById("poolChatWrap");
     const chatCol = document.getElementById("roomChatColumn");
     if (wrap && chatCol) {
@@ -427,15 +416,9 @@ export function updateRoomUI() {
     }
 }
 
-
 export function stopRoomListener() {
     if (roomState.unsub) roomState.unsub();
     roomState.unsub = null;
-}
-
-function messagesColRef() {
-    const fs = window.firebaseStore;
-    return fs.collection(fs.db, "rooms", roomState.id, "messages");
 }
 
 export function startRoomListener() {
@@ -460,26 +443,32 @@ export function startRoomListener() {
                 text.textContent = text.textContent + " · Teleparty ready";
             }
 
-            // Handle last pick banner + auto-open once per pick
             const lp = data.lastPick;
             if (lp?.movieId) {
-                const banner = id("roomPickBanner");
-                const text = id("roomPickText");
-                if (banner && text) {
+                const banner2 = id("roomPickBanner");
+                const text2 = id("roomPickText");
+                if (banner2 && text2) {
                     const title = lp.title ? String(lp.title) : "";
-                    banner.classList.remove("hidden");
-                    text.textContent = title ? `Tonight's pick: ${title}` : "Tonight's pick";
+                    banner2.classList.remove("hidden");
+                    text2.textContent = title
+                        ? `Tonight's pick: ${title}`
+                        : "Tonight's pick";
                 }
 
-                const pickedAtMs = typeof lp.pickedAt?.toMillis === "function" ? lp.pickedAt.toMillis() : 0;
+                const pickedAtMs =
+                    typeof lp.pickedAt?.toMillis === "function"
+                        ? lp.pickedAt.toMillis()
+                        : 0;
                 const key =
-                    lp.pickId ??
-                    `${lp.movieId}_${lp.clientPickedAt ?? 0}`; // fallback for older data
+                    lp.pickId ?? `${lp.movieId}_${lp.clientPickedAt ?? 0}`;
 
                 if (key && key !== lastAutoOpenedPickKey) {
                     setLastAutoOpenedPickKey(key);
                     setLastPickedMovieId(lp.movieId);
-                    openDetails(lp.movieId, { highlight: true, mediaType: lp.mediaType ?? "movie" });
+                    openDetails(lp.movieId, {
+                        highlight: true,
+                        mediaType: lp.mediaType ?? "movie",
+                    });
                 }
             }
 
@@ -487,27 +476,26 @@ export function startRoomListener() {
             const incomingBy = data.updatedBy ?? null;
             const incomingWriteId = Number(data.clientWriteId ?? 0);
 
-            // If this snapshot is from *me* but older than my latest write, ignore it
-            if (selfUid && incomingBy === selfUid && incomingWriteId && incomingWriteId < lastClientWriteId) {
+            if (
+                selfUid &&
+                incomingBy === selfUid &&
+                incomingWriteId &&
+                incomingWriteId < lastClientWriteId
+            ) {
                 return;
             }
 
-            // Teleparty: react to playback state
             const playback = data.playback || null;
             if (playback) {
-                const {
-                    mediaId,
-                    mediaType,
-                    position,
-                    isPlaying,
-                    updatedBy,
-                    updatedAt,
-                } = playback;
+                const { mediaId, mediaType, position, isPlaying, updatedBy, updatedAt } =
+                    playback;
 
                 const myUid = authState.user?.uid ?? null;
 
-                // Ignore own writes for player commands, but still allow UI to render
-                const tsMs = typeof updatedAt?.toMillis === "function" ? updatedAt.toMillis() : 0;
+                const tsMs =
+                    typeof updatedAt?.toMillis === "function"
+                        ? updatedAt.toMillis()
+                        : 0;
                 if (!myUid || !updatedBy || updatedBy !== myUid) {
                     if (tsMs && tsMs > lastPlaybackApplyTs) {
                         lastPlaybackApplyTs = tsMs;
@@ -519,8 +507,10 @@ export function startRoomListener() {
             applyingRemote = true;
             try {
                 if (Array.isArray(data.pool)) state.pool = data.pool;
-                if (Array.isArray(data.watched)) state.watched = new Set(data.watched);
-                if (data.filters && typeof data.filters === "object") state.filters = normalizeFilters(data.filters);
+                if (Array.isArray(data.watched))
+                    state.watched = new Set(data.watched);
+                if (data.filters && typeof data.filters === "object")
+                    state.filters = normalizeFilters(data.filters);
 
                 syncControlsCb?.();
                 renderPool();
@@ -536,7 +526,6 @@ export function startRoomListener() {
     );
 }
 
-// rooms.js
 export async function saveTelepartyUrl(url) {
     if (!inRoom()) return;
     const fs = window.firebaseStore;
@@ -580,10 +569,14 @@ export function startHeartbeat() {
     if (!inRoom() || !authState.user) return;
 
     heartbeatOnce().catch(() => { });
-    heartbeatTimer = setInterval(() => heartbeatOnce().catch(() => { }), HEARTBEATMS);
+    heartbeatTimer = setInterval(
+        () => heartbeatOnce().catch(() => { }),
+        HEARTBEATMS
+    );
 
     document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible") heartbeatOnce().catch(() => { });
+        if (document.visibilityState === "visible")
+            heartbeatOnce().catch(() => { });
     });
 }
 
@@ -618,7 +611,6 @@ export async function createRoom() {
 }
 
 export function joinRoom(roomId) {
-    // stop user doc sync so it doesn't overwrite room state (same as app.js) [file:189]
     stopUserDocListener();
 
     roomState.id = roomId;
@@ -647,10 +639,7 @@ export async function leaveRoom() {
     stopRoomListener();
     stopMembersListener();
     stopHeartbeat();
-    stopRoomListener();
-    stopMembersListener();
-    stopHeartbeat();
-    stopMessagesListener(); // NEW
+    stopMessagesListener();
 
     id("roomMembersWrap")?.classList.add("hidden");
     id("roomPickBanner")?.classList.add("hidden");
@@ -661,7 +650,6 @@ export async function leaveRoom() {
     setRoomInUrl(null);
     updateRoomUI();
 
-    // Restore local view immediately (same as app.js) [file:189]
     state.pool = loadJson(LSPOOL, []);
     state.watched = new Set(loadJson(LSWATCHED, []));
     state.filters = loadJson(LSFILTERS, { excludeWatched: true, minRating: 6 });
@@ -669,7 +657,6 @@ export async function leaveRoom() {
     syncControlsCb?.();
     renderPool();
 
-    // Reattach user sync when logged in (same as app.js) [file:189]
     if (authState.user) {
         ensureUserDoc().then(startUserDocListener);
     }

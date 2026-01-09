@@ -51,20 +51,17 @@
                 <div class="dropdown dropdown-end">
                     <button id="btnUser" tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
                         <span id="userChip" class="inline-flex items-center gap-2">
-                            <!-- Keep your SVG icon -->
+                            <!-- Icon -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round">
                                 <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
                                 <circle cx="12" cy="7" r="4" />
                             </svg>
-
-                            <!-- NEW: label controlled by JS -->
                             <span id="userChipLabel" class="text-xs opacity-80 hidden sm:inline">Sign in</span>
                         </span>
                     </button>
 
-                    <!-- Make it look like your filter dropdowns -->
                     <ul id="userDropdownMenu" tabindex="0"
                         class="dropdown-content z-50 mt-2 w-64 max-w-[92vw] p-2 rounded-xl border border-base-300 bg-base-100 shadow-xl menu menu-sm">
                         <li class="menu-title"><span>Account</span></li>
@@ -109,8 +106,7 @@
             <section class="card bg-base-100 shadow-xl border border-base-300">
                 <div class="card-body gap-4">
                     <div id="filtersBar" class="flex flex-col gap-3 2xl:flex-row 2xl:flex-nowrap 2xl:items-end">
-
-                        <!-- Row 1: Search input + Search + Trending -->
+                        <!-- Row 1 -->
                         <div id="searchRow" class="flex flex-col md:flex-row gap-2 md:items-end">
                             <div class="flex-1 min-w-0">
                                 <label class="label">
@@ -124,10 +120,9 @@
                             <button id="btnTrending" class="btn btn-ghost ...">Trending</button>
                         </div>
 
-                        <!-- Row 2: 3 left + 3 right -->
+                        <!-- Row 2 -->
                         <div id="filtersGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-
-                            <!-- Left column (1/3) -->
+                            <!-- mediaType -->
                             <div class="flex flex-col gap-2">
                                 <select id="mediaType" class="select select-bordered select-sm w-full">
                                     <option value="movie" selected>Movies</option>
@@ -135,7 +130,7 @@
                                 </select>
                             </div>
 
-                            <!-- Right column (1/3) -->
+                            <!-- OTT -->
                             <div class="flex flex-col gap-2">
                                 <div class="dropdown w-full">
                                     <div id="ottDropdownBtn" tabindex="0" role="button"
@@ -165,13 +160,13 @@
                                 </div>
                             </div>
 
-                            <!-- Left column (2/3) -->
+                            <!-- year -->
                             <div class="flex flex-col gap-2">
                                 <input id="yearFilter" type="number" class="input input-bordered input-sm w-full"
                                     placeholder="e.g. 2023" min="1900" max="2100" />
                             </div>
 
-                            <!-- Right column (2/3) -->
+                            <!-- sort -->
                             <div class="flex flex-col gap-2">
                                 <select id="resultSort" class="select select-bordered select-sm w-full">
                                     <option value="popularity.desc">Popular</option>
@@ -180,7 +175,7 @@
                                 </select>
                             </div>
 
-                            <!-- Left column (3/3) -->
+                            <!-- genres -->
                             <div class="flex flex-col gap-2">
                                 <div class="dropdown w-full">
                                     <div id="genreDropdownBtn" tabindex="0" role="button"
@@ -197,7 +192,7 @@
                             </div>
                         </div>
 
-                        <!-- Right column (3/3) -->
+                        <!-- reset -->
                         <div class="flex flex-col gap-2">
                             <button id="btnResetFilters" class="btn btn-outline btn-sm w-full">
                                 Reset filters
@@ -228,7 +223,7 @@
                 </div>
             </section>
 
-            <!-- Right: pool/filters -->
+            <!-- Right: pool + chat -->
             <section class="card bg-base-100 shadow-xl border border-base-300">
                 <div class="card-body gap-4">
                     <div class="flex items-center justify-between gap-2">
@@ -237,7 +232,6 @@
                         <div class="flex items-center gap-2">
                             <button id="btnImportList" class="btn btn-xs btn-primary hidden">Import</button>
 
-                            <!-- Min rating chip -->
                             <div id="minRatingChip"
                                 class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-base-200 text-xs text-base-content/80 border border-base-300">
                                 <span class="opacity-80">Min</span>
@@ -265,6 +259,7 @@
                         <div class="card-body gap-3">
                             <div class="flex items-center justify-between">
                                 <h3 class="font-bold text-sm">Room members</h3>
+                                <span id="roomOnlineCount" class="text-xs opacity-70"></span>
                             </div>
                             <div id="roomMembersList" class="space-y-2 text-sm"></div>
                         </div>
