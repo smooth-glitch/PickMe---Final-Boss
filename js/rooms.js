@@ -77,11 +77,11 @@ function renderReplyPreview(replyTo) {
     if (!replyTo || (!replyTo.text && !replyTo.gifUrl && !replyTo.stickerUrl)) {
         return null;
     }
+
     const box = document.createElement("div");
     box.className =
         "mb-1 px-2 py-1 rounded-lg bg-base-100/30 border border-base-300/80 " +
         "text-[0.65rem] leading-snug";
-
 
     const rName = replyTo.userName || "Anon";
     const label = document.createElement("div");
@@ -95,15 +95,14 @@ function renderReplyPreview(replyTo) {
     } else if (replyTo.type === "sticker" && replyTo.stickerUrl) {
         content.textContent = "Sticker";
     } else {
-        const body = renderTextWithMentions(m.text || "", m.mentions || []);
-        body.classList.add("block", "mt-0.5");
-        bubble.appendChild(body);
+        const t = replyTo.text || "";
+        content.textContent = t.length > 40 ? t.slice(0, 40) + "…" : t || "";
     }
 
     box.appendChild(content);
-
     return box;
 }
+
 
 // --- messages ---
 
@@ -211,7 +210,6 @@ export function renderRoomMessages(list) {
             (isMe ? "chat-bubble-primary" : "chat-bubble-neutral"));
 
 
-        // Right-click reactions picker
         bubble.addEventListener("contextmenu", (ev) => {
             ev.preventDefault();
             ev.stopPropagation();
@@ -224,6 +222,8 @@ export function renderRoomMessages(list) {
                 "fixed z-[9999] flex items-center gap-1 px-2 py-1 rounded-full " +
                 "bg-base-100 border border-base-300 shadow-lg";
 
+            const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
+
             for (const emoji of QUICK_EMOJIS) {
                 const btn = document.createElement("button");
                 btn.type = "button";
@@ -233,28 +233,17 @@ export function renderRoomMessages(list) {
                 btn.addEventListener("click", async (e2) => {
                     e2.preventDefault();
                     e2.stopPropagation();
-                    await toggleReaction(m.id, emoji);
-                    removeEmojiPicker();
+                    await toggleReaction(m.id, emoji);   // <- must be this
+                    removeEmojiPicker();                 // close popup
                 });
                 picker.appendChild(btn);
             }
 
             document.body.appendChild(picker);
-
-            // position near cursor
-            const pad = 8;
-            const x = Math.min(window.innerWidth - picker.offsetWidth - pad, ev.clientX);
-            const y = Math.min(window.innerHeight - picker.offsetHeight - pad, ev.clientY);
-            picker.style.left = `${Math.max(pad, x)}px`;
-            picker.style.top = `${Math.max(pad, y)}px`;
-
-            const close = () => removeEmojiPicker();
-            setTimeout(() => {
-                document.addEventListener("click", close, { once: true });
-                document.addEventListener("scroll", close, { once: true, passive: true });
-                window.addEventListener("resize", close, { once: true });
-            }, 0);
+            picker.style.left = `${ev.clientX}px`;
+            picker.style.top = `${ev.clientY}px`;
         });
+
 
         // reply preview inside bubble (top)
         const replyBox = renderReplyPreview(m.replyTo);
@@ -277,8 +266,10 @@ export function renderRoomMessages(list) {
             bubble.appendChild(img);
         } else {
             const body = renderTextWithMentions(m.text || "", m.mentions || []);
+            body.classList.add("block", "mt-0.5");   // subtle spacing under reply box
             bubble.appendChild(body);
         }
+
 
         row.appendChild(bubble);
 
