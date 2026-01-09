@@ -1,17 +1,3 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-
-import {
-  getAuth,
-  onAuthStateChanged,
-  GoogleAuthProvider,
-  GithubAuthProvider,
-  TwitterAuthProvider,
-  signInWithPopup,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-
 import {
   getFirestore,
   collection,
@@ -21,6 +7,10 @@ import {
   deleteDoc,
   onSnapshot,
   serverTimestamp,
+  addDoc,
+  query,
+  orderBy,
+  limit,
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
 const cfg =
@@ -32,24 +22,13 @@ if (!cfg) {
   );
 } else {
   const app = initializeApp(cfg);
-
   const auth = getAuth(app);
-
-  // Providers
   const googleProvider = new GoogleAuthProvider();
-  const githubProvider = new GithubAuthProvider();
-  const twitterProvider = new TwitterAuthProvider();
-
   const db = getFirestore(app);
 
   window.firebaseAuth = {
     auth,
-    // providers
     googleProvider,
-    githubProvider,
-    twitterProvider,
-
-    // helpers
     onAuthStateChanged,
     signInWithPopup,
     createUserWithEmailAndPassword,
@@ -66,5 +45,9 @@ if (!cfg) {
     deleteDoc,
     onSnapshot,
     serverTimestamp,
+    addDoc,
+    query,
+    orderBy,
+    limit,
   };
 }
