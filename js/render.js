@@ -3,52 +3,54 @@ import { state } from "./state.js";
 import { escapeHtml } from "./utils.js";
 import { openDetails } from "./details.js";
 import { addToPoolById, removeFromPool, toggleWatched } from "./pool.js";
+let showHiddenPoolItems = false;
+
 
 export function year(dateStr) {
-    return dateStr ? String(dateStr).slice(0, 4) : "";
+  return dateStr ? String(dateStr).slice(0, 4) : "";
 }
 
 export function posterUrl(path) {
-    if (!path) return "";
-    return `${state.imgBase}${state.posterSize}${path}`;
+  if (!path) return "";
+  return `${state.imgBase}${state.posterSize}${path}`;
 }
 
 export function setBusy(on) {
-    state.busy = !!on;
-    const ids = ["btnSearch", "btnTrending", "btnPick", "btnClearPool", "btnPrevPage", "btnNextPage"];
-    for (const k of ids) {
-        const b = id(k);
-        if (b) b.disabled = state.busy;
-    }
-    renderPager();
+  state.busy = !!on;
+  const ids = ["btnSearch", "btnTrending", "btnPick", "btnClearPool", "btnPrevPage", "btnNextPage"];
+  for (const k of ids) {
+    const b = id(k);
+    if (b) b.disabled = state.busy;
+  }
+  renderPager();
 }
 
 export function renderPager() {
-    const cur = id("pageCurrent");
-    const tot = id("pageTotal");
-    const prev = id("btnPrevPage");
-    const next = id("btnNextPage");
-    if (!cur || !tot || !prev || !next) return;
+  const cur = id("pageCurrent");
+  const tot = id("pageTotal");
+  const prev = id("btnPrevPage");
+  const next = id("btnNextPage");
+  if (!cur || !tot || !prev || !next) return;
 
-    cur.textContent = String(state.page);
-    tot.textContent = String(state.totalPages);
+  cur.textContent = String(state.page);
+  tot.textContent = String(state.totalPages);
 
-    prev.disabled = state.page <= 1 || state.busy;
-    next.disabled = state.page >= state.totalPages || state.busy;
+  prev.disabled = state.page <= 1 || state.busy;
+  next.disabled = state.page >= state.totalPages || state.busy;
 }
 
 export function renderResultsLoading() {
-    const wrap = id("results");
-    const empty = id("resultsEmpty");
-    if (!wrap) return;
+  const wrap = id("results");
+  const empty = id("resultsEmpty");
+  if (!wrap) return;
 
-    wrap.innerHTML = "";
-    empty?.classList.add("hidden");
+  wrap.innerHTML = "";
+  empty?.classList.add("hidden");
 
-    for (let i = 0; i < 8; i++) {
-        const sk = document.createElement("div");
-        sk.className = "card bg-base-100 shadow-md";
-        sk.innerHTML = `
+  for (let i = 0; i < 8; i++) {
+    const sk = document.createElement("div");
+    sk.className = "card bg-base-100 shadow-md";
+    sk.innerHTML = `
       <div class="m-3 rounded-xl bg-base-200 aspect-23 animate-pulse"></div>
       <div class="p-4 space-y-3">
         <div class="h-4 bg-base-200 rounded animate-pulse"></div>
@@ -58,59 +60,59 @@ export function renderResultsLoading() {
           <div class="h-8 w-16 bg-base-200 rounded animate-pulse"></div>
         </div>
       </div>`;
-        wrap.appendChild(sk);
-    }
+    wrap.appendChild(sk);
+  }
 }
 
 export function normalizeItem(item, kind) {
-    if (!item) return null;
-    if (kind === "tv") {
-        return {
-            ...item,
-            title: item.name || item.original_name || "Untitled",
-            release_date: item.first_air_date,
-            poster_path: item.poster_path || null,
-        };
-    }
+  if (!item) return null;
+  if (kind === "tv") {
     return {
-        ...item,
-        title: item.title || item.original_title || "Untitled",
-        release_date: item.release_date,
-        poster_path: item.poster_path || null,
+      ...item,
+      title: item.name || item.original_name || "Untitled",
+      release_date: item.first_air_date,
+      poster_path: item.poster_path || null,
     };
+  }
+  return {
+    ...item,
+    title: item.title || item.original_title || "Untitled",
+    release_date: item.release_date,
+    poster_path: item.poster_path || null,
+  };
 }
 
 export function renderResults(list) {
-    state.results = Array.isArray(list) ? list : [];
-    const wrap = id("results");
-    const empty = id("resultsEmpty");
-    if (!wrap) return;
+  state.results = Array.isArray(list) ? list : [];
+  const wrap = id("results");
+  const empty = id("resultsEmpty");
+  if (!wrap) return;
 
-    wrap.innerHTML = "";
-    if (!state.results.length) {
-        empty?.classList.remove("hidden");
-        renderPager();
-        return;
-    }
-    empty?.classList.add("hidden");
+  wrap.innerHTML = "";
+  if (!state.results.length) {
+    empty?.classList.remove("hidden");
+    renderPager();
+    return;
+  }
+  empty?.classList.add("hidden");
 
-    for (const raw of state.results) {
-        const m = normalizeItem(raw, state.filters.mediaType || "movie");
-        if (!m) continue;
+  for (const raw of state.results) {
+    const m = normalizeItem(raw, state.filters.mediaType || "movie");
+    if (!m) continue;
 
-        const inPool = state.pool.some((x) => x.id === m.id);
-        const p = posterUrl(m.poster_path);
+    const inPool = state.pool.some((x) => x.id === m.id);
+    const p = posterUrl(m.poster_path);
 
-        const card = document.createElement("div");
-        card.className = "card bg-base-100 shadow-md hover:shadow-xl transition-shadow w-full";
+    const card = document.createElement("div");
+    card.className = "card bg-base-100 shadow-md hover:shadow-xl transition-shadow w-full";
 
-        const poster = p
-            ? `<figure class="px-3 pt-3 cursor-pointer" data-click="details">
+    const poster = p
+      ? `<figure class="px-3 pt-3 cursor-pointer" data-click="details">
            <img class="rounded-xl aspect-23 object-cover w-full" src="${p}" alt="${escapeHtml(m.title)} Poster" loading="lazy" />
          </figure>`
-            : `<div class="m-3 rounded-xl bg-base-200 aspect-23 grid place-items-center text-base-content/60 cursor-pointer" data-click="details">No poster</div>`;
+      : `<div class="m-3 rounded-xl bg-base-200 aspect-23 grid place-items-center text-base-content/60 cursor-pointer" data-click="details">No poster</div>`;
 
-        card.innerHTML = `
+    card.innerHTML = `
       ${poster}
       <div class="card-body p-4 gap-2">
         <div class="flex items-start justify-between gap-3">
@@ -127,63 +129,105 @@ export function renderResults(list) {
       </div>
     `;
 
-        card.addEventListener("click", (e) => {
-            if (e.target.closest('[data-click="details"]')) {
-                openDetails(m.id);
-                return;
-            }
-            const btn = e.target.closest("button[data-action]");
-            if (!btn) return;
-            const action = btn.dataset.action;
-            const mid = Number(btn.dataset.id);
-            if (action === "details") openDetails(mid);
-            if (action === "add") addToPoolById(mid);
-        });
+    card.addEventListener("click", (e) => {
+      if (e.target.closest('[data-click="details"]')) {
+        openDetails(m.id);
+        return;
+      }
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const mid = Number(btn.dataset.id);
+      if (action === "details") openDetails(mid);
+      if (action === "add") addToPoolById(mid);
+    });
 
-        wrap.appendChild(card);
-    }
+    wrap.appendChild(card);
+  }
 
-    renderPager();
+  renderPager();
 }
 
 export function renderPool() {
-    const wrap = id("pool");
-    const empty = id("poolEmpty");
-    if (!wrap) return;
+  const wrap = id("pool");
+  const empty = id("poolEmpty");
+  if (!wrap) return;
 
-    wrap.innerHTML = "";
+  wrap.innerHTML = "";
 
-    const minRating = Number(state.filters.minRating ?? 0);
-    const excludeWatched = !!state.filters.excludeWatched;
+  const minRating = Number(state.filters.minRating ?? 0);
+  const excludeWatched = !!state.filters.excludeWatched;
 
-    const filtered = state.pool.filter((m) => {
-        const okRating = Number(m.vote_average ?? 0) >= minRating;
-        const okWatched = excludeWatched ? !state.watched.has(m.id) : true;
-        return okRating && okWatched;
+  // Which items are hidden by filters?
+  const hidden = [];
+  const visible = [];
+
+  for (const m of state.pool) {
+    const okRating = Number(m.vote_average ?? 0) >= minRating;
+    const okWatched = excludeWatched ? !state.watched.has(m.id) : true;
+    const passes = okRating && okWatched;
+
+    if (passes) visible.push(m);
+    else hidden.push(m);
+  }
+
+  // Decide what we actually render
+  const listToRender = showHiddenPoolItems ? [...visible, ...hidden] : visible;
+
+  // Banner that explains hidden items + toggle button
+  if (hidden.length > 0) {
+    const banner = document.createElement("div");
+    banner.className =
+      "mb-3 flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-base-200/40 border border-base-300";
+
+    banner.innerHTML = `
+      <div class="text-sm text-base-content/70">
+        ${hidden.length} hidden by filters (Min rating: ${minRating.toFixed(1)}${excludeWatched ? ", Exclude watched" : ""})
+      </div>
+      <button class="btn btn-xs btn-outline" data-action="toggleHidden">
+        ${showHiddenPoolItems ? "Hide hidden" : "Show hidden"}
+      </button>
+    `;
+
+    banner.addEventListener("click", (e) => {
+      const btn = e.target.closest('button[data-action="toggleHidden"]');
+      if (!btn) return;
+      showHiddenPoolItems = !showHiddenPoolItems;
+      renderPool();
     });
 
-    if (!filtered.length) {
-        if (empty) {
-            empty.textContent = state.pool.length
-                ? "No movies match your filters."
-                : "Add movies from results to build your pool.";
-            empty.classList.remove("hidden");
-        }
-        return;
+    wrap.appendChild(banner);
+  }
+
+  if (!listToRender.length) {
+    if (empty) {
+      empty.textContent = state.pool.length
+        ? "No movies match your filters."
+        : "Add movies from results to build your pool.";
+      empty.classList.remove("hidden");
     }
-    empty?.classList.add("hidden");
+    return;
+  }
+  empty?.classList.add("hidden");
 
-    for (const m of filtered) {
-        const p = posterUrl(m.poster_path);
-        const thumb = p
-            ? `<img class="w-12 h-16 rounded-lg object-cover" src="${p}" alt="" loading="lazy" />`
-            : `<div class="w-12 h-16 rounded-lg bg-base-200 grid place-items-center text-xs text-base-content/60">No</div>`;
+  for (const m of listToRender) {
+    const p = posterUrl(m.poster_path);
+    const thumb = p
+      ? `<img class="w-12 h-16 rounded-lg object-cover" src="${p}" alt="" loading="lazy" />`
+      : `<div class="w-12 h-16 rounded-lg bg-base-200 grid place-items-center text-xs text-base-content/60">No</div>`;
 
-        const isWatched = state.watched.has(m.id);
+    const isWatched = state.watched.has(m.id);
 
-        const row = document.createElement("div");
-        row.className = "flex items-center gap-3 p-2 rounded-xl bg-base-200/40 border border-base-300";
-        row.innerHTML = `
+    // Mark items that are hidden by current filters (only matters when showHiddenPoolItems = true)
+    const okRating = Number(m.vote_average ?? 0) >= minRating;
+    const okWatched = excludeWatched ? !isWatched : true;
+    const isHiddenByFilters = !(okRating && okWatched);
+
+    const row = document.createElement("div");
+    row.className = "flex items-center gap-3 p-2 rounded-xl bg-base-200/40 border border-base-300";
+    row.style.opacity = isHiddenByFilters && showHiddenPoolItems ? "0.65" : "1";
+
+    row.innerHTML = `
       ${thumb}
       <div class="flex-1 min-w-0">
         <div class="font-semibold truncate">${escapeHtml(m.title || "Untitled")}</div>
@@ -191,6 +235,7 @@ export function renderPool() {
           <span>${escapeHtml(year(m.release_date))}</span>
           <span class="badge badge-outline badge-sm">${Number(m.vote_average ?? 0).toFixed(1)}</span>
           ${isWatched ? `<span class="badge badge-accent badge-sm">Watched</span>` : ""}
+          ${isHiddenByFilters && showHiddenPoolItems ? `<span class="badge badge-ghost badge-sm">Hidden</span>` : ""}
         </div>
       </div>
       <div class="flex gap-2">
@@ -202,20 +247,21 @@ export function renderPool() {
       </div>
     `;
 
-        row.addEventListener("click", (e) => {
-            const btn = e.target.closest("button[data-action]");
-            if (!btn) return;
-            const mid = Number(btn.dataset.id);
-            const action = btn.dataset.action;
+    row.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+      const mid = Number(btn.dataset.id);
+      const action = btn.dataset.action;
 
-            if (action === "details") {
-                openDetails(mid, { mediaType: m.mediaType || "movie" });
-                return;
-            }
-            if (action === "toggleWatched") toggleWatched(mid);
-            if (action === "remove") removeFromPool(mid);
-        });
+      if (action === "details") {
+        openDetails(mid, { mediaType: m.mediaType || "movie" });
+        return;
+      }
+      if (action === "toggleWatched") toggleWatched(mid);
+      if (action === "remove") removeFromPool(mid);
+    });
 
-        wrap.appendChild(row);
-    }
+    wrap.appendChild(row);
+  }
 }
+
