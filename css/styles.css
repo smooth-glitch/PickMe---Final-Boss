@@ -1904,28 +1904,3 @@ html[data-theme="synthwave"] .chat-bubble-neutral {
   }
 }
 
-/* When in a room, let results flow into the empty space under the right panel */
-@media (min-width: 1024px) {
-  body.has-room main.grid {
-    display: block !important;
-    /* override Tailwind 'grid' */
-  }
-
-  body.has-room main.grid::after {
-    content: "";
-    display: block;
-    clear: both;
-  }
-
-  /* Right panel (pool/chat) */
-  body.has-room main.grid>section:last-child {
-    float: right;
-    width: min(520px, 38vw);
-    margin-left: 1rem;
-  }
-
-  /* Optional: show a few more cards per row when left side is narrower */
-  body.has-room #results {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  }
-}
