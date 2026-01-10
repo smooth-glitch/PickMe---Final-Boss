@@ -1,0 +1,375 @@
+@media (max-width: 640px) {
+    header.header-shell {
+        flex-wrap: wrap;
+        row-gap: 0.5rem;
+    }
+
+    header.header-shell>div:last-child {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    #btnPick {
+        width: 100%;
+    }
+}
+
+#pagerWrap {
+    flex-wrap: wrap;
+}
+
+#roomPickBanner {
+    border: 1px solid hsl(var(--b3));
+    border-radius: 0.9rem;
+}
+
+@media (max-width: 480px) {
+    .modal-box {
+        max-height: calc(100vh - 2rem);
+        overflow: auto;
+        padding: 1rem;
+    }
+
+    .modal-action {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .modal-action .btn {
+        flex: 1 1 9rem;
+    }
+}
+
+#results .card .card-body {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+#results .card .card-body>.flex.items-start {
+    flex-wrap: wrap;
+}
+
+#results .card .card-actions {
+    margin-top: auto !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+}
+
+#results .card .card-actions .btn {
+    white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+    #results .card .card-actions {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    #results .card .card-actions .btn {
+        width: 100%;
+    }
+}
+
+.max-w-5xl {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main.grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    align-items: stretch;
+}
+
+main.grid>section {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+main.grid>section>.card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+#results {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+#pool {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    max-height: none !important;
+}
+
+main.grid * {
+    min-width: 0;
+}
+
+/* Narrow 1080p (scaled 14" / 15.6" at 125–150%) */
+@media (min-width: 1024px) and (max-width: 1439px) {
+
+    /* Slightly wider cards so text wraps less aggressively */
+    #results {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+}
+
+@media (min-width: 1024px) and (max-width: 1535px) {
+
+    #filtersBar #mediaType,
+    #filtersBar #yearFilter,
+    #filtersBar #resultSort,
+    #filtersBar #genreDropdownBtn,
+    #filtersBar #ottDropdownBtn,
+    #filtersBar #btnResetFilters {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+    }
+
+    #filtersBar #q {
+        max-width: none !important;
+    }
+}
+
+@media (min-width: 1536px) {
+    #filtersBar {
+        flex-wrap: nowrap;
+        gap: 0.75rem;
+        align-items: flex-end;
+    }
+
+    #searchRow,
+    #filtersGrid {
+        display: contents;
+    }
+
+    #q {
+        flex: 1 1 28rem !important;
+        max-width: none !important;
+    }
+
+    #mediaType,
+    #yearFilter,
+    #resultSort,
+    #genreDropdownBtn,
+    #ottDropdownBtn,
+    #btnSearch,
+    #btnTrending,
+    #btnResetFilters {
+        flex: 0 0 var(--ctrlW);
+        width: var(--ctrlW) !important;
+    }
+}
+
+
+/* Right sidebar layout (pool + members + chat section) */
+main.grid>section:last-child {
+    align-self: flex-start !important;
+}
+
+main.grid>section:last-child>.card-body {
+    /* let the right card stretch vertically with its contents */
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+}
+
+main.grid>section:last-child #pool {
+    flex: 1 1 auto !important;
+    max-height: 32rem;
+    overflow: auto;
+}
+
+@media (max-width: 768px) {
+    main.grid>section:last-child #pool {
+        max-height: 24rem;
+    }
+}
+
+main.grid>section:first-child.card,
+main.grid>section:first-child .card-body {
+    overflow: visible !important;
+}
+
+/* 1080p laptops / large desktops: 1440–2100px */
+@media (min-width: 1440px) and (max-width: 2100px) {
+
+    /* Use slightly denser grid but keep cards readable */
+    #results {
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    }
+
+    /* Keep the right-side pool from dominating vertically */
+    main.grid>section:last-child #pool {
+        max-height: 28rem;
+    }
+}
+
+/* Extra‑wide desktops (optional denser grid) */
+@media (min-width: 1680px) and (max-width: 2100px) {
+    #results {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
+/* Filters top bar */
+#filtersBar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Second row: dropdowns + reset */
+#filtersGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* Search input: grow, but not full screen */
+#q {
+    flex: 1 1 22rem;
+    min-width: 16rem;
+}
+
+#mediaType,
+#yearFilter,
+#resultSort,
+#genreDropdownBtn,
+#ottDropdownBtn,
+#btnSearch,
+#btnTrending,
+#btnResetFilters,
+#btnPick,
+#btnCreateRoom {
+    height: 2.5rem;
+    padding-inline: 0.85rem;
+    flex: 0 0 auto;
+}
+
+
+#btnSearch,
+#btnTrending,
+#btnPick,
+#btnCreateRoom {
+    min-width: 6rem;
+}
+
+
+/* Mobile: stack everything full‑width */
+@media (max-width: 768px) {
+    #filtersBar {
+        flex-direction: column;
+    }
+
+    #searchRow,
+    #filtersGrid {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #q {
+        flex-basis: 100%;
+        min-width: 0;
+    }
+
+    #mediaType,
+    #yearFilter,
+    #resultSort,
+    #genreDropdownBtn,
+    #ottDropdownBtn,
+    #btnSearch,
+    #btnTrending,
+    #btnResetFilters,
+    #btnPick,
+    #btnCreateRoom {
+        width: 100% !important;
+    }
+}
+
+/* Top search row: input on left, buttons on right */
+#searchRow {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.75rem;
+    align-items: flex-end;
+}
+
+/* Input wrapper is the first child div inside #searchRow */
+#searchRow>div:first-child {
+    flex: 1 1 auto;
+    /* grow to fill row */
+    min-width: 0;
+}
+
+/* Search + Trending buttons (direct children after the div) */
+#searchRow>#btnSearch,
+#searchRow>#btnTrending {
+    flex: 0 0 auto;
+    min-width: 7rem;
+    height: 2.75rem;
+    padding-inline: 1.2rem;
+}
+
+/* Mobile: stack input and buttons */
+@media (max-width: 768px) {
+    #searchRow {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #searchRow>#btnSearch,
+    #searchRow>#btnTrending {
+        width: 100%;
+    }
+}
+
+#filtersBar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Only on very wide screens, allow a single row if there is space */
+@media (min-width: 1536px) {
+    #filtersBar {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: flex-end;
+    }
+}
+
+/* Tighten gap between hero and filters card */
+main.grid {
+    margin-top: 0.25rem;
+}
+
+section.relative+main.grid {
+    margin-top: 0;
+    /* hero directly above main */
+}
+
+/* add these to the existing list */
+#btnRoomBadge,
+#btnCopyRoomLink,
+#btnLeaveRoom {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+}

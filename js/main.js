@@ -64,6 +64,7 @@ let liveSearchTimer = null;
 // reply draft for chat
 let currentReplyTarget = null;
 
+
 // --------------------------------------------------
 // Utility
 // --------------------------------------------------
@@ -139,6 +140,11 @@ async function populateGenreSelect(kind) {
     }
 
     updateGenreDropdownLabel();
+}
+
+function syncCreateRoomButton() {
+    const signedIn = !!authState.user;
+    id("btnCreateRoom")?.classList.toggle("hidden", !signedIn);
 }
 
 function syncControls() {
@@ -496,7 +502,7 @@ async function boot() {
     syncUserMenu();
     updateSignOutLabel();
     await loadSharedListFromUrl();
-
+    syncCreateRoomButton();
     // firebase auth state
     const fa = window.firebaseAuth;
     if (fa) {
@@ -515,7 +521,7 @@ async function boot() {
             updateUserChip();
             syncUserMenu();
             updateSignOutLabel();
-
+            syncCreateRoomButton();
             const url = new URL(window.location.href);
             const roomId = url.searchParams.get("room");
             if (roomId) {
@@ -545,6 +551,15 @@ async function boot() {
         state.filters.minRating = Number.isFinite(v) ? v : 0;
         saveJson(LSFILTERS, state.filters);
         renderPool();
+    });
+
+    id("btnMenuSettings")?.addEventListener("click", () => {
+        document.getElementById("dlgSettings")?.showModal();
+    });
+
+    id("btnRoomBadge")?.addEventListener("click", () => {
+        document.getElementById("roomChatColumn")?.scrollIntoView({ behavior: "smooth" });
+        id("roomChatInput")?.focus();
     });
 
     id("btnSearch")?.addEventListener("click", () => doSearch(1));

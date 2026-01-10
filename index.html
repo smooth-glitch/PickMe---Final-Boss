@@ -10,95 +10,173 @@
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/main.css" />
+
     <script src="js/config.js"></script>
 
     <!-- Firebase (module) -->
     <script type="module" src="js/firebase-init.js"></script>
+
+    <style>
+        /* Apply Sora font to headlines */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .font-headline {
+            font-family: 'Sora', sans-serif;
+        }
+
+        /* swap which image is visible based on data-theme on html or body */
+        html[data-theme="cupcake"] .theme-cupcake {
+            opacity: 1;
+        }
+
+        html[data-theme="cupcake"] .theme-synthwave {
+            opacity: 0;
+        }
+
+        html[data-theme="synthwave"] .theme-cupcake {
+            opacity: 0;
+        }
+
+        html[data-theme="synthwave"] .theme-synthwave {
+            opacity: 1;
+        }
+
+        /* subtle breathing animation for Pick me now */
+        #pickMeNow {
+            animation: pulsePick 1.6s ease-in-out infinite;
+        }
+
+        @keyframes floatCard {
+            0% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-6px) scale(1.01);
+            }
+
+            100% {
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes pulsePick {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.06);
+            }
+        }
+    </style>
 </head>
 
 <body class="min-h-screen text-base-content">
-    <div class="max-w-5xl mx-auto px-3 py-6 md:py-8 space-y-4 flex flex-col min-h-screen">
-        <header
-            class="header-shell flex flex-wrap items-center justify-between gap-y-2 px-3 py-3 md:py-4 rounded-2xl border">
-            <div class="flex flex-wrap items-center justify-end gap-2">
-                <span class="text-2xl font-black tracking-tight">PickMe</span>
-            </div>
+    <div class="max-w-5xl mx-auto px-3 pt-3 pb-6 md:pt-4 md:pb-8 space-y-4 flex flex-col min-h-screen">
+        <!-- Hero with logo, theme toggle, and actions -->
+        <section class="relative z-50" id="hero">
+            <div class="relative w-full h-60 md:h-64 lg:h-72 rounded-none shadow-2xl overflow-visible">
+                <!-- Background images -->
+                <img src="assets/light-logo.jpg" alt="CineCircle cupcake theme"
+                    class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 theme-cupcake" />
+                <img src="assets/dark-logo.jpg" alt="CineCircle synthwave theme"
+                    class="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 theme-synthwave opacity-0" />
 
-            <div class="flex items-center gap-2">
-                <button id="btnPick" class="btn btn-primary btn-sm sm:btn-md">
-                    Pick for me
-                </button>
-                <span id="roomBadge" class="badge badge-outline hidden">Room: —</span>
+                <!-- Gradient overlay (left to right, fades out) -->
+                <div
+                    class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent pointer-events-none z-0">
+                </div>
 
-                <button id="btnCreateRoom" class="btn btn-outline btn-sm">
-                    Create room
-                </button>
-                <button id="btnCopyRoomLink" class="btn btn-ghost btn-sm hidden">
-                    Copy link
-                </button>
-                <button id="btnLeaveRoom" class="btn btn-ghost btn-sm hidden">
-                    Leave
-                </button>
-
-                <!-- Theme toggle -->
-                <button id="themeToggleBtn" class="theme-toggle btn btn-ghost btn-sm px-2" type="button"
-                    title="Toggle theme" aria-label="Toggle theme">
-                    <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="18" height="18"
-                        class="theme-toggle__dark-inner" fill="currentColor" viewBox="0 0 32 32">
-                        <path d="M16 9c3.9 0 7 3.1 7 7s-3.1 7-7 7" />
-                        <path
-                            d="M16 .5C7.4.5.5 7.4.5 16S7.4 31.5 16 31.5 31.5 24.6 31.5 16 24.6.5 16 .5zm0 28.1V23c-3.9 0-7-3.1-7-7s3.1-7 7-7V3.4C23 3.4 28.6 9 28.6 16S23 28.6 16 28.6z" />
-                    </svg>
-                </button>
-
-                <!-- User/login button with icon -->
-                <div class="dropdown dropdown-end">
-                    <button id="btnUser" tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
-                        <span id="userChip" class="inline-flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                                <circle cx="12" cy="7" r="4" />
-                            </svg>
-                            <span id="userChipLabel" class="text-xs opacity-80 hidden sm:inline">Sign in</span>
-                        </span>
+                <!-- Theme toggle - Top right corner -->
+                <div class="absolute top-4 right-4 z-30 hero-fade">
+                    <button id="themeToggleBtn"
+                        class="theme-toggle btn btn-circle btn-md btn-outline bg-transparent border-base-300 text-base-content transition-all"
+                        type="button" title="Toggle theme" aria-label="Toggle theme">
+                        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="20" height="20"
+                            class="theme-toggle__dark-inner" fill="currentColor" viewBox="0 0 32 32">
+                            <path d="M16 9c3.9 0 7 3.1 7 7s-3.1 7-7 7" />
+                            <path
+                                d="M16 .5C7.4.5.5 7.4.5 16S7.4 31.5 16 31.5 31.5 24.6 31.5 16 24.6.5 16 .5zm0 28.1V23c-3.9 0-7-3.1-7-7s3.1-7 7-7V3.4C23 3.4 28.6 9 28.6 16S23 28.6 16 28.6z" />
+                        </svg>
                     </button>
+                </div>
 
-                    <ul id="userDropdownMenu" tabindex="0"
-                        class="dropdown-content z-50 mt-2 w-64 max-w-[92vw] p-2 rounded-xl border border-base-300 bg-base-100 shadow-xl menu menu-sm">
-                        <li class="menu-title"><span>Account</span></li>
+                <!-- Content: Left-aligned, natural overlay -->
+                <div class="absolute inset-y-0 left-0 flex items-center z-10 hero-fade">
+                    <div class="px-4 md:px-8 lg:px-12 max-w-md">
+                        <!-- Headline with Sora font -->
+                        <h1 class="text-2xl md:text-3xl lg:text-4xl font-black text-primary-content leading-tight"
+                            style="font-family: 'Sora', sans-serif; font-weight: 800; letter-spacing: -0.02em;">
+                            Pick together,<br />watch smarter.
+                        </h1>
 
-                        <li>
-                            <button id="btnMenuSignIn" class="flex items-center gap-2 rounded-lg px-3 py-2">
-                                <span>Sign in</span>
+                        <!-- Short description -->
+                        <p class="mt-3 text-sm md:text-base text-primary-content/90 leading-relaxed">
+                            Add your titles, invite friends, and let the algorithm settle movie night disagreements.
+                        </p>
+
+                        <!-- Action buttons -->
+                        <div class="mt-4 flex flex-col xs:flex-row gap-2 md:gap-3">
+                            <button id="pickMeNow" class="btn btn-primary btn-sm md:btn-md shadow-lg hover:shadow-xl"
+                                onclick="document.getElementById('results').scrollIntoView({ behavior: 'smooth' })">
+                                Start picking
                             </button>
-                        </li>
-
-                        <li>
-                            <a href="settings.html" class="flex items-center gap-2 rounded-lg px-3 py-2">
-                                <span>Settings</span>
-                            </a>
-                        </li>
-
-                        <li>
-                            <button id="btnMenuCopyUid" class="flex items-center gap-2 rounded-lg px-3 py-2">
-                                <span>Copy UID</span>
+                            <button id="btnTrendingHero"
+                                class="btn btn-outline btn-sm md:btn-md border-primary-content text-primary-content hover:bg-primary-content/10">
+                                See trending
                             </button>
-                        </li>
+                        </div>
 
-                        <li class="my-1 border-t border-base-300 opacity-70"></li>
-
-                        <li>
-                            <button id="btnMenuSignOut" class="flex items-center gap-2 rounded-lg px-3 py-2 text-error">
-                                <span>Sign out</span>
-                            </button>
-                        </li>
-                    </ul>
+                        <!-- Small trust signal -->
+                        <div class="mt-3 flex items-center gap-1.5 text-xs text-primary-content/70" id="ad-text-id">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <span id="ad-text">Works with Netflix, Prime, Hotstar</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </header>
+
+            <!-- User menu dropdown (hero) -->
+            <!-- User menu dropdown (hero) -->
+            <div class="absolute bottom-4 right-4 z-[9999] dropdown dropdown-end">
+                <label tabindex="0" id="btnUser"
+                    class="btn btn-md md:btn-lg gap-2 bg-base-100/95 hover:bg-base-100 border border-base-300 shadow-lg hover:shadow-xl text-base-content transition-all">
+                    <span class="inline-flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="lucide lucide-venetian-mask-icon lucide-venetian-mask">
+                            <path d="M18 11c-1.5 0-2.5.5-3 2" />
+                            <path d="M4 6a2 2 0 0 0-2 2v4a5 5 0 0 0 5 5 8 8 0 0 1 5 2 8 8 0 0 1 5-2
+                         5 5 0 0 0 5-5V8a2 2 0 0 0-2-2h-3a8 8 0 0 0-5 2 8 8 0 0 0-5-2z" />
+                            <path d="M6 11c1.5 0 2.5.5 3 2" />
+                        </svg>
+                    </span>
+                    <span id="userChipLabel" class="text-xs md:text-sm font-medium">
+                        Save pools
+                    </span>
+                </label>
+
+                <ul tabindex="0" id="userDropdownMenu"
+                    class="dropdown-content menu menu-sm mt-2 w-56 p-2 rounded-xl border border-base-300 bg-base-100 shadow-xl z-[9999]">
+                    <li><button id="btnMenuSignIn" type="button" class="user-menu-item">Sign in</button></li>
+                    <li><button id="btnMenuSettings" type="button" class="user-menu-item">Settings</button></li>
+                    <li><button id="btnMenuCopyUid" type="button" class="user-menu-item">Copy UID</button></li>
+                    <li><button id="btnMenuSignOut" type="button" class="user-menu-item">Sign out</button></li>
+                </ul>
+            </div>
+        </section>
 
         <div id="roomPickBanner" class="alert alert-info hidden">
             <span id="roomPickText">Tonight’s pick: —</span>
@@ -146,16 +224,46 @@
                             </div>
 
                             <div class="flex flex-col gap-2">
-                                <div class="dropdown w-full">
-                                    <div id="ottDropdownBtn" tabindex="0" role="button"
-                                        class="btn btn-outline btn-sm w-full justify-between">
-                                        OTT
-                                        <span class="opacity-60 text-xs" id="ottDropdownCount"></span>
+                                <div class="flex flex-col sm:flex-row gap-2 w-full">
+                                    <!-- Genres dropdown -->
+                                    <div class="dropdown w-full sm:flex-1">
+                                        <div id="genreDropdownBtn" tabindex="0" role="button"
+                                            class="btn btn-outline btn-sm w-full justify-between">
+                                            Genres
+                                            <span class="opacity-60 text-xs" id="genreDropdownCount"></span>
+                                        </div>
+
+                                        <div id="genreDropdownMenu" tabindex="0"
+                                            class="dropdown-content z-[50] mt-2 w-full p-2 rounded-xl border border-base-300 bg-base-100 shadow-xl max-h-64 overflow-auto">
+                                            <!-- genre checkboxes injected -->
+                                        </div>
                                     </div>
-                                    <div id="ottDropdownMenu" tabindex="0"
-                                        class="dropdown-content z-50 mt-2 w-full p-2 rounded-xl border border-base-300 bg-base-100 shadow-xl max-h-64 overflow-auto">
-                                        <!-- your OTT checkboxes -->
+
+                                    <!-- Actions next to Genres -->
+
+
+                                    <div class="flex gap-2 sm:shrink-0">
+                                        <button id="btnPick" class="btn btn-secondary btn-sm">
+                                            Surprise me
+                                        </button>
+
+                                        <button id="btnCreateRoom" class="btn btn-outline btn-sm hidden">
+                                            Create room
+                                        </button>
+
+                                        <!-- Room controls -->
+                                        <button id="roomBadge" class="btn btn-outline btn-sm hidden">
+                                            <span id="roomBadgeLabel" class="truncate">Room: —</span>
+                                        </button>
+                                        <button id="btnCopyRoomLink" class="btn btn-outline btn-sm hidden">
+                                            Copy link
+                                        </button>
+                                        <button id="btnLeaveRoom" class="btn btn-outline btn-sm hidden">
+                                            Leave
+                                        </button>
                                     </div>
+
+
                                 </div>
                             </div>
 
@@ -171,20 +279,7 @@
                                     <option value="primary_release_date.desc">Newest</option>
                                 </select>
                             </div>
-
-                            <div class="flex flex-col gap-2">
-                                <div class="dropdown w-full">
-                                    <div id="genreDropdownBtn" tabindex="0" role="button"
-                                        class="btn btn-outline btn-sm w-full justify-between">
-                                        Genres
-                                        <span class="opacity-60 text-xs" id="genreDropdownCount"></span>
-                                    </div>
-                                    <div id="genreDropdownMenu" tabindex="0"
-                                        class="dropdown-content z-[50] mt-2 w-full p-2 rounded-xl border border-base-300 bg-base-100 shadow-xl max-h-64 overflow-auto">
-                                        <!-- genre checkboxes injected -->
-                                    </div>
-                                </div>
-                            </div>
+                        </div>
 
                             <div class="flex flex-col gap-2">
                                 <button id="btnResetFilters" class="btn btn-outline btn-sm w-full">
@@ -412,7 +507,9 @@
                         <!-- Sticker picker -->
                         <dialog id="dlgStickerPicker" class="modal">
                             <div class="modal-box max-w-sm space-y-3">
-                                <h3 class="font-semibold mb-1 text-sm">Choose a sticker</h3>
+                                <h3 class="font-semibold mb-1 text-sm">
+                                    Choose a sticker
+                                </h3>
 
                                 <input id="stickerSearchInput" type="text" class="input input-bordered input-sm w-full"
                                     placeholder="Search stickers…" />
@@ -565,6 +662,7 @@
         </div>
     </div>
 
+    <script type="module" src="./js/hero-fade.js"></script>
     <script type="module" src="./js/main.js"></script>
 </body>
 

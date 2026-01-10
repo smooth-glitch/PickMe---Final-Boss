@@ -1,0 +1,49 @@
+html[data-theme="synthwave"] {
+    --b1: 240 29% 16%;
+    --b2: 248 38% 10%;
+    --b3: 248 40% 8%;
+    --p: 315 93% 63%;
+    --s: 184 100% 60%;
+    --a: 52 100% 63%;
+    --bc: 210 32% 92%;
+    --su: 145 72% 55%;
+    --er: 0 83% 64%;
+}
+
+html[data-theme="cupcake"] {
+    --b1: 220 40% 99%;
+    --b2: 220 45% 96%;
+    --b3: 220 30% 92%;
+    --p: 283 84% 62%;
+    --s: 192 94% 62%;
+    --a: 46 98% 64%;
+    --bc: 222 18% 18%;
+    --su: 145 64% 40%;
+    --er: 0 76% 55%;
+}
+
+:root {
+    --filterW: 11.5rem;
+}
+
+:root {
+    --ctrlW: 11.25rem;
+    --searchMin: 22rem;
+    --searchMax: 34rem;
+}
+
+:root {
+    --ctrlW: 11.25rem;
+    --searchMin: 24rem;
+}
+
+:root {
+    --rounded-box: 0.4rem;
+    --rounded-btn: 0.35rem;
+    --rounded-badge: 0.35rem;
+    --rounded-input: 0.35rem;
+}
+
+:root {
+    --shadow-elevated: 0 14px 35px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.35);
+}

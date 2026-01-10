@@ -1,0 +1,9 @@
+/* main.css (import order matters!) */
+@import "01-base.css";
+@import "02-scrollbar-and-motion.css";
+@import "03-theme-vars-initial.css";
+@import "04-components-core.css";
+@import "05-layout-and-grid.css";
+@import "06-filters-and-dropdowns.css";
+@import "07-chat-and-room.css";
+@import "08-theme-overrides-and-elevation.css";

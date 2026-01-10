@@ -1,1891 +1,1549 @@
-/* =========================================================
-   styles.css (CLEAN FINAL)
-   - Keeps your current design (themes, gradients, card look)
-   - Removes duplicated “final/hotfix” blocks
-   - Consistent buttons/inputs + no overlaps in pool/results/members
-   ========================================================= */
-
-/* =========================================================
-   Background + global polish
-   ========================================================= */
-
-/* Peppy background + subtle grain */
-body {
-  background: radial-gradient(
-      900px 500px at 15% -10%,
-      rgba(255, 0, 170, 0.28),
-      transparent 55%
-    ),
-    radial-gradient(
-      800px 520px at 90% 0%,
-      rgba(0, 255, 230, 0.22),
-      transparent 55%
-    ),
-    radial-gradient(
-      900px 520px at 60% 110%,
-      rgba(120, 90, 255, 0.24),
-      transparent 55%
-    ),
-    hsl(var(--b2));
-}
-
-/* ✅ Prevent “cut off” by blocking accidental horizontal overflow */
-html,
-body {
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.08;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
-}
-
-/* Better scrollbar (Chrome/Edge) */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: color-mix(in oklab, hsl(var(--p)) 42%, transparent);
-  border-radius: 999px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-/* Accessibility: reduce motion */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* =========================================================
-     Theme variables (daisyUI overrides)
-     ========================================================= */
-
-/* Synthwave (default) – deep neon night */
-html[data-theme="synthwave"] {
-  /* surfaces */
-  --b1: 240 29% 16%;
-  /* card bg */
-  --b2: 248 38% 10%;
-  /* page bg */
-  --b3: 248 40% 8%;
-  /* borders */
-
-  /* accents */
-  --p: 315 93% 63%;
-  /* primary */
-  --s: 184 100% 60%;
-  /* secondary */
-  --a: 52 100% 63%;
-  /* accent */
-
-  /* content */
-  --bc: 210 32% 92%;
-
-  /* feedback */
-  --su: 145 72% 55%;
-  --er: 0 83% 64%;
-}
-
-/* Cupcake (light) – pastel cyberpunk */
-html[data-theme="cupcake"] {
-  --b1: 220 40% 99%;
-  --b2: 220 45% 96%;
-  --b3: 220 30% 92%;
-
-  --p: 283 84% 62%;
-  --s: 192 94% 62%;
-  --a: 46 98% 64%;
-
-  --bc: 222 18% 18%;
-  --su: 145 64% 40%;
-  --er: 0 76% 55%;
-}
-
-/* Ensure readable text in both themes */
-html[data-theme="synthwave"] body,
-html[data-theme="synthwave"] .card,
-html[data-theme="synthwave"] .navbar {
-  color: hsl(var(--bc));
-}
-
-html[data-theme="cupcake"] body,
-html[data-theme="cupcake"] .card,
-html[data-theme="cupcake"] .navbar {
-  color: hsl(var(--bc));
-}
-
-/* =========================================================
-     Small UI animations/icons
-     ========================================================= */
-
-/* Theme icon animation */
-.theme-ico {
-  transition: transform 260ms ease, color 260ms ease, stroke 260ms ease;
-}
-
-/* Dark synthwave: neon magenta camera with slight tilt */
-html[data-theme="synthwave"] .theme-ico {
-  color: hsl(315 93% 63%);
-  stroke: currentColor;
-  transform: rotate(-8deg) scale(1);
-}
-
-/* Light cupcake: teal camera, opposite tilt */
-html[data-theme="cupcake"] .theme-ico {
-  color: hsl(192 94% 62%);
-  stroke: currentColor;
-  transform: rotate(8deg) scale(1.05);
-}
-
-/* Press feedback */
-button:active .theme-ico,
-.btn:active .theme-ico {
-  transform: scale(0.94) translateY(1px);
-}
-
-/* A tiny “pop” for Tonight’s pick badge */
-@keyframes pop {
-  0% {
-    transform: scale(0.96);
-    opacity: 0.7;
-  }
-
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.badge-primary {
-  animation: pop 220ms ease-out;
-}
-
-/* =========================================================
-     Core components (cards, header, modals)
-     ========================================================= */
-
-/* Cards */
-.card {
-  background-color: hsl(var(--b1));
-  border-radius: 0.9rem;
-  border: 1px solid hsl(var(--b3));
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.48),
-    0 0 0 1px rgba(255, 255, 255, 0.02);
-  overflow: hidden;
-  transition: transform 160ms ease, box-shadow 160ms ease;
-}
-
-/* Make posters feel snappy on hover */
-.card img {
-  transition: transform 160ms ease, filter 160ms ease;
-}
-
-.card:hover img {
-  transform: translateY(-2px) scale(1.02);
-  filter: saturate(1.1) contrast(1.05);
-}
-
-/* Card hover: gentle lift */
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.04);
-}
-
-/* Card poster area */
-.card figure {
-  padding: 0.75rem 0.75rem 0;
-}
-
-.card img {
-  border-radius: 0.7rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-}
-
-/* Card body spacing / typography */
-.card-body {
-  padding: 0.75rem 0.9rem 0.9rem;
-  gap: 0.4rem;
-}
-
-.card-title {
-  font-size: 0.96rem;
-  letter-spacing: 0.01em;
-}
-
-/* Rating badge more “pro” */
-.badge-primary {
-  border-radius: 999px;
-  padding-inline: 0.55rem;
-  font-weight: 600;
-}
-
-/* Header shell that follows theme */
-.header-shell {
-  background-color: hsl(var(--b1));
-  border-color: hsl(var(--b3));
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(255, 255, 255, 0.02);
-}
-
-.header-shell,
-.header-shell span {
-  color: hsl(var(--bc));
-}
-
-/* Make buttons not shrink too small in header */
-.header-shell .btn {
-  min-width: 2.25rem;
-}
-
-/* Modals: ensure auth dialog text and fields are visible */
-html[data-theme="synthwave"] .modal-box,
-html[data-theme="cupcake"] .modal-box {
-  background-color: hsl(var(--b1));
-  color: hsl(var(--bc));
-}
-
-.modal-box .label-text,
-.modal-box p,
-.modal-box h3 {
-  color: hsl(var(--bc));
-}
-
-.modal-box .input,
-.modal-box .btn,
-.modal-box .divider {
-  color: hsl(var(--bc));
-}
-
-/* =========================================================
-     Layout: results grid
-     ========================================================= */
-
-#results {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1.5rem;
-}
-
-/* =========================================================
-     Unified controls (buttons + inputs)
-     ========================================================= */
-
-:root {
-  --ui-radius: 0.7rem;
-  --ui-radius-sm: 0.65rem;
-  --ui-radius-xs: 0.6rem;
-  --ui-radius-pill: 999px;
-
-  --ui-border: 1px solid hsl(var(--b3));
-
-  --ui-shadow: 0 10px 24px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-  --ui-shadow-soft: 0 6px 16px rgba(0, 0, 0, 0.35),
-    0 0 0 1px rgba(255, 255, 255, 0.03);
-}
-
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-.truncate {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Fallback if color-mix isn't supported */
-.bg-base-20040 {
-  background-color: rgba(255, 255, 255, 0.06);
-}
-
-@supports (background-color: color-mix(in oklab, black, white)) {
-  .bg-base-20040 {
-    background-color: color-mix(in oklab, hsl(var(--b2)) 40%, transparent);
-  }
-}
-
-/* Base control sizing */
-.btn,
-.input,
-.select {
-  min-height: 2.4rem;
-  height: 2.4rem;
-  border-radius: var(--ui-radius);
-  font-size: 0.9rem;
-  padding-inline: 0.85rem;
-}
-
-/* Small variants */
-.btn-sm,
-.input-sm,
-.select-sm {
-  min-height: 2.1rem;
-  height: 2.1rem;
-  font-size: 0.82rem;
-  border-radius: var(--ui-radius-sm);
-}
-
-/* XS variants */
-.btn-xs,
-.input-xs,
-.select-xs {
-  min-height: 1.8rem;
-  height: 1.8rem;
-  font-size: 0.78rem;
-  border-radius: var(--ui-radius-xs);
-}
-
-/* Buttons: shared behavior */
-.btn {
-  line-height: 1;
-  border-width: 1px;
-  border-color: transparent;
-  transition: transform 120ms ease, filter 160ms ease, box-shadow 160ms ease,
-    background-color 160ms ease, border-color 160ms ease;
-}
-
-.btn:active {
-  transform: translateY(1px);
-}
-
-.btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent),
-    var(--ui-shadow);
-}
-
-/* Primary / secondary gradients (base look) */
-.btn-primary {
-  background: linear-gradient(
-    135deg,
-    hsl(var(--p)),
-    color-mix(in oklab, hsl(var(--p)) 80%, hsl(var(--s)) 20%)
-  );
-  border-color: transparent;
-  color: hsl(0 0% 5%);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-}
-
-.btn-primary:hover {
-  filter: brightness(1.05);
-}
-
-.btn-secondary {
-  background: linear-gradient(
-    135deg,
-    hsl(var(--s)),
-    color-mix(in oklab, hsl(var(--s)) 75%, hsl(var(--p)) 25%)
-  );
-  border-color: transparent;
-  color: hsl(0 0% 5%);
-  box-shadow: var(--ui-shadow);
-}
-
-.btn-secondary:hover {
-  filter: brightness(1.06);
-}
-
-/* Ensure Add button is visible on dark synthwave */
-html[data-theme="synthwave"] .btn-secondary {
-  background-color: hsl(var(--s));
-  color: hsl(0 0% 5%);
-  border-color: transparent;
-}
-
-html[data-theme="synthwave"] .btn-secondary:hover {
-  filter: brightness(1.1);
-}
-
-/* Ghost buttons (header/login, details) */
-.btn-ghost {
-  border-radius: var(--ui-radius-pill);
-  border-color: transparent;
-  background-color: transparent;
-  box-shadow: none;
-}
-
-.btn-ghost:hover {
-  background-color: color-mix(in oklab, hsl(var(--b3)) 60%, transparent);
-}
-
-/* Outline buttons (for safety) */
-.btn-outline {
-  background-color: transparent;
-  border: var(--ui-border);
-  color: hsl(var(--bc));
-}
-
-.btn-outline:hover {
-  background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
-}
-
-/* Danger button: consistent shadow */
-.btn-error {
-  box-shadow: var(--ui-shadow-soft);
-}
-
-/* Disabled states */
-.btn[disabled],
-.btn.btn-disabled,
-.btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-  filter: none;
-}
-
-/* Inputs/selects: consistent look */
-.input,
-.select {
-  border-width: 1px;
-  border-color: hsl(var(--b3));
-  background-color: hsl(var(--b1));
-  box-shadow: var(--ui-shadow-soft);
-  color: hsl(var(--bc));
-}
-
-.input:focus,
-.select:focus {
-  outline: none;
-  border-color: hsl(var(--p));
-  box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55);
-}
-
-.input:disabled,
-.select:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
-/* Select option readability */
-select option {
-  color: hsl(var(--bc));
-  background-color: hsl(var(--b1));
-}
-
-/* Result sort dropdown text contrast */
-#resultSort.select {
-  color: hsl(var(--bc));
-}
-
-#resultSort.select option {
-  color: hsl(var(--bc));
-  background-color: hsl(var(--b1));
-}
-
-/* Theme toggle (if used) */
-.theme-toggle__dark-inner {
-  transition: transform 260ms ease, color 260ms ease;
-}
-
-html[data-theme="synthwave"] .theme-toggle__dark-inner {
-  color: hsl(315 93% 63%);
-  transform: rotate(-10deg);
-}
-
-html[data-theme="cupcake"] .theme-toggle__dark-inner {
-  color: hsl(192 94% 62%);
-  transform: rotate(10deg);
-}
-
-.theme-toggle:active .theme-toggle__dark-inner {
-  transform: scale(0.92) translateY(1px);
-}
-
-/* Theme button harmonization (as in your file) */
-html[data-theme="synthwave"] .btn-primary,
-html[data-theme="synthwave"] .btn-secondary,
-html[data-theme="synthwave"] .btn-accent {
-  background: linear-gradient(
-    135deg,
-    hsl(var(--p)),
-    color-mix(in oklab, hsl(var(--p)) 80%, hsl(var(--s)) 20%)
-  );
-  border-color: transparent;
-  color: hsl(0 0% 5%);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(255, 255, 255, 0.06);
-}
-
-html[data-theme="synthwave"] .btn-primary:hover,
-html[data-theme="synthwave"] .btn-secondary:hover,
-html[data-theme="synthwave"] .btn-accent:hover {
-  filter: brightness(1.06);
-}
-
-html[data-theme="cupcake"] .btn-primary,
-html[data-theme="cupcake"] .btn-secondary,
-html[data-theme="cupcake"] .btn-accent {
-  background: linear-gradient(
-    135deg,
-    hsl(var(--s)),
-    color-mix(in oklab, hsl(var(--s)) 80%, hsl(var(--p)) 20%)
-  );
-  border-color: transparent;
-  color: hsl(0 0% 5%);
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.3),
-    0 0 0 1px rgba(15, 23, 42, 0.06);
-}
-
-html[data-theme="cupcake"] .btn-primary:hover,
-html[data-theme="cupcake"] .btn-secondary:hover,
-html[data-theme="cupcake"] .btn-accent:hover {
-  filter: brightness(1.04);
-}
-
-/* Typography helper in your file */
-.card-body p,
-.text-base-content\/60 {
-  font-weight: 400;
-}
-
-/* =========================================================
-     App.js fallback utilities (in case CDN Tailwind misses them)
-     ========================================================= */
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.aspect-23 {
-  aspect-ratio: 2 / 3;
-}
-
-.text-base-content60 {
-  color: color-mix(in oklab, hsl(var(--bc)) 60%, transparent);
-}
-
-.text-base-content70 {
-  color: color-mix(in oklab, hsl(var(--bc)) 70%, transparent);
-}
-
-/* Toast wrapper created by app.js uses z-999 */
-.z-999 {
-  z-index: 999;
-}
-
-#toasts.toast {
-  z-index: 9999;
-}
-
-/* =========================================================
-     Mobile layout safety (header + modals + pager)
-     ========================================================= */
-
-@media (max-width: 640px) {
-  header.header-shell {
-    flex-wrap: wrap;
-    row-gap: 0.5rem;
-  }
-
-  /* second header row becomes full width and wraps */
-  header.header-shell > div:last-child {
-    width: 100%;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-  }
-
-  /* make “Pick for me” easy to tap */
-  #btnPick {
-    width: 100%;
-  }
-}
-
-/* Pager can wrap on small screens */
-#pagerWrap {
-  flex-wrap: wrap;
-}
-
-/* Room pick banner: match your “card-ish” look */
-#roomPickBanner {
-  border: 1px solid hsl(var(--b3));
-  border-radius: 0.9rem;
-}
-
-/* Modals: usable on very small screens */
-@media (max-width: 480px) {
-  .modal-box {
-    max-height: calc(100vh - 2rem);
-    overflow: auto;
-    padding: 1rem;
-  }
-
-  .modal-action {
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .modal-action .btn {
-    flex: 1 1 9rem;
-  }
-}
-
-/* =========================================================
-     Results card actions: never overlap
-     ========================================================= */
-
-#results .card .card-body {
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-/* If app.js uses a flex row for title+badge, allow wrap */
-#results .card .card-body > .flex.items-start {
-  flex-wrap: wrap;
-}
-
-#results .card .card-actions {
-  margin-top: auto !important;
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 0.5rem !important;
-  justify-content: flex-end !important;
-  align-items: center !important;
-}
-
-#results .card .card-actions .btn {
-  white-space: nowrap;
-}
-
-@media (max-width: 420px) {
-  #results .card .card-actions {
-    flex-direction: column !important;
-    align-items: stretch !important;
-  }
-
-  #results .card .card-actions .btn {
-    width: 100%;
-  }
-}
-
-/* =========================================================
-     Pool list + rows (grid so buttons never collide)
-     ========================================================= */
-
-/* Cleaner chips */
-#pool .badge {
-  border-radius: 999px;
-}
-
-/* Each pool row is created by app.js as a direct child of #pool */
-#pool > div {
-  display: grid !important;
-  grid-template-columns: 3rem minmax(0, 1fr) auto !important;
-  align-items: center !important;
-  gap: 0.75rem !important;
-
-  padding: 0.65rem 0.75rem;
-  border-radius: 0.7rem;
-  background-color: color-mix(in oklab, hsl(var(--b2)) 40%, transparent);
-  border: 1px solid hsl(var(--b3));
-  backdrop-filter: blur(6px);
-  transition: background-color 160ms ease;
-}
-
-#pool > div:hover {
-  background-color: color-mix(in oklab, hsl(var(--b2)) 55%, transparent);
-}
-
-/* Thumb slot: either <img> or placeholder div */
-#pool > div > :first-child {
-  width: 3rem !important;
-  height: 4rem !important;
-  border-radius: 0.6rem !important;
-  overflow: hidden !important;
-}
-
-/* Info column */
-#pool > div > :nth-child(2) {
-  min-width: 0 !important;
-}
-
-/* Ensure long titles truncate instead of pushing buttons */
-#pool .font-semibold {
-  font-size: 0.9rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Actions column */
-#pool > div > :nth-child(3) {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 0.45rem !important;
-  justify-content: flex-end !important;
-  align-items: center !important;
-}
-
-@media (max-width: 640px) {
-  #pool > div {
-    grid-template-columns: 3rem minmax(0, 1fr) !important;
-    grid-template-rows: auto auto !important;
-  }
-
-  #pool > div > :nth-child(3) {
-    grid-column: 1 / -1 !important;
-    justify-content: flex-start !important;
-  }
-
-  #pool .btn-xs {
-    flex: 1 1 auto;
-    min-width: 5.25rem;
-  }
-}
-
-/* Keep pool usable when long */
-#pool {
-  max-height: 32rem;
-  overflow-y: auto;
-}
-
-@media (max-width: 768px) {
-  #pool {
-    max-height: 24rem;
-  }
-}
-
-/* =========================================================
-     Room members panel (nested card) – no clipping + clean rows
-     ========================================================= */
-
-/* Allow nested card to show badge cleanly (global .card has overflow:hidden) */
-#roomMembersWrap.card {
-  overflow: visible !important;
-}
-
-#roomMembersWrap {
-  width: 100% !important;
-  display: block !important;
-  margin-top: 0.75rem !important;
-
-  /* Remove double heavy shadow (it sits inside another card) */
-  box-shadow: none !important;
-  border: 1px solid hsl(var(--b3)) !important;
-  background: color-mix(in oklab, hsl(var(--b1)) 70%, transparent) !important;
-  border-radius: 0.9rem;
-}
-
-#roomMembersWrap .card-body {
-  padding: 0.9rem !important;
-  overflow: visible !important;
-}
-
-/* Header row: “Room members” + Online badge */
-#roomMembersWrap .card-body > div:first-child {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto !important;
-  align-items: center !important;
-  gap: 0.75rem !important;
-  overflow: visible !important;
-}
-
-#roomMembersWrap .card-body > div:first-child h3 {
-  min-width: 0 !important;
-  margin: 0 !important;
-}
-
-/* Online count badge spacing */
-#roomOnlineCount {
-  white-space: nowrap !important;
-  flex-shrink: 0 !important;
-  margin-right: 0.35rem !important;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.6rem;
-}
-
-@media (max-width: 420px) {
-  #roomOnlineCount {
-    font-size: 0.7rem !important;
-    padding: 0.2rem 0.45rem !important;
-    margin-right: 0.25rem !important;
-  }
-}
-
-/* Members list */
-#roomMembersList {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 0.5rem !important;
-  margin-top: 0.5rem !important;
-  max-height: 12rem;
-  overflow: auto;
-}
-
-/* Each row (app.js uses bg-base-20040 etc.) */
-#roomMembersList > div {
-  width: 100% !important;
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto !important;
-  align-items: center !important;
-  column-gap: 0.6rem !important;
-
-  padding: 0.6rem 0.75rem !important;
-  border-radius: 0.75rem !important;
-  border: 1px solid hsl(var(--b3)) !important;
-  word-break: break-word;
-}
-
-#roomMembersList > div > .truncate {
-  min-width: 0 !important;
-}
-
-#roomMembersList > div > .badge {
-  justify-self: end !important;
-  white-space: nowrap !important;
-}
-
-/* Keep members list usable on mobile */
-@media (max-width: 768px) {
-  #roomMembersList {
-    max-height: 12rem;
-  }
-}
-
-/* Prevent long room IDs from breaking header layout */
-#roomBadge {
-  max-width: 12rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.8rem;
-}
-
-@media (max-width: 640px) {
-  #roomBadge {
-    max-width: 8rem;
-  }
-}
-
-/* =========================================================
-     Watch filters UI (Step 1)
-     ========================================================= */
-
-#watchFilters {
-  padding: 0.75rem;
-  border-radius: 0.9rem;
-  border: 1px solid hsl(var(--b3));
-  background-color: color-mix(in oklab, hsl(var(--b2)) 30%, transparent);
-}
-
-.watch-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid hsl(var(--b3));
-  background-color: color-mix(in oklab, hsl(var(--b1)) 70%, transparent);
-  cursor: pointer;
-  user-select: none;
-}
-
-.watch-chip:hover {
-  filter: brightness(1.04);
-}
-
-#watchRegion {
-  width: 100%;
-}
-
-@media (min-width: 1024px) {
-  #watchRegion {
-    height: 2.9rem !important;
-    border-radius: 0.95rem !important;
-  }
-}
-
-.wp-pill span.opacity-70 {
-  margin-left: 0.25rem;
-}
-
-/* 2) Make the search bar less wide (your input is #q with w-full) */
-#q {
-  max-width: 420px;
-  width: 100%;
-}
-
-/* 3) Result sort: prevent arrow overlapping text (your select is #resultSort) */
-#resultSort {
-  padding-right: 2.5rem !important;
-  /* space for arrow */
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-
-  /* make the arrow sit in the right padding area */
-  background-position: right 0.85rem center !important;
-  background-size: 1rem 1rem !important;
-}
-
-/* Also ensure the select keeps a usable width */
-#resultSort {
-  min-width: 10.5rem;
-}
-
-/* 4) Exclude watched: make it visually obvious when ON (checkbox id = excludeWatched) */
-label:has(#excludeWatched) {
-  padding: 0.45rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid hsl(var(--b3));
-  background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
-  transition: filter 160ms ease, background-color 160ms ease,
-    border-color 160ms ease, box-shadow 160ms ease;
-}
-
-label:has(#excludeWatched):hover {
-  filter: brightness(1.05);
-}
-
-label:has(#excludeWatched:checked) {
-  border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
-  background: linear-gradient(
-    135deg,
-    color-mix(in oklab, hsl(var(--p)) 70%, transparent),
-    color-mix(in oklab, hsl(var(--s)) 55%, transparent)
-  );
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(255, 255, 255, 0.06);
-}
-
-/* Make the text pop when enabled */
-label:has(#excludeWatched:checked) span {
-  color: hsl(var(--bc));
-  font-weight: 700;
-}
-
-/* Make the checkbox itself match the "enabled" state better */
-#excludeWatched.checkbox:checked {
-  background-color: hsl(var(--p));
-  border-color: transparent;
-}
-
-/* ---------- 2) Exclude watched + OTT accounts: same pill UI + theme-aware ON state ---------- */
-/* Your Exclude watched is a checkbox (#excludeWatched) inside a label in index.html. */
-label:has(#excludeWatched),
-/* OTT accounts / providers toggles: make ANY checkbox/radio inside #watchFilters look like pills */
-#watchFilters label:has(input[type="checkbox"]),
-#watchFilters label:has(input[type="radio"]),
-/* If OTT toggles are buttons/chips, style them too */
-#watchFilters .watch-chip {
-  padding: 0.45rem 0.65rem;
-  border-radius: 999px;
-  border: 1px solid hsl(var(--b3));
-  background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
-  transition: filter 160ms ease, background-color 160ms ease,
-    border-color 160ms ease, box-shadow 160ms ease, transform 120ms ease;
-}
-
-label:has(#excludeWatched):hover,
-#watchFilters label:has(input[type="checkbox"]):hover,
-#watchFilters label:has(input[type="radio"]):hover,
-#watchFilters .watch-chip:hover {
-  filter: brightness(1.05);
-}
-
-label:has(#excludeWatched:checked),
-#watchFilters label:has(input[type="checkbox"]:checked),
-#watchFilters label:has(input[type="radio"]:checked),
-/* If your OTT chips are implemented as buttons, these cover common “active” patterns */
-#watchFilters .watch-chip.is-active,
-#watchFilters .watch-chip.active,
-#watchFilters .watch-chip[aria-pressed="true"],
-#watchFilters .watch-chip[data-active="true"] {
-  border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
-  background: linear-gradient(
-    135deg,
-    color-mix(in oklab, hsl(var(--p)) 70%, transparent),
-    color-mix(in oklab, hsl(var(--s)) 55%, transparent)
-  );
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(255, 255, 255, 0.06);
-}
-
-label:has(#excludeWatched:checked) span,
-#watchFilters label:has(input[type="checkbox"]:checked) span,
-#watchFilters label:has(input[type="radio"]:checked) span,
-#watchFilters .watch-chip.is-active,
-#watchFilters .watch-chip.active,
-#watchFilters .watch-chip[aria-pressed="true"],
-#watchFilters .watch-chip[data-active="true"] {
-  font-weight: 700;
-  color: hsl(var(--bc));
-}
-
-/* Keep the actual checkbox visible and theme-consistent when checked */
-#excludeWatched.checkbox:checked,
-#watchFilters input[type="checkbox"].checkbox:checked,
-#watchFilters input[type="radio"].radio:checked {
-  background-color: hsl(var(--p));
-  border-color: transparent;
-}
-
-/* Optional: make the pill feel clickable */
-#watchFilters label:has(input[type="checkbox"]),
-#watchFilters label:has(input[type="radio"]) {
-  cursor: pointer;
-  user-select: none;
-}
-
-/* =========================================================
-  FINAL GENRE DROPDOWN STYLE (multi-select)
-  ========================================================= */
-
-/* Exact element:
-  <select id="genreFilter" class="select select-bordered select-sm" multiple size="5"></select>
-*/
-#genreFilter {
-  /* Override any generic .select / .select-sm / .select-bordered */
-  border-radius: 0.75rem !important;
-  border-width: 1px !important;
-  border-style: solid !important;
-  border-color: hsl(var(--b3)) !important;
-
-  background-color: hsl(var(--b1)) !important;
-  color: hsl(var(--bc)) !important;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35),
-    0 0 0 1px rgba(255, 255, 255, 0.03) !important;
-
-  /* Multi-select should look like a scrollable list, not a single-select */
-  padding: 0.5rem 0.6rem !important;
-  min-height: 11rem !important;
-  /* matches size="5" */
-
-  /* Remove the dropdown chevron that .select normally adds */
-  background-image: none !important;
-  background-position: initial !important;
-  background-repeat: initial !important;
-}
-
-/* Options inside genres list */
-#genreFilter option {
-  color: hsl(var(--bc)) !important;
-  background-color: hsl(var(--b1)) !important;
-}
-
-/* Make genreFilter behave like other selects on focus */
-#genreFilter:focus {
-  outline: none;
-  border-color: hsl(var(--p));
-  box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55);
-}
-
-/* Bigger + standout search input */
-#q {
-  max-width: 520px;
-  min-height: 3rem;
-  height: 3rem;
-  font-size: 1rem;
-  border-width: 2px;
-  border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(255, 255, 255, 0.06);
-}
-
-#q:focus {
-  border-color: hsl(var(--p));
-  box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 55%, transparent),
-    0 14px 34px rgba(0, 0, 0, 0.55);
-}
-
-/* Prevent select arrow overlapping text (mediaType) */
-#mediaType {
-  padding-right: 2.5rem !important;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  background-position: right 0.85rem center !important;
-  background-size: 1rem 1rem !important;
-}
-
-/* Genres dropdown (button + menu) should match other selects */
-#genreDropdownBtn {
-  border: 1px solid hsl(var(--b3)) !important;
-  background-color: hsl(var(--b1)) !important;
-  color: hsl(var(--bc)) !important;
-  box-shadow: var(--ui-shadow-soft) !important;
-}
-
-#genreDropdownBtn:hover {
-  background-color: color-mix(
-    in oklab,
-    hsl(var(--b2)) 35%,
-    transparent
-  ) !important;
-}
-
-#genreDropdownBtn:focus-visible {
-  outline: none !important;
-  box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55) !important;
-}
-
-/* Menu surface matches your select dropdown surface */
-#genreDropdownMenu {
-  border-color: hsl(var(--b3)) !important;
-  background-color: hsl(var(--b1)) !important;
-  color: hsl(var(--bc)) !important;
-}
-
-/* Make Genres dropdown menu always readable */
-#genreDropdownMenu {
-  min-width: 100%;
-  max-width: min(28rem, 92vw);
-}
-
-#genreDropdownMenu label {
-  width: 100%;
-}
-
-#genreDropdownMenu span {
-  white-space: normal;
-}
-
-:root {
-  --filterW: 11.5rem;
-  /* change once to resize all filters/buttons */
-}
-
-:root {
-  --ctrlW: 11.25rem;
-  /* width for Type/Year/Genres/Sort + buttons */
-  --searchMin: 22rem;
-  /* search bar minimum width */
-  --searchMax: 34rem;
-  /* search bar maximum width */
-}
-
-:root {
-  --ctrlW: 11.25rem;
-  /* fixed width for all non-search controls */
-  --searchMin: 24rem;
-  /* search bar minimum */
-}
-
-/* =========================================================
-   FINAL LAYOUT FIX (full page + laptop safe)
-   - Uses full viewport width/height
-   - Prevents filter bar overflow on 1366×768
-   ========================================================= */
-
-/* Full-width + full-height app wrapper (your wrapper uses .max-w-5xl) */
-.max-w-5xl {
-  max-width: 100% !important;
-  width: 100% !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Main should consume remaining height under header/banner */
-main.grid {
-  flex: 1 1 auto;
-  min-height: 0;
-  align-items: stretch;
-}
-
-/* Let both cards stretch and allow inner scrolling areas */
-main.grid > section {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-main.grid > section > .card-body {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-}
-
-/* Scroll inside results/pool instead of growing the whole page */
-#results {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
-}
-
-#pool {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
-  max-height: none !important;
-}
-
-/* Safety: prevent accidental horizontal overflow from long flex children */
-main.grid * {
-  min-width: 0;
-}
-
-/* =========================================================
-   OTT dropdown (matches Genre dropdown styles)
-   Paste at END of styles.css
-   ========================================================= */
-
-/* Button surface matches other selects */
-#ottDropdownBtn {
-  border: 1px solid hsl(var(--b3)) !important;
-  background-color: hsl(var(--b1)) !important;
-  color: hsl(var(--bc)) !important;
-  box-shadow: var(--ui-shadow-soft) !important;
-}
-
-#ottDropdownBtn:hover {
-  background-color: color-mix(
-    in oklab,
-    hsl(var(--b2)) 35%,
-    transparent
-  ) !important;
-}
-
-#ottDropdownBtn:focus-visible {
-  outline: none !important;
-  box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55) !important;
-}
-
-/* Menu surface matches genre dropdown menu */
-#ottDropdownMenu {
-  border-color: hsl(var(--b3)) !important;
-  background-color: hsl(var(--b1)) !important;
-  color: hsl(var(--bc)) !important;
-
-  min-width: 100%;
-  max-width: min(28rem, 92vw);
-}
-
-#ottDropdownMenu label {
-  width: 100%;
-}
-
-#ottDropdownMenu span {
-  white-space: normal;
-}
-
-/* =========================================================
-   Make dropdown selections visible (Genres + OTT)
-   Paste at END of styles.css
-   ========================================================= */
-
-#genreDropdownMenu label,
-#ottDropdownMenu label {
-  border: 1px solid transparent;
-  border-radius: 0.75rem;
-  transition: filter 160ms ease, background-color 160ms ease,
-    border-color 160ms ease, box-shadow 160ms ease;
-}
-
-/* Hover feedback (optional, but makes it feel clickable) */
-#genreDropdownMenu label:hover,
-#ottDropdownMenu label:hover {
-  filter: brightness(1.05);
-}
-
-/* ✅ Selected state */
-#genreDropdownMenu label:has(input[type="checkbox"]:checked),
-#ottDropdownMenu label:has(input[type="checkbox"]:checked) {
-  border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
-  background: linear-gradient(
-    135deg,
-    color-mix(in oklab, hsl(var(--p)) 45%, transparent),
-    color-mix(in oklab, hsl(var(--s)) 35%, transparent)
-  );
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35),
-    0 0 0 1px rgba(255, 255, 255, 0.06);
-}
-
-/* Make selected label text pop */
-#genreDropdownMenu label:has(input[type="checkbox"]:checked) span,
-#ottDropdownMenu label:has(input[type="checkbox"]:checked) span {
-  font-weight: 700;
-  color: hsl(var(--bc));
-}
-
-/* Keyboard + click focus visibility (when the checkbox gets focus) */
-#genreDropdownMenu label:focus-within,
-#ottDropdownMenu label:focus-within {
-  outline: none;
-  box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent),
-    0 10px 24px rgba(0, 0, 0, 0.45);
-}
-
-/* Make clicking on the option text toggle the checkbox */
-#genreDropdownMenu label span,
-#ottDropdownMenu label span {
-  pointer-events: none;
-}
-
-#genreDropdownMenu label,
-#ottDropdownMenu label {
-  cursor: pointer;
-}
-
-#genreDropdownMenu label,
-#ottDropdownMenu label {
-  width: 100%;
-  cursor: pointer;
-}
-
-/* Small laptops: grid-based filters, full-width controls */
-@media (min-width: 1024px) and (max-width: 1535px) {
-  #filtersBar #mediaType,
-  #filtersBar #yearFilter,
-  #filtersBar #resultSort,
-  #filtersBar #genreDropdownBtn,
-  #filtersBar #ottDropdownBtn,
-  #filtersBar #btnResetFilters {
-    width: 100% !important;
-    max-width: none !important;
-    min-width: 0 !important;
-  }
-
-  /* Keep Search input big */
-  #filtersBar #q {
-    max-width: none !important;
-  }
-}
-
-/* Make only Search + Trending slightly bigger than btn-sm (but not huge) */
-#btnSearch,
-#btnTrending {
-  min-height: 2.55rem;
-  /* between btn-sm (2.1) and default (2.4) / slightly above */
-  height: 2.55rem;
-  padding-inline: 1rem;
-  font-size: 0.9rem;
-}
-
-/* Big monitors / TVs: everything in ONE row */
-@media (min-width: 1536px) {
-  #filtersBar {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 0.75rem;
-    align-items: flex-end;
-  }
-
-  /* Flatten the two blocks so their children become direct flex items */
-  #searchRow,
-  #filtersGrid {
-    display: contents;
-  }
-
-  /* Let Search input take remaining space, keep other controls consistent */
-  #q {
-    flex: 1 1 28rem !important;
-    max-width: none !important;
-  }
-
-  #mediaType,
-  #yearFilter,
-  #resultSort,
-  #genreDropdownBtn,
-  #ottDropdownBtn,
-  #btnSearch,
-  #btnTrending,
-  #btnResetFilters {
-    width: var(--ctrlW) !important;
-  }
-}
-
-/* Remove unnecessary vertical space in the right "Your pool" card */
-main.grid > section:last-child {
-  align-self: flex-start !important;
-  /* don't stretch to match left column height */
-}
-
-main.grid > section:last-child > .card-body {
-  flex: 0 0 auto !important;
-  min-height: auto !important;
-}
-
-/* Pool should size to content; only scroll if it becomes long */
-main.grid > section:last-child #pool {
-  flex: 0 0 auto !important;
-  max-height: 32rem;
-  overflow: auto;
-}
-
-@media (max-width: 768px) {
-  main.grid > section:last-child #pool {
-    max-height: 24rem;
-  }
-}
-
-/* Allow dropdown menus to overflow the left card (fix mobile/tablet clipping) */
-main.grid > section:first-child.card,
-main.grid > section:first-child .card-body {
-  overflow: visible !important;
-}
-
-/* --- FIX: modal backdrop + box opacity (mobile-safe) --- */
-dialog.modal {
-  background: transparent;
-}
-
-/* dialog element itself */
-
-dialog.modal::backdrop {
-  background: rgba(0, 0, 0, 0.68);
-  backdrop-filter: blur(6px);
-}
-
-/* ensure the visible box is solid in both themes */
-.modal .modal-box {
-  background-color: hsl(var(--b1));
-  color: hsl(var(--bc));
-  border: 1px solid hsl(var(--b3));
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
-}
-
-/* --- FIX: toast/notification opacity --- */
-#toasts.toast .alert {
-  opacity: 1 !important;
-  background-color: hsl(var(--b1) / 0.96);
-  color: hsl(var(--bc));
-  border: 1px solid hsl(var(--b3));
-  backdrop-filter: blur(8px);
-}
-
-/* User dropdown menu styling (match filter dropdown vibe) */
-#userDropdownMenu {
-  border-color: hsl(var(--b3)) !important;
-  background-color: hsl(var(--b1)) !important;
-  color: hsl(var(--bc)) !important;
-}
-
-.user-menu-item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.55rem 0.7rem;
-  border-radius: 0.75rem;
-  border: 1px solid transparent;
-}
-
-.user-menu-item:hover {
-  background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
-  border-color: color-mix(in oklab, hsl(var(--b3)) 70%, transparent);
-}
-
-.user-menu-ico {
-  width: 1rem;
-  height: 1rem;
-  flex: 0 0 auto;
-  opacity: 0.9;
-}
-
-html[data-reduce-motion] *,
-html[data-reduce-motion] *::before,
-html[data-reduce-motion] *::after {
-  animation: none !important;
-  transition: none !important;
-  scroll-behavior: auto !important;
-}
-
-/* --- Settings toggles: always visible in light + dark --- */
-.toggle {
-  /* track color when OFF */
-  --tglbg: color-mix(in oklab, hsl(var(--b2)) 55%, hsl(var(--b1)) 45%);
-  border: 1px solid hsl(var(--b3));
-}
-
-/* track color when ON */
-.toggle:checked {
-  --tglbg: hsl(var(--p));
-  border-color: hsl(var(--p));
-}
-
-/* keyboard focus */
-.toggle:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent);
-}
-
-/* My messages (right side) – black bubble with white text */
-.chat-bubble-primary {
-  background-color: #000; /* black bubble */
-  color: #fff; /* white text */
-  border-radius: 9999px;
-}
-
-/* Other people's messages (left side) – white bubble with black text */
-.chat-bubble-neutral {
-  background-color: #fff; /* white bubble */
-  color: #000; /* black text */
-  border-radius: 9999px;
-}
-
-#roomChatMessages {
-  position: relative;
-}
-
-/* Chat toolbar icon buttons */
-#roomGifBtn,
-#roomStickerBtn,
-#roomEmojiBtn {
-  transition: transform 140ms ease, background-color 140ms ease,
-    box-shadow 140ms ease;
-  border-radius: 999px;
-}
-
-#roomGifBtn:hover,
-#roomStickerBtn:hover,
-#roomEmojiBtn:hover {
-  transform: translateY(-1px) scale(1.04);
-  background-color: color-mix(in oklab, hsl(var(--b3)) 60%, transparent);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
-}
-
-#roomGifBtn:active,
-#roomStickerBtn:active,
-#roomEmojiBtn {
-  transform: translateY(0) scale(0.97);
-  box-shadow: none;
-}
-
-/* Chat input + send button polish */
-#roomChatForm {
-  gap: 0.5rem;
-}
-
-#roomChatInput {
-  transition: box-shadow 140ms ease, border-color 140ms ease,
-    transform 120ms ease;
-}
-
-#roomChatInput:focus {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.55), 0 0 0 1px hsl(var(--p));
-}
-
-/* Send button subtle lift */
-#roomChatForm button[type="submit"] {
-  transition: transform 120ms ease, box-shadow 150ms ease, filter 140ms ease;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
-}
-
-#roomChatForm button[type="submit"]:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
-}
-
-#roomChatForm button[type="submit"]:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-}
-
-/* Default (fallback) */
-.chat-bubble-primary,
-.chat-bubble-neutral {
-  border-radius: 9999px;
-}
-
-/* Dark synthwave theme: my messages light, others slightly darker */
-html[data-theme="synthwave"] .chat-bubble-primary {
-  background-color: hsl(var(--b1));
-  color: hsl(var(--bc));
-}
-
-html[data-theme="synthwave"] .chat-bubble-neutral {
-  background-color: color-mix(in oklab, hsl(var(--b1)) 80%, hsl(var(--b3)) 20%);
-  color: hsl(var(--bc));
-}
-
-/* Light cupcake theme: invert for balance */
-html[data-theme="cupcake"] .chat-bubble-primary {
-  background-color: hsl(222 18% 12%); /* dark text bubble */
-  color: #fff;
-}
-
-html[data-theme="cupcake"] .chat-bubble-neutral {
-  background-color: #fff; /* white bubble */
-  color: hsl(222 18% 12%);
-}
-
-/* Position GIF dialog like a tray near chat input (desktop only) */
-@media (min-width: 768px) {
-  #dlgGifPicker .modal-box {
-    margin: 0;
-    position: fixed;
-    left: 0.75rem;
-    right: 0.75rem;
-    bottom: 5.5rem; /* roughly just above the chat form */
-    max-width: 480px;
-    margin-inline: auto;
-  }
-}
-
-/* The chat column must be a positioning context */
-#roomChatColumn {
-  position: relative;
-  overflow: visible;
-}
-
-/* Docked tray above input, aligned to the right */
-.chat-tray {
-  position: absolute;
-  right: 0.5rem;
-  bottom: 2.6rem; /* sits above the input row */
-  width: min(26rem, 92vw);
-  padding: 0.75rem;
-  border-radius: 1rem;
-
-  background-color: hsl(var(--b1));
-  border: 1px solid hsl(var(--b3));
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
-  z-index: 50;
-}
-
-/* Tabs feel “selected” */
-.chat-tray-tab.is-active {
-  background-color: color-mix(in oklab, hsl(var(--b2)) 60%, transparent);
-  border: 1px solid hsl(var(--b3));
-}
-
-#roomChatShell {
-  min-height: 6rem;
-  max-height: 80vh; /* do not exceed viewport */
-}
-
-#roomChatShell.fullscreen {
-  position: fixed;
-  inset: 3.5rem 0.75rem 4.5rem 0.75rem; /* leave space for header/footer */
-  z-index: 60;
-  background-color: hsl(var(--b1));
-  border-radius: 1rem;
-  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.7);
-  padding: 0.75rem;
-  display: flex;
-  flex-direction: column;
-}
-
-#roomChatShell.fullscreen #roomChatMessages {
-  flex: 1;
-  height: auto;
-}
-
-#roomChatShell.fullscreen #roomChatResize {
-  cursor: default;
-}
-
-/* Soften cupcake light theme */
-html[data-theme="cupcake"] {
-  --b1: 38 60% 88%; /* base-100: warm beige */
-  --b2: 35 55% 82%; /* base-200: slightly deeper */
-  --b3: 30 50% 75%; /* base-300: borders */
-  --bc: 222 18% 15%; /* base-content: dark slate text */
-}
-
-html[data-theme="cupcake"] #roomChatMessages {
-  background-color: hsl(35 40% 90%);
-}
-
-html[data-theme="cupcake"] .chat-bubble-primary {
-  background-color: hsl(222 18% 16%);
-  color: #fff;
-}
-
-html[data-theme="cupcake"] .chat-bubble-neutral {
-  background-color: hsl(35 45% 88%);
-  color: hsl(222 18% 14%);
-}
-
-html[data-theme="cupcake"] {
-  /* Softer base background (from previous step) */
-  --b1: 38 60% 88%;
-  --b2: 35 55% 82%;
-  --b3: 30 50% 75%;
-  --bc: 222 18% 15%;
-
-  /* Cupcake-style primary (buttons, links) */
-  --p: 330 72% 72%; /* primary: strawberry frosting pink */
-  --pf: 330 80% 64%; /* primary-focus: slightly deeper */
-  --pc: 330 20% 18%; /* primary-content: dark text on pink */
-}
-
-html[data-theme="cupcake"] {
-  /* …previous vars… */
-
-  --s: 200 60% 70%; /* secondary: soft teal */
-  --sf: 200 65% 62%;
-  --sc: 200 20% 18%;
-
-  --a: 45 90% 70%; /* accent: pastel yellow */
-  --af: 45 95% 62%;
-  --ac: 45 25% 18%;
-}
-
-html[data-theme="synthwave"] {
-  /* Darker, cooler background */
-  --b1: 250 25% 10%; /* base-100: deep indigo */
-  --b2: 250 28% 14%; /* base-200 */
-  --b3: 250 30% 20%; /* base-300: borders */
-  --bc: 220 20% 88%; /* base-content: light cool text */
-}
-
-html[data-theme="synthwave"] {
-  /* …base vars above… */
-
-  /* Electric cyan primary for buttons, links */
-  --p: 190 95% 65%; /* primary */
-  --pf: 190 95% 58%; /* primary-focus */
-  --pc: 210 40% 10%; /* primary-content (text on primary) */
-
-  /* Purple secondary, pink accent */
-  --s: 275 80% 70%; /* secondary: neon purple */
-  --sf: 275 80% 62%;
-  --sc: 275 25% 14%;
-
-  --a: 330 80% 68%; /* accent: magenta */
-  --af: 330 80% 60%;
-  --ac: 330 30% 14%;
-}
-
-html[data-theme="synthwave"] .chat-bubble-primary {
-  background-color: hsl(190 95% 65%);
-  color: hsl(210 40% 10%);
-}
-
-html[data-theme="synthwave"] .chat-bubble-neutral {
-  background-color: hsl(250 28% 14%);
-  color: hsl(220 20% 88%);
-}
-
-/* Boxy look: minimal rounding */
-:root {
-  --rounded-box: 0.4rem; /* cards, modals */
-  --rounded-btn: 0.35rem; /* buttons */
-  --rounded-badge: 0.35rem;
-  --rounded-input: 0.35rem;
-}
-
-/* Force some components to be square-ish everywhere */
-.card,
-.modal-box,
-.input,
-.select,
-.btn,
-.badge {
-  border-radius: 0.4rem !important;
-}
-
-/* Chat bits */
-#roomChatMessages,
-#roomReplyPreview,
-#roomChatForm,
-.chat-bubble,
-.chat-bubble-primary,
-.chat-bubble-neutral {
-  border-radius: 0.4rem !important;
-}
-
-:root {
-  --shadow-elevated: 0 14px 35px rgba(0, 0, 0, 0.45),
-    0 2px 6px rgba(0, 0, 0, 0.35);
-}
-
-/* Primary shells */
-.card,
-.modal-box,
-#poolChatWrap > div,
-#roomMembersWrap,
-#roomChatColumn,
-#roomChatShell {
-  box-shadow: var(--shadow-elevated);
-  border-width: 1px;
-  border-color: hsl(var(--b3));
-}
-
-/* Chat tray (GIF/Sticker/Emoji) */
-#chatTray {
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
-}
-
-/* Buttons: subtle lift */
-.btn {
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-  transform: translateY(0);
-  transition: box-shadow 140ms ease, transform 120ms ease, filter 140ms ease;
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
-  filter: brightness(1.03);
-}
-
-.btn:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-}
-
-/* Boxy chat bubbles with depth */
-.chat-bubble-primary,
-.chat-bubble-neutral {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-}
-
-/* Chat input row as a bar */
-#roomChatForm {
-  border-radius: 0.4rem;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
-}
-
-/* Input + send polish you already added works with the boxy style */
-
-/* Tiny bump when tray tab is hovered and we “mirror” it on toolbar buttons */
-.chat-tray-pulse {
-  transform: translateY(-1px) scale(1.06);
-  background-color: color-mix(in oklab, hsl(var(--b3)) 70%, transparent);
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.55);
-}
-
-/* Reactions context menu – use theme surface instead of transparent */
-.reaction-menu,
-#reactionMenu {
-  background-color: hsl(var(--b1));
-  color: hsl(var(--bc));
-  border: 1px solid hsl(var(--b3));
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
-  border-radius: 0.45rem;
-}
-
-/* Optional: reaction items hover */
-.reaction-menu button,
-.reaction-menu .reaction-item {
-  border-radius: 999px;
-  transition: background-color 140ms ease, transform 120ms ease;
-}
-
-.reaction-menu button:hover,
-.reaction-menu .reaction-item:hover {
-  background-color: color-mix(in oklab, hsl(var(--b2)) 45%, transparent);
-  transform: translateY(-1px) scale(1.03);
-}
+ body {
+   background: radial-gradient(900px 500px at 15% -10%, rgba(255, 0, 170, 0.28), transparent 55%), radial-gradient(800px 520px at 90% 0%, rgba(0, 255, 230, 0.22), transparent 55%), radial-gradient(900px 520px at 60% 110%, rgba(120, 90, 255, 0.24), transparent 55%), hsl(var(--b2));
+ }
+
+ html,
+ body {
+   max-width: 100%;
+   overflow-x: hidden;
+ }
+
+ body::before {
+   content: "";
+   position: fixed;
+   inset: 0;
+   pointer-events: none;
+   opacity: 0.08;
+   mix-blend-mode: overlay;
+   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+ }
+
+ ::-webkit-scrollbar {
+   width: 10px;
+   height: 10px;
+ }
+
+ ::-webkit-scrollbar-thumb {
+   background: color-mix(in oklab, hsl(var(--p)) 42%, transparent);
+   border-radius: 999px;
+ }
+
+ ::-webkit-scrollbar-track {
+   background: transparent;
+ }
+
+ @media (prefers-reduced-motion: reduce) {
+   * {
+     animation: none !important;
+     transition: none !important;
+     scroll-behavior: auto !important;
+   }
+ }
+
+ html[data-theme="synthwave"] {
+   --b1: 240 29% 16%;
+   --b2: 248 38% 10%;
+   --b3: 248 40% 8%;
+   --p: 315 93% 63%;
+   --s: 184 100% 60%;
+   --a: 52 100% 63%;
+   --bc: 210 32% 92%;
+   --su: 145 72% 55%;
+   --er: 0 83% 64%;
+ }
+
+ html[data-theme="cupcake"] {
+   --b1: 220 40% 99%;
+   --b2: 220 45% 96%;
+   --b3: 220 30% 92%;
+   --p: 283 84% 62%;
+   --s: 192 94% 62%;
+   --a: 46 98% 64%;
+   --bc: 222 18% 18%;
+   --su: 145 64% 40%;
+   --er: 0 76% 55%;
+ }
+
+ html[data-theme="synthwave"] body,
+ html[data-theme="synthwave"] .card,
+ html[data-theme="synthwave"] .navbar {
+   color: hsl(var(--bc));
+ }
+
+ html[data-theme="cupcake"] body,
+ html[data-theme="cupcake"] .card,
+ html[data-theme="cupcake"] .navbar {
+   color: hsl(var(--bc));
+ }
+
+ .theme-ico {
+   transition: transform 260ms ease, color 260ms ease, stroke 260ms ease;
+ }
+
+ html[data-theme="synthwave"] .theme-ico {
+   color: hsl(315 93% 63%);
+   stroke: currentColor;
+   transform: rotate(-8deg) scale(1);
+ }
+
+ html[data-theme="cupcake"] .theme-ico {
+   color: hsl(192 94% 62%);
+   stroke: currentColor;
+   transform: rotate(8deg) scale(1.05);
+ }
+
+ button:active .theme-ico,
+ .btn:active .theme-ico {
+   transform: scale(0.94) translateY(1px);
+ }
+
+ @keyframes pop {
+   0% {
+     transform: scale(0.96);
+     opacity: 0.7;
+   }
+
+   100% {
+     transform: scale(1);
+     opacity: 1;
+   }
+ }
+
+ .badge-primary {
+   animation: pop 220ms ease-out;
+ }
+
+ .card {
+   background-color: hsl(var(--b1));
+   border-radius: 0.9rem;
+   border: 1px solid hsl(var(--b3));
+   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(255, 255, 255, 0.02);
+   overflow: hidden;
+   transition: transform 160ms ease, box-shadow 160ms ease;
+ }
+
+ .card img {
+   transition: transform 160ms ease, filter 160ms ease;
+ }
+
+ .card:hover img {
+   transform: translateY(-2px) scale(1.02);
+   filter: saturate(1.1) contrast(1.05);
+ }
+
+ .card:hover {
+   transform: translateY(-2px);
+   box-shadow: 0 22px 55px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
+ }
+
+ .card figure {
+   padding: 0.75rem 0.75rem 0;
+ }
+
+ .card img {
+   border-radius: 0.7rem;
+   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+ }
+
+ .card-body {
+   padding: 0.75rem 0.9rem 0.9rem;
+   gap: 0.4rem;
+ }
+
+ .card-title {
+   font-size: 0.96rem;
+   letter-spacing: 0.01em;
+ }
+
+ .badge-primary {
+   border-radius: 999px;
+   padding-inline: 0.55rem;
+   font-weight: 600;
+ }
+
+ .header-shell {
+   background-color: hsl(var(--b1));
+   border-color: hsl(var(--b3));
+   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.02);
+ }
+
+ .header-shell,
+ .header-shell span {
+   color: hsl(var(--bc));
+ }
+
+ .header-shell .btn {
+   min-width: 2.25rem;
+ }
+
+ html[data-theme="synthwave"] .modal-box,
+ html[data-theme="cupcake"] .modal-box {
+   background-color: hsl(var(--b1));
+   color: hsl(var(--bc));
+ }
+
+ .modal-box .label-text,
+ .modal-box p,
+ .modal-box h3 {
+   color: hsl(var(--bc));
+ }
+
+ .modal-box .input,
+ .modal-box .btn,
+ .modal-box .divider {
+   color: hsl(var(--bc));
+ }
+
+ #results {
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+   gap: 1.5rem;
+ }
+
+ :root {
+   --ui-radius: 0.7rem;
+   --ui-radius-sm: 0.65rem;
+   --ui-radius-xs: 0.6rem;
+   --ui-radius-pill: 999px;
+   --ui-border: 1px solid hsl(var(--b3));
+   --ui-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.05);
+   --ui-shadow-soft: 0 6px 16px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.03);
+ }
+
+ * {
+   -webkit-tap-highlight-color: transparent;
+ }
+
+ .truncate {
+   min-width: 0;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+ }
+
+ .bg-base-20040 {
+   background-color: rgba(255, 255, 255, 0.06);
+ }
+
+ @supports (background-color: color-mix(in oklab, black, white)) {
+   .bg-base-20040 {
+     background-color: color-mix(in oklab, hsl(var(--b2)) 40%, transparent);
+   }
+ }
+
+ .btn,
+ .input,
+ .select {
+   min-height: 2.4rem;
+   height: 2.4rem;
+   border-radius: var(--ui-radius);
+   font-size: 0.9rem;
+   padding-inline: 0.85rem;
+ }
+
+ .btn-sm,
+ .input-sm,
+ .select-sm {
+   min-height: 2.1rem;
+   height: 2.1rem;
+   font-size: 0.82rem;
+   border-radius: var(--ui-radius-sm);
+ }
+
+ .btn-xs,
+ .input-xs,
+ .select-xs {
+   min-height: 1.8rem;
+   height: 1.8rem;
+   font-size: 0.78rem;
+   border-radius: var(--ui-radius-xs);
+ }
+
+ .btn {
+   line-height: 1;
+   border-width: 1px;
+   border-color: transparent;
+   transition: transform 120ms ease, filter 160ms ease, box-shadow 160ms ease, background-color 160ms ease, border-color 160ms ease;
+ }
+
+ .btn:active {
+   transform: translateY(1px);
+ }
+
+ .btn:focus-visible {
+   outline: none;
+   box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent), var(--ui-shadow);
+ }
+
+ .btn-primary {
+   background: linear-gradient(135deg, hsl(var(--p)), color-mix(in oklab, hsl(var(--p)) 80%, hsl(var(--s)) 20%));
+   border-color: transparent;
+   color: hsl(0 0% 5%);
+   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+ }
+
+ .btn-primary:hover {
+   filter: brightness(1.05);
+ }
+
+ .btn-secondary {
+   background: linear-gradient(135deg, hsl(var(--s)), color-mix(in oklab, hsl(var(--s)) 75%, hsl(var(--p)) 25%));
+   border-color: transparent;
+   color: hsl(0 0% 5%);
+   box-shadow: var(--ui-shadow);
+ }
+
+ .btn-secondary:hover {
+   filter: brightness(1.06);
+ }
+
+ html[data-theme="synthwave"] .btn-secondary {
+   background-color: hsl(var(--s));
+   color: hsl(0 0% 5%);
+   border-color: transparent;
+ }
+
+ html[data-theme="synthwave"] .btn-secondary:hover {
+   filter: brightness(1.1);
+ }
+
+ .btn-ghost {
+   border-radius: var(--ui-radius-pill);
+   border-color: transparent;
+   background-color: transparent;
+   box-shadow: none;
+ }
+
+ .btn-ghost:hover {
+   background-color: color-mix(in oklab, hsl(var(--b3)) 60%, transparent);
+ }
+
+ .btn-outline {
+   background-color: transparent;
+   border: var(--ui-border);
+   color: hsl(var(--bc));
+ }
+
+ .btn-outline:hover {
+   background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
+ }
+
+ .btn-error {
+   box-shadow: var(--ui-shadow-soft);
+ }
+
+ .btn[disabled],
+ .btn.btn-disabled,
+ .btn:disabled {
+   opacity: 0.55;
+   cursor: not-allowed;
+   transform: none;
+   box-shadow: none;
+   filter: none;
+ }
+
+ .input,
+ .select {
+   border-width: 1px;
+   border-color: hsl(var(--b3));
+   background-color: hsl(var(--b1));
+   box-shadow: var(--ui-shadow-soft);
+   color: hsl(var(--bc));
+ }
+
+ .input:focus,
+ .select:focus {
+   outline: none;
+   border-color: hsl(var(--p));
+   box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55);
+ }
+
+ .input:disabled,
+ .select:disabled {
+   opacity: 0.65;
+   cursor: not-allowed;
+ }
+
+ select option {
+   color: hsl(var(--bc));
+   background-color: hsl(var(--b1));
+ }
+
+ #resultSort.select {
+   color: hsl(var(--bc));
+ }
+
+ #resultSort.select option {
+   color: hsl(var(--bc));
+   background-color: hsl(var(--b1));
+ }
+
+ .theme-toggle__dark-inner {
+   transition: transform 260ms ease, color 260ms ease;
+ }
+
+ html[data-theme="synthwave"] .theme-toggle__dark-inner {
+   color: hsl(315 93% 63%);
+   transform: rotate(-10deg);
+ }
+
+ html[data-theme="cupcake"] .theme-toggle__dark-inner {
+   color: hsl(192 94% 62%);
+   transform: rotate(10deg);
+ }
+
+ .theme-toggle:active .theme-toggle__dark-inner {
+   transform: scale(0.92) translateY(1px);
+ }
+
+ html[data-theme="synthwave"] .btn-primary,
+ html[data-theme="synthwave"] .btn-secondary,
+ html[data-theme="synthwave"] .btn-accent {
+   background: linear-gradient(135deg, hsl(var(--p)), color-mix(in oklab, hsl(var(--p)) 80%, hsl(var(--s)) 20%));
+   border-color: transparent;
+   color: hsl(0 0% 5%);
+   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
+ }
+
+ html[data-theme="synthwave"] .btn-primary:hover,
+ html[data-theme="synthwave"] .btn-secondary:hover,
+ html[data-theme="synthwave"] .btn-accent:hover {
+   filter: brightness(1.06);
+ }
+
+ html[data-theme="cupcake"] .btn-primary,
+ html[data-theme="cupcake"] .btn-secondary,
+ html[data-theme="cupcake"] .btn-accent {
+   background: linear-gradient(135deg, hsl(var(--s)), color-mix(in oklab, hsl(var(--s)) 80%, hsl(var(--p)) 20%));
+   border-color: transparent;
+   color: hsl(0 0% 5%);
+   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.3), 0 0 0 1px rgba(15, 23, 42, 0.06);
+ }
+
+ html[data-theme="cupcake"] .btn-primary:hover,
+ html[data-theme="cupcake"] .btn-secondary:hover,
+ html[data-theme="cupcake"] .btn-accent:hover {
+   filter: brightness(1.04);
+ }
+
+ .card-body p,
+ .text-base-content\/60 {
+   font-weight: 400;
+ }
+
+ .line-clamp-2 {
+   display: -webkit-box;
+   -webkit-line-clamp: 2;
+   -webkit-box-orient: vertical;
+   overflow: hidden;
+ }
+
+ .aspect-23 {
+   aspect-ratio: 2 / 3;
+ }
+
+ .text-base-content60 {
+   color: color-mix(in oklab, hsl(var(--bc)) 60%, transparent);
+ }
+
+ .text-base-content70 {
+   color: color-mix(in oklab, hsl(var(--bc)) 70%, transparent);
+ }
+
+ .z-999 {
+   z-index: 999;
+ }
+
+ #toasts.toast {
+   z-index: 9999;
+ }
+
+ @media (max-width: 640px) {
+   header.header-shell {
+     flex-wrap: wrap;
+     row-gap: 0.5rem;
+   }
+
+   header.header-shell>div:last-child {
+     width: 100%;
+     flex-wrap: wrap;
+     justify-content: flex-start;
+   }
+
+   #btnPick {
+     width: 100%;
+   }
+ }
+
+ #pagerWrap {
+   flex-wrap: wrap;
+ }
+
+ #roomPickBanner {
+   border: 1px solid hsl(var(--b3));
+   border-radius: 0.9rem;
+ }
+
+ @media (max-width: 480px) {
+   .modal-box {
+     max-height: calc(100vh - 2rem);
+     overflow: auto;
+     padding: 1rem;
+   }
+
+   .modal-action {
+     flex-wrap: wrap;
+     gap: 0.5rem;
+   }
+
+   .modal-action .btn {
+     flex: 1 1 9rem;
+   }
+ }
+
+ #results .card .card-body {
+   display: flex !important;
+   flex-direction: column !important;
+ }
+
+ #results .card .card-body>.flex.items-start {
+   flex-wrap: wrap;
+ }
+
+ #results .card .card-actions {
+   margin-top: auto !important;
+   display: flex !important;
+   flex-wrap: wrap !important;
+   gap: 0.5rem !important;
+   justify-content: flex-end !important;
+   align-items: center !important;
+ }
+
+ #results .card .card-actions .btn {
+   white-space: nowrap;
+ }
+
+ @media (max-width: 420px) {
+   #results .card .card-actions {
+     flex-direction: column !important;
+     align-items: stretch !important;
+   }
+
+   #results .card .card-actions .btn {
+     width: 100%;
+   }
+ }
+
+ #pool .badge {
+   border-radius: 999px;
+ }
+
+ #pool>div {
+   display: grid !important;
+   grid-template-columns: 3rem minmax(0, 1fr) auto !important;
+   align-items: center !important;
+   gap: 0.75rem !important;
+   padding: 0.65rem 0.75rem;
+   border-radius: 0.7rem;
+   background-color: color-mix(in oklab, hsl(var(--b2)) 40%, transparent);
+   border: 1px solid hsl(var(--b3));
+   backdrop-filter: blur(6px);
+   transition: background-color 160ms ease;
+ }
+
+ #pool>div:hover {
+   background-color: color-mix(in oklab, hsl(var(--b2)) 55%, transparent);
+ }
+
+ #pool>div> :first-child {
+   width: 3rem !important;
+   height: 4rem !important;
+   border-radius: 0.6rem !important;
+   overflow: hidden !important;
+ }
+
+ #pool>div> :nth-child(2) {
+   min-width: 0 !important;
+ }
+
+ #pool .font-semibold {
+   font-size: 0.9rem;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+ }
+
+ #pool>div> :nth-child(3) {
+   display: flex !important;
+   flex-wrap: wrap !important;
+   gap: 0.45rem !important;
+   justify-content: flex-end !important;
+   align-items: center !important;
+ }
+
+ @media (max-width: 640px) {
+   #pool>div {
+     grid-template-columns: 3rem minmax(0, 1fr) !important;
+     grid-template-rows: auto auto !important;
+   }
+
+   #pool>div> :nth-child(3) {
+     grid-column: 1 / -1 !important;
+     justify-content: flex-start !important;
+   }
+
+   #pool .btn-xs {
+     flex: 1 1 auto;
+     min-width: 5.25rem;
+   }
+ }
+
+ #pool {
+   max-height: 32rem;
+   overflow-y: auto;
+ }
+
+ @media (max-width: 768px) {
+   #pool {
+     max-height: 24rem;
+   }
+ }
+
+ #roomMembersWrap.card {
+   overflow: visible !important;
+ }
+
+ #roomMembersWrap {
+   width: 100% !important;
+   display: block !important;
+   margin-top: 0.75rem !important;
+   box-shadow: none !important;
+   border: 1px solid hsl(var(--b3)) !important;
+   background: color-mix(in oklab, hsl(var(--b1)) 70%, transparent) !important;
+   border-radius: 0.9rem;
+ }
+
+ #roomMembersWrap .card-body {
+   padding: 0.9rem !important;
+   overflow: visible !important;
+ }
+
+ #roomMembersWrap .card-body>div:first-child {
+   display: grid !important;
+   grid-template-columns: minmax(0, 1fr) auto !important;
+   align-items: center !important;
+   gap: 0.75rem !important;
+   overflow: visible !important;
+ }
+
+ #roomMembersWrap .card-body>div:first-child h3 {
+   min-width: 0 !important;
+   margin: 0 !important;
+ }
+
+ #roomOnlineCount {
+   white-space: nowrap !important;
+   flex-shrink: 0 !important;
+   margin-right: 0.35rem !important;
+   border-radius: 999px;
+   font-size: 0.75rem;
+   padding: 0.25rem 0.6rem;
+ }
+
+ @media (max-width: 420px) {
+   #roomOnlineCount {
+     font-size: 0.7rem !important;
+     padding: 0.2rem 0.45rem !important;
+     margin-right: 0.25rem !important;
+   }
+ }
+
+ #roomMembersList {
+   display: flex !important;
+   flex-direction: column !important;
+   gap: 0.5rem !important;
+   margin-top: 0.5rem !important;
+   max-height: 12rem;
+   overflow: auto;
+ }
+
+ #roomMembersList>div {
+   width: 100% !important;
+   display: grid !important;
+   grid-template-columns: minmax(0, 1fr) auto !important;
+   align-items: center !important;
+   column-gap: 0.6rem !important;
+   padding: 0.6rem 0.75rem !important;
+   border-radius: 0.75rem !important;
+   border: 1px solid hsl(var(--b3)) !important;
+   word-break: break-word;
+ }
+
+ #roomMembersList>div>.truncate {
+   min-width: 0 !important;
+ }
+
+ #roomMembersList>div>.badge {
+   justify-self: end !important;
+   white-space: nowrap !important;
+ }
+
+ @media (max-width: 768px) {
+   #roomMembersList {
+     max-height: 12rem;
+   }
+ }
+
+ #roomBadge {
+   max-width: 12rem;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+   font-size: 0.8rem;
+ }
+
+ @media (max-width: 640px) {
+   #roomBadge {
+     max-width: 8rem;
+   }
+ }
+
+ #watchFilters {
+   padding: 0.75rem;
+   border-radius: 0.9rem;
+   border: 1px solid hsl(var(--b3));
+   background-color: color-mix(in oklab, hsl(var(--b2)) 30%, transparent);
+ }
+
+ .watch-chip {
+   display: inline-flex;
+   align-items: center;
+   gap: 0.5rem;
+   padding: 0.35rem 0.6rem;
+   border-radius: 999px;
+   border: 1px solid hsl(var(--b3));
+   background-color: color-mix(in oklab, hsl(var(--b1)) 70%, transparent);
+   cursor: pointer;
+   user-select: none;
+ }
+
+ .watch-chip:hover {
+   filter: brightness(1.04);
+ }
+
+ #watchRegion {
+   width: 100%;
+ }
+
+ @media (min-width: 1024px) {
+   #watchRegion {
+     height: 2.9rem !important;
+     border-radius: 0.95rem !important;
+   }
+ }
+
+ .wp-pill span.opacity-70 {
+   margin-left: 0.25rem;
+ }
+
+ #q {
+   max-width: 420px;
+   width: 100%;
+ }
+
+ #resultSort {
+   padding-right: 2.5rem !important;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+   overflow: hidden;
+   background-position: right 0.85rem center !important;
+   background-size: 1rem 1rem !important;
+ }
+
+ #resultSort {
+   min-width: 10.5rem;
+ }
+
+ label:has(#excludeWatched) {
+   padding: 0.45rem 0.6rem;
+   border-radius: 999px;
+   border: 1px solid hsl(var(--b3));
+   background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
+   transition: filter 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+ }
+
+ label:has(#excludeWatched):hover {
+   filter: brightness(1.05);
+ }
+
+ label:has(#excludeWatched:checked) {
+   border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
+   background: linear-gradient(135deg, color-mix(in oklab, hsl(var(--p)) 70%, transparent), color-mix(in oklab, hsl(var(--s)) 55%, transparent));
+   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
+ }
+
+ label:has(#excludeWatched:checked) span {
+   color: hsl(var(--bc));
+   font-weight: 700;
+ }
+
+ #excludeWatched.checkbox:checked {
+   background-color: hsl(var(--p));
+   border-color: transparent;
+ }
+
+ label:has(#excludeWatched),
+ #watchFilters label:has(input[type="checkbox"]),
+ #watchFilters label:has(input[type="radio"]),
+ #watchFilters .watch-chip {
+   padding: 0.45rem 0.65rem;
+   border-radius: 999px;
+   border: 1px solid hsl(var(--b3));
+   background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
+   transition: filter 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 120ms ease;
+ }
+
+ label:has(#excludeWatched):hover,
+ #watchFilters label:has(input[type="checkbox"]):hover,
+ #watchFilters label:has(input[type="radio"]):hover,
+ #watchFilters .watch-chip:hover {
+   filter: brightness(1.05);
+ }
+
+ label:has(#excludeWatched:checked),
+ #watchFilters label:has(input[type="checkbox"]:checked),
+ #watchFilters label:has(input[type="radio"]:checked),
+ #watchFilters .watch-chip.is-active,
+ #watchFilters .watch-chip.active,
+ #watchFilters .watch-chip[aria-pressed="true"],
+ #watchFilters .watch-chip[data-active="true"] {
+   border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
+   background: linear-gradient(135deg, color-mix(in oklab, hsl(var(--p)) 70%, transparent), color-mix(in oklab, hsl(var(--s)) 55%, transparent));
+   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
+ }
+
+ label:has(#excludeWatched:checked) span,
+ #watchFilters label:has(input[type="checkbox"]:checked) span,
+ #watchFilters label:has(input[type="radio"]:checked) span,
+ #watchFilters .watch-chip.is-active,
+ #watchFilters .watch-chip.active,
+ #watchFilters .watch-chip[aria-pressed="true"],
+ #watchFilters .watch-chip[data-active="true"] {
+   font-weight: 700;
+   color: hsl(var(--bc));
+ }
+
+ #excludeWatched.checkbox:checked,
+ #watchFilters input[type="checkbox"].checkbox:checked,
+ #watchFilters input[type="radio"].radio:checked {
+   background-color: hsl(var(--p));
+   border-color: transparent;
+ }
+
+ #watchFilters label:has(input[type="checkbox"]),
+ #watchFilters label:has(input[type="radio"]) {
+   cursor: pointer;
+   user-select: none;
+ }
+
+ #genreFilter {
+   border-radius: 0.75rem !important;
+   border-width: 1px !important;
+   border-style: solid !important;
+   border-color: hsl(var(--b3)) !important;
+   background-color: hsl(var(--b1)) !important;
+   color: hsl(var(--bc)) !important;
+   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.03) !important;
+   padding: 0.5rem 0.6rem !important;
+   min-height: 11rem !important;
+   background-image: none !important;
+   background-position: initial !important;
+   background-repeat: initial !important;
+ }
+
+ #genreFilter option {
+   color: hsl(var(--bc)) !important;
+   background-color: hsl(var(--b1)) !important;
+ }
+
+ #genreFilter:focus {
+   outline: none;
+   border-color: hsl(var(--p));
+   box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55);
+ }
+
+ #q {
+   max-width: 520px;
+   min-height: 3rem;
+   height: 3rem;
+   font-size: 1rem;
+   border-width: 2px;
+   border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
+   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
+ }
+
+ #q:focus {
+   border-color: hsl(var(--p));
+   box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 55%, transparent), 0 14px 34px rgba(0, 0, 0, 0.55);
+ }
+
+ #mediaType {
+   padding-right: 2.5rem !important;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+   overflow: hidden;
+   background-position: right 0.85rem center !important;
+   background-size: 1rem 1rem !important;
+ }
+
+ #genreDropdownBtn {
+   border: 1px solid hsl(var(--b3)) !important;
+   background-color: hsl(var(--b1)) !important;
+   color: hsl(var(--bc)) !important;
+   box-shadow: var(--ui-shadow-soft) !important;
+ }
+
+ #genreDropdownBtn:hover {
+   background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent) !important;
+ }
+
+ #genreDropdownBtn:focus-visible {
+   outline: none !important;
+   box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55) !important;
+ }
+
+ #genreDropdownMenu {
+   border-color: hsl(var(--b3)) !important;
+   background-color: hsl(var(--b1)) !important;
+   color: hsl(var(--bc)) !important;
+ }
+
+ #genreDropdownMenu {
+   min-width: 100%;
+   max-width: min(28rem, 92vw);
+ }
+
+ #genreDropdownMenu label {
+   width: 100%;
+ }
+
+ #genreDropdownMenu span {
+   white-space: normal;
+ }
+
+ :root {
+   --filterW: 11.5rem;
+ }
+
+ :root {
+   --ctrlW: 11.25rem;
+   --searchMin: 22rem;
+   --searchMax: 34rem;
+ }
+
+ :root {
+   --ctrlW: 11.25rem;
+   --searchMin: 24rem;
+ }
+
+ .max-w-5xl {
+   max-width: 100% !important;
+   width: 100% !important;
+   margin-left: 0 !important;
+   margin-right: 0 !important;
+   min-height: 100vh;
+   display: flex;
+   flex-direction: column;
+ }
+
+ main.grid {
+   flex: 1 1 auto;
+   min-height: 0;
+   align-items: stretch;
+ }
+
+ main.grid>section {
+   display: flex;
+   flex-direction: column;
+   min-height: 0;
+ }
+
+ main.grid>section>.card-body {
+   display: flex;
+   flex-direction: column;
+   flex: 1 1 auto;
+   min-height: 0;
+ }
+
+ #results {
+   flex: 1 1 auto;
+   min-height: 0;
+   overflow: auto;
+ }
+
+ #pool {
+   flex: 1 1 auto;
+   min-height: 0;
+   overflow: auto;
+   max-height: none !important;
+ }
+
+ main.grid * {
+   min-width: 0;
+ }
+
+ #ottDropdownBtn {
+   border: 1px solid hsl(var(--b3)) !important;
+   background-color: hsl(var(--b1)) !important;
+   color: hsl(var(--bc)) !important;
+   box-shadow: var(--ui-shadow-soft) !important;
+ }
+
+ #ottDropdownBtn:hover {
+   background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent) !important;
+ }
+
+ #ottDropdownBtn:focus-visible {
+   outline: none !important;
+   box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55) !important;
+ }
+
+ #ottDropdownMenu {
+   border-color: hsl(var(--b3)) !important;
+   background-color: hsl(var(--b1)) !important;
+   color: hsl(var(--bc)) !important;
+   min-width: 100%;
+   max-width: min(28rem, 92vw);
+ }
+
+ #ottDropdownMenu label {
+   width: 100%;
+ }
+
+ #ottDropdownMenu span {
+   white-space: normal;
+ }
+
+ #genreDropdownMenu label,
+ #ottDropdownMenu label {
+   border: 1px solid transparent;
+   border-radius: 0.75rem;
+   transition: filter 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+ }
+
+ #genreDropdownMenu label:hover,
+ #ottDropdownMenu label:hover {
+   filter: brightness(1.05);
+ }
+
+ #genreDropdownMenu label:has(input[type="checkbox"]:checked),
+ #ottDropdownMenu label:has(input[type="checkbox"]:checked) {
+   border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
+   background: linear-gradient(135deg, color-mix(in oklab, hsl(var(--p)) 45%, transparent), color-mix(in oklab, hsl(var(--s)) 35%, transparent));
+   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.06);
+ }
+
+ #genreDropdownMenu label:has(input[type="checkbox"]:checked) span,
+ #ottDropdownMenu label:has(input[type="checkbox"]:checked) span {
+   font-weight: 700;
+   color: hsl(var(--bc));
+ }
+
+ #genreDropdownMenu label:focus-within,
+ #ottDropdownMenu label:focus-within {
+   outline: none;
+   box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent), 0 10px 24px rgba(0, 0, 0, 0.45);
+ }
+
+ #genreDropdownMenu label span,
+ #ottDropdownMenu label span {
+   pointer-events: none;
+ }
+
+ #genreDropdownMenu label,
+ #ottDropdownMenu label {
+   cursor: pointer;
+ }
+
+ #genreDropdownMenu label,
+ #ottDropdownMenu label {
+   width: 100%;
+   cursor: pointer;
+ }
+
+ @media (min-width: 1024px) and (max-width: 1535px) {
+
+   #filtersBar #mediaType,
+   #filtersBar #yearFilter,
+   #filtersBar #resultSort,
+   #filtersBar #genreDropdownBtn,
+   #filtersBar #ottDropdownBtn,
+   #filtersBar #btnResetFilters {
+     width: 100% !important;
+     max-width: none !important;
+     min-width: 0 !important;
+   }
+
+   #filtersBar #q {
+     max-width: none !important;
+   }
+ }
+
+ #btnSearch,
+ #btnTrending {
+   min-height: 2.55rem;
+   height: 2.55rem;
+   padding-inline: 1rem;
+   font-size: 0.9rem;
+ }
+
+ @media (min-width: 1536px) {
+   #filtersBar {
+     display: flex;
+     flex-wrap: nowrap;
+     gap: 0.75rem;
+     align-items: flex-end;
+   }
+
+   #searchRow,
+   #filtersGrid {
+     display: contents;
+   }
+
+   #q {
+     flex: 1 1 28rem !important;
+     max-width: none !important;
+   }
+
+   #mediaType,
+   #yearFilter,
+   #resultSort,
+   #genreDropdownBtn,
+   #ottDropdownBtn,
+   #btnSearch,
+   #btnTrending,
+   #btnResetFilters {
+     width: var(--ctrlW) !important;
+   }
+ }
+
+ main.grid>section:last-child {
+   align-self: flex-start !important;
+ }
+
+ main.grid>section:last-child>.card-body {
+   flex: 0 0 auto !important;
+   min-height: auto !important;
+ }
+
+ main.grid>section:last-child #pool {
+   flex: 0 0 auto !important;
+   max-height: 32rem;
+   overflow: auto;
+ }
+
+ @media (max-width: 768px) {
+   main.grid>section:last-child #pool {
+     max-height: 24rem;
+   }
+ }
+
+ main.grid>section:first-child.card,
+ main.grid>section:first-child .card-body {
+   overflow: visible !important;
+ }
+
+ dialog.modal {
+   background: transparent;
+ }
+
+ dialog.modal::backdrop {
+   background: rgba(0, 0, 0, 0.68);
+   backdrop-filter: blur(6px);
+ }
+
+ .modal .modal-box {
+   background-color: hsl(var(--b1));
+   color: hsl(var(--bc));
+   border: 1px solid hsl(var(--b3));
+   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+ }
+
+ #toasts.toast .alert {
+   opacity: 1 !important;
+   background-color: hsl(var(--b1) / 0.96);
+   color: hsl(var(--bc));
+   border: 1px solid hsl(var(--b3));
+   backdrop-filter: blur(8px);
+ }
+
+ #userDropdownMenu {
+   border-color: hsl(var(--b3)) !important;
+   background-color: hsl(var(--b1)) !important;
+   color: hsl(var(--bc)) !important;
+ }
+
+ .user-menu-item {
+   width: 100%;
+   display: flex;
+   align-items: center;
+   gap: 0.65rem;
+   padding: 0.55rem 0.7rem;
+   border-radius: 0.75rem;
+   border: 1px solid transparent;
+ }
+
+ .user-menu-item:hover {
+   background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
+   border-color: color-mix(in oklab, hsl(var(--b3)) 70%, transparent);
+ }
+
+ .user-menu-ico {
+   width: 1rem;
+   height: 1rem;
+   flex: 0 0 auto;
+   opacity: 0.9;
+ }
+
+ html[data-reduce-motion] *,
+ html[data-reduce-motion] *::before,
+ html[data-reduce-motion] *::after {
+   animation: none !important;
+   transition: none !important;
+   scroll-behavior: auto !important;
+ }
+
+ .toggle {
+   --tglbg: color-mix(in oklab, hsl(var(--b2)) 55%, hsl(var(--b1)) 45%);
+   border: 1px solid hsl(var(--b3));
+ }
+
+ .toggle:checked {
+   --tglbg: hsl(var(--p));
+   border-color: hsl(var(--p));
+ }
+
+ .toggle:focus-visible {
+   outline: none;
+   box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent);
+ }
+
+ .chat-bubble-primary {
+   background-color: #000;
+   color: #fff;
+   border-radius: 9999px;
+ }
+
+ .chat-bubble-neutral {
+   background-color: #fff;
+   color: #000;
+   border-radius: 9999px;
+ }
+
+ #roomChatMessages {
+   position: relative;
+ }
+
+ #roomGifBtn,
+ #roomStickerBtn,
+ #roomEmojiBtn {
+   transition: transform 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+   border-radius: 999px;
+ }
+
+ #roomGifBtn:hover,
+ #roomStickerBtn:hover,
+ #roomEmojiBtn:hover {
+   transform: translateY(-1px) scale(1.04);
+   background-color: color-mix(in oklab, hsl(var(--b3)) 60%, transparent);
+   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+ }
+
+ #roomGifBtn:active,
+ #roomStickerBtn:active,
+ #roomEmojiBtn {
+   transform: translateY(0) scale(0.97);
+   box-shadow: none;
+ }
+
+ #roomChatForm {
+   gap: 0.5rem;
+ }
+
+ #roomChatInput {
+   transition: box-shadow 140ms ease, border-color 140ms ease, transform 120ms ease;
+ }
+
+ #roomChatInput:focus {
+   transform: translateY(-1px);
+   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.55), 0 0 0 1px hsl(var(--p));
+ }
+
+ #roomChatForm button[type="submit"] {
+   transition: transform 120ms ease, box-shadow 150ms ease, filter 140ms ease;
+   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+ }
+
+ #roomChatForm button[type="submit"]:hover {
+   transform: translateY(-1px);
+   filter: brightness(1.05);
+   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+ }
+
+ #roomChatForm button[type="submit"]:active {
+   transform: translateY(0);
+   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+ }
+
+ .chat-bubble-primary,
+ .chat-bubble-neutral {
+   border-radius: 9999px;
+ }
+
+ html[data-theme="synthwave"] .chat-bubble-primary {
+   background-color: hsl(var(--b1));
+   color: hsl(var(--bc));
+ }
+
+ html[data-theme="synthwave"] .chat-bubble-neutral {
+   background-color: color-mix(in oklab, hsl(var(--b1)) 80%, hsl(var(--b3)) 20%);
+   color: hsl(var(--bc));
+ }
+
+ html[data-theme="cupcake"] .chat-bubble-primary {
+   background-color: hsl(222 18% 12%);
+   color: #fff;
+ }
+
+ html[data-theme="cupcake"] .chat-bubble-neutral {
+   background-color: #fff;
+   color: hsl(222 18% 12%);
+ }
+
+ @media (min-width: 768px) {
+   #dlgGifPicker .modal-box {
+     margin: 0;
+     position: fixed;
+     left: 0.75rem;
+     right: 0.75rem;
+     bottom: 5.5rem;
+     max-width: 480px;
+     margin-inline: auto;
+   }
+ }
+
+ #roomChatColumn {
+   position: relative;
+   overflow: visible;
+ }
+
+ .chat-tray {
+   position: absolute;
+   right: 0.5rem;
+   bottom: 2.6rem;
+   width: min(26rem, 92vw);
+   padding: 0.75rem;
+   border-radius: 1rem;
+   background-color: hsl(var(--b1));
+   border: 1px solid hsl(var(--b3));
+   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+   z-index: 50;
+ }
+
+ .chat-tray-tab.is-active {
+   background-color: color-mix(in oklab, hsl(var(--b2)) 60%, transparent);
+   border: 1px solid hsl(var(--b3));
+ }
+
+ #roomChatShell {
+   min-height: 6rem;
+   max-height: 80vh;
+ }
+
+ #roomChatShell.fullscreen {
+   position: fixed;
+   inset: 3.5rem 0.75rem 4.5rem 0.75rem;
+   z-index: 60;
+   background-color: hsl(var(--b1));
+   border-radius: 1rem;
+   box-shadow: 0 32px 90px rgba(0, 0, 0, 0.7);
+   padding: 0.75rem;
+   display: flex;
+   flex-direction: column;
+ }
+
+ #roomChatShell.fullscreen #roomChatMessages {
+   flex: 1;
+   height: auto;
+ }
+
+ #roomChatShell.fullscreen #roomChatResize {
+   cursor: default;
+ }
+
+ html[data-theme="cupcake"] {
+   --b1: 38 60% 88%;
+   --b2: 35 55% 82%;
+   --b3: 30 50% 75%;
+   --bc: 222 18% 15%;
+ }
+
+ html[data-theme="cupcake"] #roomChatMessages {
+   background-color: hsl(35 40% 90%);
+ }
+
+ html[data-theme="cupcake"] .chat-bubble-primary {
+   background-color: hsl(222 18% 16%);
+   color: #fff;
+ }
+
+ html[data-theme="cupcake"] .chat-bubble-neutral {
+   background-color: hsl(35 45% 88%);
+   color: hsl(222 18% 14%);
+ }
+
+ html[data-theme="cupcake"] {
+   --b1: 38 60% 88%;
+   --b2: 35 55% 82%;
+   --b3: 30 50% 75%;
+   --bc: 222 18% 15%;
+   --p: 330 72% 72%;
+   --pf: 330 80% 64%;
+   --pc: 330 20% 18%;
+ }
+
+ html[data-theme="cupcake"] {
+   --s: 200 60% 70%;
+   --sf: 200 65% 62%;
+   --sc: 200 20% 18%;
+   --a: 45 90% 70%;
+   --af: 45 95% 62%;
+   --ac: 45 25% 18%;
+ }
+
+ html[data-theme="synthwave"] {
+   --b1: 250 25% 10%;
+   --b2: 250 28% 14%;
+   --b3: 250 30% 20%;
+   --bc: 220 20% 88%;
+ }
+
+ html[data-theme="synthwave"] {
+   --p: 190 95% 65%;
+   --pf: 190 95% 58%;
+   --pc: 210 40% 10%;
+   --s: 275 80% 70%;
+   --sf: 275 80% 62%;
+   --sc: 275 25% 14%;
+   --a: 330 80% 68%;
+   --af: 330 80% 60%;
+   --ac: 330 30% 14%;
+ }
+
+ html[data-theme="synthwave"] .chat-bubble-primary {
+   background-color: hsl(190 95% 65%);
+   color: hsl(210 40% 10%);
+ }
+
+ html[data-theme="synthwave"] .chat-bubble-neutral {
+   background-color: hsl(250 28% 14%);
+   color: hsl(220 20% 88%);
+ }
+
+ :root {
+   --rounded-box: 0.4rem;
+   --rounded-btn: 0.35rem;
+   --rounded-badge: 0.35rem;
+   --rounded-input: 0.35rem;
+ }
+
+ .card,
+ .modal-box,
+ .input,
+ .select,
+ .btn,
+ .badge {
+   border-radius: 0.4rem !important;
+ }
+
+ #roomChatMessages,
+ #roomReplyPreview,
+ #roomChatForm,
+ .chat-bubble,
+ .chat-bubble-primary,
+ .chat-bubble-neutral {
+   border-radius: 0.4rem !important;
+ }
+
+ :root {
+   --shadow-elevated: 0 14px 35px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.35);
+ }
+
+ .card,
+ .modal-box,
+ #poolChatWrap>div,
+ #roomMembersWrap,
+ #roomChatColumn,
+ #roomChatShell {
+   box-shadow: var(--shadow-elevated);
+   border-width: 1px;
+   border-color: hsl(var(--b3));
+ }
+
+ #chatTray {
+   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+ }
+
+ .btn {
+   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+   transform: translateY(0);
+   transition: box-shadow 140ms ease, transform 120ms ease, filter 140ms ease;
+ }
+
+ .btn:hover {
+   transform: translateY(-1px);
+   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+   filter: brightness(1.03);
+ }
+
+ .btn:active {
+   transform: translateY(0);
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+ }
+
+ .chat-bubble-primary,
+ .chat-bubble-neutral {
+   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+ }
+
+ #roomChatForm {
+   border-radius: 0.4rem;
+   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+ }
+
+ .chat-tray-pulse {
+   transform: translateY(-1px) scale(1.06);
+   background-color: color-mix(in oklab, hsl(var(--b3)) 70%, transparent);
+   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.55);
+ }
+
+ .reaction-menu,
+ #reactionMenu {
+   background-color: hsl(var(--b1));
+   color: hsl(var(--bc));
+   border: 1px solid hsl(var(--b3));
+   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
+   border-radius: 0.45rem;
+ }
+
+ .reaction-menu button,
+ .reaction-menu .reaction-item {
+   border-radius: 999px;
+   transition: background-color 140ms ease, transform 120ms ease;
+ }
+
+ .reaction-menu button:hover,
+ .reaction-menu .reaction-item:hover {
+   background-color: color-mix(in oklab, hsl(var(--b2)) 45%, transparent);
+   transform: translateY(-1px) scale(1.03);
+ }

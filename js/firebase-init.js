@@ -23,6 +23,8 @@ import {
   query,
   orderBy,
   limit,
+  updateDoc,
+  deleteField,
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
 const cfg =
@@ -61,5 +63,7 @@ if (!cfg) {
     query,
     orderBy,
     limit,
+    updateDoc,
+    deleteField,
   };
 }

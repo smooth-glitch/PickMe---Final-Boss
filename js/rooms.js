@@ -645,29 +645,50 @@ export function updateRoomUI() {
     const btnCreate = id("btnCreateRoom");
     const btnCopy = id("btnCopyRoomLink");
     const btnLeave = id("btnLeaveRoom");
-
+    const chatCol = document.getElementById("roomChatColumn");
     const hasRoom = inRoom();
+    // this class no longer affects layout but you can keep it if you want
+    document.body.classList.toggle("has-room", hasRoom);
+
+    if (badge && chatCol) {
+        badge.onclick = () => {
+            chatCol.scrollIntoView({ behavior: "smooth" });
+            const input = document.getElementById("roomChatInput");
+            if (input) input.focus();
+        };
+    }
 
     if (badge) {
+        const labelEl = document.getElementById("roomBadgeLabel");
         badge.classList.toggle("hidden", !hasRoom);
-        badge.textContent = hasRoom ? `Room: ${roomState.id}` : "Room: —";
+
+        if (!hasRoom) {
+            if (labelEl) labelEl.textContent = "Room: —";
+        } else {
+            const u = authState.user;
+            const rawName =
+                u?.displayName ||
+                (u?.email ? u.email.split("@")[0] : null) ||
+                "Friends";
+            const alias = `${rawName}'s room`;
+            if (labelEl) labelEl.textContent = alias;
+        }
     }
+
     if (btnCreate) btnCreate.classList.toggle("hidden", hasRoom);
     if (btnCopy) btnCopy.classList.toggle("hidden", !hasRoom);
     if (btnLeave) btnLeave.classList.toggle("hidden", !hasRoom);
 
     const chatBar = document.getElementById("roomChatBar");
-
     if (chatBar) {
         chatBar.classList.toggle("hidden", !hasRoom);
     }
-    // inside updateRoomUI()
+
     const wrap = document.getElementById("poolChatWrap");
-    const chatCol = document.getElementById("roomChatColumn");
     const membersWrap = document.getElementById("roomMembersWrap");
 
     if (wrap) {
-        // 1 column normally, 2 columns when in room (Pool + Members)
+        // 1 column normally, 2 columns (pool + chat) when in room
         wrap.classList.toggle("md:grid-cols-2", hasRoom);
     }
 
@@ -679,9 +700,8 @@ export function updateRoomUI() {
         chatCol.classList.toggle("hidden", !hasRoom);
         chatCol.classList.toggle("flex", hasRoom);
     }
-
-
 }
+
 
 export function stopRoomListener() {
     if (roomState.unsub) roomState.unsub();
