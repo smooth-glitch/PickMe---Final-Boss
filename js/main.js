@@ -513,6 +513,7 @@ async function boot() {
         roomState.id = null;
     }
 
+    const fa = window.firebaseAuth;
     fa.onAuthStateChanged(fa.auth, async (user) => {
         authState.user = user || null;
 
