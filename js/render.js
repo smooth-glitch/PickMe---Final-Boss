@@ -147,6 +147,13 @@ export function renderResults(list) {
         addToPoolById(mid);
         refreshResultsPoolButtons();
       }
+      if (action === "remove") {
+        removeFromPool(mid);   // updates state + storage + cloud
+        renderPool();          // UI refresh lives here
+        // if you added refreshResultsPoolButtons(), keep it here as well
+        refreshResultsPoolButtons();
+        return;
+      }
 
 
     });

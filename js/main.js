@@ -1,5 +1,6 @@
 // js/main.js
 import { id } from "./dom.js";
+import { loadPrefs, savePrefs, applyTheme } from "./prefs.js";
 import {
     state,
     authState,
@@ -73,16 +74,6 @@ function setPageLoading(on) {
     const el = document.getElementById("pageLoader");
     if (!el) return;
     el.classList.toggle("hidden", !on);
-}
-
-function applyTheme(theme) {
-    document.documentElement.setAttribute("data-theme", theme);
-    saveJson(LSTHEME, theme);
-}
-
-function initTheme() {
-    const saved = loadJson(LSTHEME, "synthwave");
-    applyTheme(saved);
 }
 
 function updateGenreDropdownLabel() {
@@ -471,6 +462,42 @@ function syncUserMenu() {
     id("btnMenuCopyUid")?.classList.toggle("hidden", !signedIn);
 }
 
+
+function applyPrefsToUI() {
+    // Theme is already applied inside loadPrefs()
+
+    // Map prefs -> filters
+    state.filters.mediaType = state.prefs.defaultMediaType;
+    state.filters.minRating = state.prefs.defaultMinRating;
+    state.filters.excludeWatched = state.prefs.defaultExcludeWatched;
+    state.filters.year = state.prefs.defaultYear;
+    state.filters.sort = state.prefs.defaultSort;
+
+    // Pool-related defaults
+    state.filters.minRating = state.prefs.poolMinRating;
+    state.filters.excludeWatched = state.prefs.poolExcludeWatched;
+
+    // Reflect into DOM controls if present
+    const mediaTypeEl = id("mediaType");
+    if (mediaTypeEl) mediaTypeEl.value = state.prefs.defaultMediaType;
+
+    const yearEl = id("yearFilter");
+    if (yearEl) yearEl.value = state.prefs.defaultYear || "";
+
+    const sortEl = id("resultSort");
+    if (sortEl) sortEl.value = state.prefs.defaultSort;
+
+    const minRatingPoolEl = id("minRatingPool");
+    if (minRatingPoolEl) {
+        minRatingPoolEl.value = String(state.prefs.poolMinRating);
+    }
+
+    const excludePoolEl = id("excludeWatched");
+    if (excludePoolEl) {
+        excludePoolEl.checked = state.prefs.poolExcludeWatched;
+    }
+}
+
 async function boot() {
     await loadTmdbConfig();
 
@@ -483,7 +510,8 @@ async function boot() {
     state.filters = loadJson(LSFILTERS, { excludeWatched: true, minRating: 6 });
 
     ensureWatchFilterDefaults();
-    initTheme();
+    loadPrefs();
+    applyPrefsToUI();
     syncControls();
 
     await initWatchFiltersUI({
@@ -532,6 +560,51 @@ async function boot() {
         applyTheme(current === "synthwave" ? "cupcake" : "synthwave");
     });
 
+    id("btnSettingsSave")?.addEventListener("click", async (e) => {
+        const btn = e.currentTarget;
+        const originalContent = btn.innerHTML;
+
+        // 1. Read values from inputs
+        const typeSelect = id("settingsDefaultMediaType");
+        if (typeSelect) state.prefs.defaultMediaType = typeSelect.value;
+
+        const minRating = id("settingsDefaultMinRating");
+        if (minRating) state.prefs.defaultMinRating = Number(minRating.value);
+
+        const exclude = id("settingsDefaultExcludeWatched");
+        if (exclude) state.prefs.defaultExcludeWatched = exclude.checked;
+
+        // 2. Persist
+        savePrefs(); // local storage
+        if (state.user) {
+            // If you have a firebase function, await it here
+            await saveUserPrefsToFirebase(state.user.uid, state.prefs);
+        }
+        applyPrefsToUI(); // Update UI immediately
+
+        // 3. Animation: Switch to success state
+        btn.classList.remove("btn-primary");
+        btn.classList.add("btn-success", "text-white");
+        btn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Saved!
+        `;
+
+        // 4. Close after delay
+        setTimeout(() => {
+            id("dlgSettings")?.close();
+
+            // Reset button state for next time
+            setTimeout(() => {
+                btn.classList.add("btn-primary");
+                btn.classList.remove("btn-success", "text-white");
+                btn.innerHTML = originalContent;
+            }, 200);
+        }, 1000);
+    });
+
     id("settingsThemeToggle")?.addEventListener("change", () => {
         const toggle = id("settingsThemeToggle");
         if (!toggle) return;
@@ -575,6 +648,8 @@ async function boot() {
     }
 
     const fa = window.firebaseAuth;
+    
+
     fa.onAuthStateChanged(fa.auth, async (user) => {
         authState.user = user || null;
 
@@ -602,13 +677,34 @@ async function boot() {
 
         // ensure we are not considered in a room before first UI update
         roomState.id = null;
-
         updateRoomUI();
 
         if (!authState.user) return;
+
         await ensureUserDoc();
+
+        // NEW: load prefs from user doc and apply
+        if (fs) {
+            try {
+                const userRef = fs.doc(fs.db, "users", user.uid);
+                const snap = await fs.getDoc(userRef);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    if (data.prefs && typeof data.prefs === "object") {
+                        state.prefs = { ...state.prefs, ...data.prefs };
+                        savePrefs();        // sync to localStorage
+                        applyPrefsToUI();   // update filters/controls
+                        applyTheme(state.prefs.theme); // ensure theme matches
+                    }
+                }
+            } catch (err) {
+                console.warn("Failed to load user prefs", err);
+            }
+        }
+
         startUserDocListener();
     });
+
 
     const qEl = id("q");
 
@@ -666,6 +762,11 @@ async function boot() {
         chatCol?.classList.add("hidden");
     });
 
+    function boot() {
+        loadPrefs();
+        applyPrefsToUI(); // your function that syncs filters/controls from state.prefs
+        // rest of init
+    }
 
     id("btnResetFilters")?.addEventListener("click", resetAllFilters);
 
@@ -704,9 +805,10 @@ async function boot() {
     });
 
     id("themeToggleBtn")?.addEventListener("click", () => {
-        const current =
-            document.documentElement.getAttribute("data-theme") || "synthwave";
-        applyTheme(current === "synthwave" ? "cupcake" : "synthwave");
+        const next = state.prefs.theme === "synthwave" ? "cupcake" : "synthwave";
+        state.prefs.theme = next;
+        applyTheme(next);
+        savePrefs();
     });
 
     id("btnMenuSignIn")?.addEventListener("click", openAuthDialog);

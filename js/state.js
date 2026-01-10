@@ -29,6 +29,24 @@ export const state = {
     lastMode: "trending",
     lastQuery: "",
     lastSort: "popularity.desc",
+    prefs: {
+        theme: "synthwave",          // "synthwave" | "cupcake"
+        defaultMediaType: "movie",   // "movie" | "tv"
+
+        // Search / filters defaults
+        defaultMinRating: 6,
+        defaultExcludeWatched: true,
+        defaultYear: "",             // "" = no constraint
+        defaultSort: "popularity.desc",
+
+        // Pool defaults
+        poolMinRating: 6,
+        poolExcludeWatched: true,
+
+        // Future: any other user prefs
+        // language: "en-US",
+        // region: "IN",
+    },
 };
 
 export const authState = { user: null };

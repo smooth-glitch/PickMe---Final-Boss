@@ -75,20 +75,26 @@ export async function openDetails(idNum, opts = {}) {
         setBusy(true);
 
         currentDetailsId = idNum;
+        const kind = opts?.mediaType || state.filters?.mediaType || "movie";
+
+        if (!dlg || !dlgTitle || !dlgMeta || !ovEl) return;
+
         dlgTitle.textContent = "Loading…";
         dlgMeta.textContent = "";
         ovEl.innerHTML = `
-      <div class="flex items-center justify-center py-10">
-        <span class="loading loading-spinner loading-lg text-primary"></span>
-      </div>
-    `;
-        if (posterEl) posterEl.src = "";
+        <div class="flex items-center justify-center py-10">
+          <span class="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+      `;
+
+        if (posterEl) {
+            posterEl.src = "";
+            posterEl.alt = "";
+        }
         if (mainExtras) mainExtras.innerHTML = "";
         if (extraContent) extraContent.innerHTML = "";
 
         dlg.showModal();
-
-        const kind = opts?.mediaType || state.filters?.mediaType || "movie";
 
         const data = await tmdb(`${kind}/${idNum}`, {
             language: "en-US",
@@ -139,6 +145,7 @@ export async function openDetails(idNum, opts = {}) {
                 posterEl.alt = title;
             } else {
                 posterEl.src = "";
+                posterEl.alt = "";
             }
         }
 
@@ -146,14 +153,11 @@ export async function openDetails(idNum, opts = {}) {
         ovEl.textContent = data.overview || "No overview available.";
 
         // ----- Main extras (trailers / providers / seasons / collection) -----
-        if (mainExtras) {
-            mainExtras.innerHTML = "";
-        }
-
+        if (mainExtras) mainExtras.innerHTML = "";
         const rightExtras = document.createElement("div");
         rightExtras.className = "space-y-4";
 
-        // Trailer row (with icons)
+        // Trailer row
         try {
             const videos = await loadBestVideos(kind, idNum);
             const best = pickBestTrailer(videos);
@@ -169,13 +173,13 @@ export async function openDetails(idNum, opts = {}) {
                 btnTrailer.target = "_blank";
                 btnTrailer.rel = "noopener noreferrer";
                 btnTrailer.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-               viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="5 3 19 12 5 21 5 3"/>
-          </svg>
-          Watch trailer
-        `;
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Watch trailer
+          `;
                 trailerWrap.appendChild(btnTrailer);
             } else {
                 const none = document.createElement("div");
@@ -189,9 +193,9 @@ export async function openDetails(idNum, opts = {}) {
                 btnTeleparty.type = "button";
                 btnTeleparty.className = "btn btn-sm btn-primary gap-2";
                 btnTeleparty.innerHTML = `
-          <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-base-100 text-[10px] font-semibold">TP</span>
-          <span>Teleparty</span>
-        `;
+            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-base-100 text-[10px] font-semibold">TP</span>
+            <span>Teleparty</span>
+          `;
                 btnTeleparty.addEventListener("click", async () => {
                     const existing = prompt(
                         "Paste your Teleparty link here:",
@@ -211,14 +215,14 @@ export async function openDetails(idNum, opts = {}) {
                 btnPlayTogether.type = "button";
                 btnPlayTogether.className = "btn btn-sm btn-primary gap-2";
                 btnPlayTogether.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-               viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="4" width="20" height="16" rx="2"/>
-            <polygon points="10 9 15 12 10 15 10 9"/>
-          </svg>
-          Play together
-        `;
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <polygon points="10 9 15 12 10 15 10 9"/>
+            </svg>
+            Play together
+          `;
                 btnPlayTogether.addEventListener("click", () => {
                     const cur = state.currentDetails;
                     if (!cur) return;
@@ -237,7 +241,7 @@ export async function openDetails(idNum, opts = {}) {
 
             rightExtras.appendChild(trailerWrap);
         } catch {
-            /* ignore trailer errors */
+            // ignore trailer errors
         }
 
         // Where to watch
@@ -245,9 +249,11 @@ export async function openDetails(idNum, opts = {}) {
             const wp = await tmdb(`${kind}/${idNum}/watch/providers`, {});
             const wpSection = renderWatchProvidersSection(wp);
             if (wpSection) rightExtras.appendChild(wpSection);
-        } catch { }
+        } catch {
+            // ignore
+        }
 
-        // Seasons
+        // Seasons (TV)
         if (kind === "tv" && Array.isArray(data.seasons)) {
             const seasonsSection = renderTvSeasonsSection(data);
             if (seasonsSection) {
@@ -266,111 +272,123 @@ export async function openDetails(idNum, opts = {}) {
                 );
                 const colSection = renderMovieCollectionSection(data, col);
                 if (colSection) rightExtras.appendChild(colSection);
-            } catch { }
+            } catch {
+                // ignore collection errors
+            }
         }
 
         if (mainExtras) mainExtras.appendChild(rightExtras);
 
-        // ----- Recommendations / Similar (new placement, with icons) -----
+        // ----- Recommendations / Similar -----
         if (extraContent) extraContent.innerHTML = "";
 
         async function buildSection(title, list, mediaType) {
-            if (!Array.isArray(list) || !list.length) return "";
-            const cards = list.slice(0, 10).map((m) => {
-                const p = posterUrl(m.poster_path);
-                const name = mediaType === "tv"
-                    ? m.name || m.original_name
-                    : m.title || m.original_title;
+            if (!Array.isArray(list) || list.length === 0) return "";
+
+            const cards = list.slice(0, 10).map((item) => {
+                const p = posterUrl(item.poster_path);
+                const name =
+                    mediaType === "tv"
+                        ? item.name || item.original_name
+                        : item.title || item.original_title;
+
                 return `
-          <button
-            type="button"
-            class="flex-none w-24 text-left group"
-            data-id="${m.id}"
-            data-kind="${mediaType}"
-          >
-            <div class="relative aspect-[2/3] rounded-lg overflow-hidden bg-base-300 mb-1.5">
-              ${p
+            <button
+              type="button"
+              class="flex-none w-24 text-left group"
+              data-id="${item.id}"
+              data-kind="${mediaType}"
+            >
+              <div class="relative aspect-[2/3] rounded-lg overflow-hidden bg-base-300 mb-1.5">
+                ${p
                         ? `<img src="${p}" alt="${escapeHtml(name || "")}"
-                        class="w-full h-full object-cover transition group-hover:scale-105" loading="lazy" />`
+                           class="w-full h-full object-cover transition group-hover:scale-105" loading="lazy" />`
                         : `<div class="w-full h-full grid place-items-center text-[10px] opacity-60">No poster</div>`
                     }
-            </div>
-            <p class="text-[11px] leading-tight line-clamp-2 group-hover:text-primary">
-              ${escapeHtml(name || "Untitled")}
-            </p>
-          </button>
-        `;
+              </div>
+              <p class="text-[11px] leading-tight line-clamp-2 group-hover:text-primary">
+                ${escapeHtml(name || "Untitled")}
+              </p>
+            </button>
+          `;
             }).join("");
 
+            if (!cards) return "";
+
             return `
-        <section class="space-y-2">
-          <h4 class="font-semibold text-sm flex items-center gap-2 opacity-80">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-            </svg>
-            ${title}
-          </h4>
-          <div class="flex gap-3 overflow-x-auto pb-2">
-            ${cards}
-          </div>
-        </section>
-      `;
+          <section class="space-y-2">
+            <h4 class="font-semibold text-sm flex items-center gap-2 opacity-80">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                   viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+              </svg>
+              ${title}
+            </h4>
+            <div class="flex gap-3 overflow-x-auto pb-2">
+              ${cards}
+            </div>
+          </section>
+        `;
         }
 
         let sectionsHtml = "";
 
         if (kind === "tv") {
-            if (data.recommendations?.results?.length) {
-                sectionsHtml += await buildSection(
-                    "Recommended shows",
-                    data.recommendations.results,
-                    "tv"
-                );
+            const tvRecs = data.recommendations?.results || [];
+            const tvSimilar = data.similar?.results || [];
+
+            console.log("TV recs length:", tvRecs.length);
+            console.log("TV similar length:", tvSimilar.length);
+
+            if (tvRecs.length) {
+                sectionsHtml += await buildSection("Recommended shows", tvRecs, "tv");
             }
-            if (data.similar?.results?.length) {
-                sectionsHtml += await buildSection(
-                    "Similar shows",
-                    data.similar.results,
-                    "tv"
-                );
+            if (tvSimilar.length) {
+                sectionsHtml += await buildSection("Similar shows", tvSimilar, "tv");
             }
         } else {
             const rec = await tmdb(`movie/${idNum}/recommendations`, {
                 language: "en-US",
             });
-            if (rec.results?.length) {
-                sectionsHtml += await buildSection(
-                    "Recommended movies",
-                    rec.results,
-                    "movie"
-                );
-            }
             const sim = await tmdb(`movie/${idNum}/similar`, {
                 language: "en-US",
             });
-            if (sim.results?.length) {
-                sectionsHtml += await buildSection(
-                    "Similar movies",
-                    sim.results,
-                    "movie"
-                );
+
+            const movieRecs = rec.results || [];
+            const movieSimilar = sim.results || [];
+
+            console.log("Movie recs length:", movieRecs.length);
+            console.log("Movie similar length:", movieSimilar.length);
+
+            if (movieRecs.length) {
+                sectionsHtml += await buildSection("Recommended movies", movieRecs, "movie");
+            }
+            if (movieSimilar.length) {
+                sectionsHtml += await buildSection("Similar movies", movieSimilar, "movie");
             }
         }
 
-        if (extraContent && sectionsHtml) {
-            extraContent.innerHTML = sectionsHtml;
+        if (extraContent) {
+            if (sectionsHtml) {
+                extraContent.innerHTML = sectionsHtml;
 
-            // Delegate click to openDetails on recs/similar cards
-            extraContent.querySelectorAll("button[data-id]").forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    const mid = Number(btn.getAttribute("data-id"));
-                    const mkind = btn.getAttribute("data-kind") || kind;
-                    if (!Number.isFinite(mid)) return;
-                    openDetails(mid, { mediaType: mkind });
+                // Delegate click to openDetails on recs/similar cards
+                extraContent.querySelectorAll("button[data-id]").forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        const mid = Number(btn.getAttribute("data-id"));
+                        const mkind = btn.getAttribute("data-kind") || kind;
+                        if (!Number.isFinite(mid)) return;
+                        openDetails(mid, { mediaType: mkind });
+                    });
                 });
-            });
+            } else {
+                extraContent.innerHTML = `
+            <p class="text-xs text-base-content/50">
+              No recommendations or similar titles available for this title yet.
+            </p>
+          `;
+            }
         }
 
         if (opts.highlight) {
@@ -380,7 +398,9 @@ export async function openDetails(idNum, opts = {}) {
             mainExtras?.appendChild(hint);
         }
 
-        if (btnReroll) btnReroll.classList.toggle("hidden", !opts?.highlight);
+        if (btnReroll) {
+            btnReroll.classList.toggle("hidden", !opts?.highlight);
+        }
 
         dlg.showModal();
     } catch {
@@ -389,6 +409,7 @@ export async function openDetails(idNum, opts = {}) {
         setBusy(false);
     }
 }
+
 
 
 // Mini horizontal list for recommendations/similar
