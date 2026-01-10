@@ -80,9 +80,9 @@
 </head>
 
 <body class="min-h-screen text-base-content">
-    <div class="max-w-5xl mx-auto px-3 pt-3 pb-6 md:pt-4 md:pb-8 space-y-4 flex flex-col min-h-screen">
+    <div class="max-w-none mx-auto px-3 pt-3 pb-6 md:pt-4 md:pb-8 space-y-2 flex flex-col min-h-screen">
         <!-- Hero with logo, theme toggle, and actions -->
-        <section class="relative z-50" id="hero">
+        <section class="relative z-50 px-0" id="hero">
             <div class="relative w-full h-60 md:h-64 lg:h-72 rounded-none shadow-2xl overflow-visible">
                 <!-- Background images -->
                 <img src="assets/light-logo.jpg" alt="CineCircle cupcake theme"
@@ -195,10 +195,11 @@
             <!-- Left: search/results -->
             <section class="card bg-base-100 shadow-xl border border-base-300">
                 <div class="card-body gap-4">
-                    <div id="filtersBar" class="flex flex-col gap-3 2xl:gap-4">
-                        <!-- Top line: search + buttons -->
-                        <div id="searchRow" class="flex flex-col md:flex-row md:flex-nowrap gap-2 md:items-end">
-                            <div class="flex-1 min-w-[260px]">
+                    <div id="filtersBar" class="flex flex-col gap-3">
+                        <!-- Search row is above; keep as you have it -->
+                        <!-- TOP: Search row -->
+                        <div id="searchRow">
+                            <div>
                                 <label class="label">
                                     <span class="label-text">Search movie</span>
                                 </label>
@@ -206,88 +207,91 @@
                                     placeholder="Title (or leave empty for rating-based discover)..." />
                             </div>
 
-                            <button id="btnSearch" class="btn btn-secondary">
-                                Search
-                            </button>
-                            <button id="btnTrending" class="btn btn-ghost">
-                                Trending
-                            </button>
+                            <div class="flex gap-2">
+                                <button id="btnSearch" class="btn btn-secondary">
+                                    Search
+                                </button>
+                                <button id="btnPick" class="btn btn-secondary">
+                                    Surprise me
+                                </button>
+                                <button id="btnCreateRoom" class="btn btn-secondary hidden">
+                                    Create room
+                                </button>
+                                <button id="btnTrending" class="btn btn-ghost">
+                                    Trending
+                                </button>
+                            </div>
                         </div>
 
-                        <!-- Second line: filters grid -->
-                        <div id="filtersGrid" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-                            <div class="flex flex-col gap-2">
+                        <!-- Filters grid row -->
+                        <div id="filtersGrid">
+                            <!-- Media type -->
+                            <div>
+                                <label class="label">
+                                    <span class="label-text">Type</span>
+                                </label>
                                 <select id="mediaType" class="select select-bordered select-sm w-full">
                                     <option value="movie" selected>Movies</option>
                                     <option value="tv">TV Shows</option>
                                 </select>
                             </div>
 
-                            <div class="flex flex-col gap-2">
-                                <div class="flex flex-col sm:flex-row gap-2 w-full">
-                                    <!-- Genres dropdown -->
-                                    <div class="dropdown w-full sm:flex-1">
+                            <!-- Genres -->
+                            <div>
+                                <label class="label">
+                                    <span class="label-text">Genres</span>
+                                </label>
+
+                                <div class="flex flex-wrap gap-2">
+                                    <!-- Genres dropdown (flex-1) -->
+                                    <div class="dropdown flex-1 min-w-[10rem]">
                                         <div id="genreDropdownBtn" tabindex="0" role="button"
                                             class="btn btn-outline btn-sm w-full justify-between">
                                             Genres
-                                            <span class="opacity-60 text-xs" id="genreDropdownCount"></span>
+                                            <span id="genreDropdownCount" class="opacity-60 text-xs"></span>
                                         </div>
 
-                                        <div id="genreDropdownMenu" tabindex="0"
-                                            class="dropdown-content z-[50] mt-2 w-full p-2 rounded-xl border border-base-300 bg-base-100 shadow-xl max-h-64 overflow-auto">
-                                            <!-- genre checkboxes injected -->
+                                        <div id="genreDropdownMenu"
+                                            class="dropdown-content z-50 mt-2 w-full p-2 rounded-xl border border-base-300 bg-base-100 shadow-xl max-h-64 overflow-auto">
                                         </div>
                                     </div>
-
-                                    <!-- Actions next to Genres -->
-
-
-                                    <div class="flex gap-2 sm:shrink-0">
-                                        <button id="btnPick" class="btn btn-secondary btn-sm">
-                                            Surprise me
-                                        </button>
-
-                                        <button id="btnCreateRoom" class="btn btn-outline btn-sm hidden">
-                                            Create room
-                                        </button>
-
-                                        <!-- Room controls -->
-                                        <button id="roomBadge" class="btn btn-outline btn-sm hidden">
-                                            <span id="roomBadgeLabel" class="truncate">Room: —</span>
-                                        </button>
-                                        <button id="btnCopyRoomLink" class="btn btn-outline btn-sm hidden">
-                                            Copy link
-                                        </button>
-                                        <button id="btnLeaveRoom" class="btn btn-outline btn-sm hidden">
-                                            Leave
-                                        </button>
-                                    </div>
-
-
                                 </div>
                             </div>
 
-                            <div class="flex flex-col gap-2">
-                                <input id="yearFilter" type="number" class="input input-bordered input-sm w-full"
-                                    placeholder="e.g. 2023" min="1900" max="2100" />
+
+                            <!-- Year -->
+                            <div>
+                                <label class="label">
+                                    <span class="label-text">Year</span>
+                                </label>
+                                <input id="yearFilter" type="number" min="1900" max="2100"
+                                    class="input input-bordered input-sm w-full" placeholder="e.g. 2023" />
                             </div>
 
-                            <div class="flex flex-col gap-2">
+                            <!-- Sort -->
+                            <div>
+                                <label class="label">
+                                    <span class="label-text">Sort by</span>
+                                </label>
                                 <select id="resultSort" class="select select-bordered select-sm w-full">
                                     <option value="popularity.desc">Popular</option>
                                     <option value="vote_average.desc">Rating</option>
                                     <option value="primary_release_date.desc">Newest</option>
                                 </select>
                             </div>
-                        </div>
 
-                            <div class="flex flex-col gap-2">
-                                <button id="btnResetFilters" class="btn btn-outline btn-sm w-full">
-                                    Reset filters
-                                </button>
+                            <!-- Reset -->
+                            <div>
+                                <label class="label">
+                                    <span class="label-text">&nbsp;</span>
+                                </label>
+                                <button id="btnResetFilters" class="btn btn-outline btn-sm w-full">Reset
+                                    filters</button>
                             </div>
                         </div>
                     </div>
+
+
 
                     <div id="resultsEmpty" class="text-base-content/60 hidden text-sm">
                         No results yet. Try Trending.
