@@ -1,0 +1,50 @@
+body {
+    background: radial-gradient(900px 500px at 15% -10%, rgba(255, 0, 170, 0.28), transparent 55%), radial-gradient(800px 520px at 90% 0%, rgba(0, 255, 230, 0.22), transparent 55%), radial-gradient(900px 520px at 60% 110%, rgba(120, 90, 255, 0.24), transparent 55%), hsl(var(--b2));
+}
+
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.08;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+}
+
+:root {
+    --ui-radius: 0.7rem;
+    --ui-radius-sm: 0.65rem;
+    --ui-radius-xs: 0.6rem;
+    --ui-radius-pill: 999px;
+    --ui-border: 1px solid hsl(var(--b3));
+    --ui-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    --ui-shadow-soft: 0 6px 16px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.truncate {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bg-base-20040 {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+@supports (background-color: color-mix(in oklab, black, white)) {
+    .bg-base-20040 {
+        background-color: color-mix(in oklab, hsl(var(--b2)) 40%, transparent);
+    }
+}

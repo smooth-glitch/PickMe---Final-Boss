@@ -1,0 +1,266 @@
+#resultSort {
+    padding-right: 2.5rem !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    background-position: right 0.85rem center !important;
+    background-size: 1rem 1rem !important;
+}
+
+#resultSort {
+    min-width: 10.5rem;
+}
+
+label:has(#excludeWatched) {
+    padding: 0.45rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--b3));
+    background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
+    transition: filter 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+label:has(#excludeWatched):hover {
+    filter: brightness(1.05);
+}
+
+label:has(#excludeWatched:checked) {
+    border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
+    background: linear-gradient(135deg, color-mix(in oklab, hsl(var(--p)) 70%, transparent), color-mix(in oklab, hsl(var(--s)) 55%, transparent));
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+label:has(#excludeWatched:checked) span {
+    color: hsl(var(--bc));
+    font-weight: 700;
+}
+
+#excludeWatched.checkbox:checked {
+    background-color: hsl(var(--p));
+    border-color: transparent;
+}
+
+label:has(#excludeWatched),
+#watchFilters label:has(input[type="checkbox"]),
+#watchFilters label:has(input[type="radio"]),
+#watchFilters .watch-chip {
+    padding: 0.45rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--b3));
+    background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent);
+    transition: filter 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 120ms ease;
+}
+
+label:has(#excludeWatched):hover,
+#watchFilters label:has(input[type="checkbox"]):hover,
+#watchFilters label:has(input[type="radio"]):hover,
+#watchFilters .watch-chip:hover {
+    filter: brightness(1.05);
+}
+
+label:has(#excludeWatched:checked),
+#watchFilters label:has(input[type="checkbox"]:checked),
+#watchFilters label:has(input[type="radio"]:checked),
+#watchFilters .watch-chip.is-active,
+#watchFilters .watch-chip.active,
+#watchFilters .watch-chip[aria-pressed="true"],
+#watchFilters .watch-chip[data-active="true"] {
+    border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
+    background: linear-gradient(135deg, color-mix(in oklab, hsl(var(--p)) 70%, transparent), color-mix(in oklab, hsl(var(--s)) 55%, transparent));
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+label:has(#excludeWatched:checked) span,
+#watchFilters label:has(input[type="checkbox"]:checked) span,
+#watchFilters label:has(input[type="radio"]:checked) span,
+#watchFilters .watch-chip.is-active,
+#watchFilters .watch-chip.active,
+#watchFilters .watch-chip[aria-pressed="true"],
+#watchFilters .watch-chip[data-active="true"] {
+    font-weight: 700;
+    color: hsl(var(--bc));
+}
+
+#excludeWatched.checkbox:checked,
+#watchFilters input[type="checkbox"].checkbox:checked,
+#watchFilters input[type="radio"].radio:checked {
+    background-color: hsl(var(--p));
+    border-color: transparent;
+}
+
+#watchFilters label:has(input[type="checkbox"]),
+#watchFilters label:has(input[type="radio"]) {
+    cursor: pointer;
+    user-select: none;
+}
+
+#genreFilter {
+    border-radius: 0.75rem !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-color: hsl(var(--b3)) !important;
+    background-color: hsl(var(--b1)) !important;
+    color: hsl(var(--bc)) !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.03) !important;
+    padding: 0.5rem 0.6rem !important;
+    min-height: 11rem !important;
+    background-image: none !important;
+    background-position: initial !important;
+    background-repeat: initial !important;
+}
+
+#genreFilter option {
+    color: hsl(var(--bc)) !important;
+    background-color: hsl(var(--b1)) !important;
+}
+
+#genreFilter:focus {
+    outline: none;
+    border-color: hsl(var(--p));
+    box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55);
+}
+
+#q {
+    max-width: 420px;
+    width: 100%;
+}
+
+#q {
+    max-width: 520px;
+    min-height: 3rem;
+    height: 3rem;
+    font-size: 1rem;
+    border-width: 2px;
+    border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+#q:focus {
+    border-color: hsl(var(--p));
+    box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 55%, transparent), 0 14px 34px rgba(0, 0, 0, 0.55);
+}
+
+#mediaType {
+    padding-right: 2.5rem !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    background-position: right 0.85rem center !important;
+    background-size: 1rem 1rem !important;
+}
+
+#genreDropdownBtn {
+    border: 1px solid hsl(var(--b3)) !important;
+    background-color: hsl(var(--b1)) !important;
+    color: hsl(var(--bc)) !important;
+    box-shadow: var(--ui-shadow-soft) !important;
+}
+
+#genreDropdownBtn:hover {
+    background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent) !important;
+}
+
+#genreDropdownBtn:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55) !important;
+}
+
+#genreDropdownMenu {
+    border-color: hsl(var(--b3)) !important;
+    background-color: hsl(var(--b1)) !important;
+    color: hsl(var(--bc)) !important;
+}
+
+#genreDropdownMenu {
+    min-width: 100%;
+    max-width: min(28rem, 92vw);
+}
+
+#genreDropdownMenu label {
+    width: 100%;
+}
+
+#genreDropdownMenu span {
+    white-space: normal;
+}
+
+#ottDropdownBtn {
+    border: 1px solid hsl(var(--b3)) !important;
+    background-color: hsl(var(--b1)) !important;
+    color: hsl(var(--bc)) !important;
+    box-shadow: var(--ui-shadow-soft) !important;
+}
+
+#ottDropdownBtn:hover {
+    background-color: color-mix(in oklab, hsl(var(--b2)) 35%, transparent) !important;
+}
+
+#ottDropdownBtn:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 1px hsl(var(--p)), 0 10px 24px rgba(0, 0, 0, 0.55) !important;
+}
+
+#ottDropdownMenu {
+    border-color: hsl(var(--b3)) !important;
+    background-color: hsl(var(--b1)) !important;
+    color: hsl(var(--bc)) !important;
+    min-width: 100%;
+    max-width: min(28rem, 92vw);
+}
+
+#ottDropdownMenu label {
+    width: 100%;
+}
+
+#ottDropdownMenu span {
+    white-space: normal;
+}
+
+#genreDropdownMenu label,
+#ottDropdownMenu label {
+    border: 1px solid transparent;
+    border-radius: 0.75rem;
+    transition: filter 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+#genreDropdownMenu label:hover,
+#ottDropdownMenu label:hover {
+    filter: brightness(1.05);
+}
+
+#genreDropdownMenu label:has(input[type="checkbox"]:checked),
+#ottDropdownMenu label:has(input[type="checkbox"]:checked) {
+    border-color: color-mix(in oklab, hsl(var(--p)) 55%, hsl(var(--b3)) 45%);
+    background: linear-gradient(135deg, color-mix(in oklab, hsl(var(--p)) 45%, transparent), color-mix(in oklab, hsl(var(--s)) 35%, transparent));
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+#genreDropdownMenu label:has(input[type="checkbox"]:checked) span,
+#ottDropdownMenu label:has(input[type="checkbox"]:checked) span {
+    font-weight: 700;
+    color: hsl(var(--bc));
+}
+
+#genreDropdownMenu label:focus-within,
+#ottDropdownMenu label:focus-within {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in oklab, hsl(var(--p)) 45%, transparent), 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+#genreDropdownMenu label span,
+#ottDropdownMenu label span {
+    pointer-events: none;
+}
+
+#genreDropdownMenu label,
+#ottDropdownMenu label {
+    cursor: pointer;
+    width: 100%;
+}
+
+#btnSearch,
+#btnTrending {
+    min-height: 2.55rem;
+    height: 2.55rem;
+    padding-inline: 1rem;
+    font-size: 0.9rem;
+}

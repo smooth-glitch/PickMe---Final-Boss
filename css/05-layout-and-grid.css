@@ -1,0 +1,195 @@
+@media (max-width: 640px) {
+    header.header-shell {
+        flex-wrap: wrap;
+        row-gap: 0.5rem;
+    }
+
+    header.header-shell>div:last-child {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    #btnPick {
+        width: 100%;
+    }
+}
+
+#pagerWrap {
+    flex-wrap: wrap;
+}
+
+#roomPickBanner {
+    border: 1px solid hsl(var(--b3));
+    border-radius: 0.9rem;
+}
+
+@media (max-width: 480px) {
+    .modal-box {
+        max-height: calc(100vh - 2rem);
+        overflow: auto;
+        padding: 1rem;
+    }
+
+    .modal-action {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .modal-action .btn {
+        flex: 1 1 9rem;
+    }
+}
+
+#results .card .card-body {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+#results .card .card-body>.flex.items-start {
+    flex-wrap: wrap;
+}
+
+#results .card .card-actions {
+    margin-top: auto !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+}
+
+#results .card .card-actions .btn {
+    white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+    #results .card .card-actions {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    #results .card .card-actions .btn {
+        width: 100%;
+    }
+}
+
+.max-w-5xl {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main.grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    align-items: stretch;
+}
+
+main.grid>section {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+main.grid>section>.card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+#results {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+#pool {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    max-height: none !important;
+}
+
+main.grid * {
+    min-width: 0;
+}
+
+@media (min-width: 1024px) and (max-width: 1535px) {
+
+    #filtersBar #mediaType,
+    #filtersBar #yearFilter,
+    #filtersBar #resultSort,
+    #filtersBar #genreDropdownBtn,
+    #filtersBar #ottDropdownBtn,
+    #filtersBar #btnResetFilters {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+    }
+
+    #filtersBar #q {
+        max-width: none !important;
+    }
+}
+
+@media (min-width: 1536px) {
+    #filtersBar {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 0.75rem;
+        align-items: flex-end;
+    }
+
+    #searchRow,
+    #filtersGrid {
+        display: contents;
+    }
+
+    #q {
+        flex: 1 1 28rem !important;
+        max-width: none !important;
+    }
+
+    #mediaType,
+    #yearFilter,
+    #resultSort,
+    #genreDropdownBtn,
+    #ottDropdownBtn,
+    #btnSearch,
+    #btnTrending,
+    #btnResetFilters {
+        width: var(--ctrlW) !important;
+    }
+}
+
+main.grid>section:last-child {
+    align-self: flex-start !important;
+}
+
+main.grid>section:last-child>.card-body {
+    flex: 0 0 auto !important;
+    min-height: auto !important;
+}
+
+main.grid>section:last-child #pool {
+    flex: 0 0 auto !important;
+    max-height: 32rem;
+    overflow: auto;
+}
+
+@media (max-width: 768px) {
+    main.grid>section:last-child #pool {
+        max-height: 24rem;
+    }
+}
+
+main.grid>section:first-child.card,
+main.grid>section:first-child .card-body {
+    overflow: visible !important;
+}
