@@ -280,3 +280,19 @@ dialog.modal::backdrop {
     box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5);
     transform: translateY(-1px);
 }
+
+html[data-theme="cupcake"] #hero h1,
+html[data-theme="cupcake"] #ad-text .text-primary-content {
+    color: hsl(280 45% 26%);
+}
+
+html[data-theme="cupcake"] #hero p,
+html[data-theme="cupcake"] #hero .text-primary-content,
+html[data-theme="cupcake"] #hero .text-primary-content\/90 {
+    color: hsl(185, 8%, 74%);
+}
+
+html[data-theme="cupcake"] #ad-text,
+html[data-theme="cupcake"] #ad-text-id {
+    color: hsl(185, 8%, 74%);
+}
