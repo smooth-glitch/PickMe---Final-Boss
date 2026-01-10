@@ -117,9 +117,10 @@
             <!-- Left: search/results -->
             <section class="card bg-base-100 shadow-xl border border-base-300">
                 <div class="card-body gap-4">
-                    <div id="filtersBar" class="flex flex-col gap-3 2xl:flex-row 2xl:flex-nowrap 2xl:items-end">
-                        <div id="searchRow" class="flex flex-col md:flex-row gap-2 md:items-end">
-                            <div class="flex-1 min-w-0">
+                    <div id="filtersBar" class="flex flex-col gap-3 2xl:gap-4">
+                        <!-- Top line: search + buttons -->
+                        <div id="searchRow" class="flex flex-col md:flex-row md:flex-nowrap gap-2 md:items-end">
+                            <div class="flex-1 min-w-[260px]">
                                 <label class="label">
                                     <span class="label-text">Search movie</span>
                                 </label>
@@ -127,15 +128,16 @@
                                     placeholder="Title (or leave empty for rating-based discover)..." />
                             </div>
 
-                            <button id="btnSearch" class="btn btn-secondary ...">
+                            <button id="btnSearch" class="btn btn-secondary">
                                 Search
                             </button>
-                            <button id="btnTrending" class="btn btn-ghost ...">
+                            <button id="btnTrending" class="btn btn-ghost">
                                 Trending
                             </button>
                         </div>
 
-                        <div id="filtersGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                        <!-- Second line: filters grid -->
+                        <div id="filtersGrid" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
                             <div class="flex flex-col gap-2">
                                 <select id="mediaType" class="select select-bordered select-sm w-full">
                                     <option value="movie" selected>Movies</option>
@@ -150,24 +152,9 @@
                                         OTT
                                         <span class="opacity-60 text-xs" id="ottDropdownCount"></span>
                                     </div>
-
                                     <div id="ottDropdownMenu" tabindex="0"
                                         class="dropdown-content z-50 mt-2 w-full p-2 rounded-xl border border-base-300 bg-base-100 shadow-xl max-h-64 overflow-auto">
-                                        <label
-                                            class="flex items-center gap-2 p-2 rounded-lg hover:bg-base-200/40 cursor-pointer">
-                                            <input id="ottNetflix" type="checkbox" class="checkbox checkbox-xs" />
-                                            <span class="text-sm">Netflix</span>
-                                        </label>
-                                        <label
-                                            class="flex items-center gap-2 p-2 rounded-lg hover:bg-base-200/40 cursor-pointer">
-                                            <input id="ottPrime" type="checkbox" class="checkbox checkbox-xs" />
-                                            <span class="text-sm">Prime Video</span>
-                                        </label>
-                                        <label
-                                            class="flex items-center gap-2 p-2 rounded-lg hover:bg-base-200/40 cursor-pointer">
-                                            <input id="ottHotstar" type="checkbox" class="checkbox checkbox-xs" />
-                                            <span class="text-sm">Disney Hotstar</span>
-                                        </label>
+                                        <!-- your OTT checkboxes -->
                                     </div>
                                 </div>
                             </div>
@@ -192,19 +179,18 @@
                                         Genres
                                         <span class="opacity-60 text-xs" id="genreDropdownCount"></span>
                                     </div>
-
                                     <div id="genreDropdownMenu" tabindex="0"
                                         class="dropdown-content z-[50] mt-2 w-full p-2 rounded-xl border border-base-300 bg-base-100 shadow-xl max-h-64 overflow-auto">
                                         <!-- genre checkboxes injected -->
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="flex flex-col gap-2">
-                            <button id="btnResetFilters" class="btn btn-outline btn-sm w-full">
-                                Reset filters
-                            </button>
+                            <div class="flex flex-col gap-2">
+                                <button id="btnResetFilters" class="btn btn-outline btn-sm w-full">
+                                    Reset filters
+                                </button>
+                            </div>
                         </div>
                     </div>
 
