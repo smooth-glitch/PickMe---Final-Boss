@@ -350,3 +350,17 @@ html[data-theme="cupcake"] .chat-bubble-neutral {
 #roomChatShell.fullscreen #roomChatResize {
     cursor: default;
 }
+
+/* Chat + members tuning on 1080p laptops */
+@media (min-width: 1440px) and (max-width: 2100px) {
+
+    /* Give chat a bit more vertical space on larger laptops */
+    #roomChatMessages {
+        max-height: 20rem;
+    }
+
+    /* Slightly shorter pool so chat + results visually balance */
+    #pool {
+        max-height: 28rem;
+    }
+}

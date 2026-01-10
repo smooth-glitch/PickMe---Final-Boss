@@ -120,6 +120,15 @@ main.grid * {
     min-width: 0;
 }
 
+/* Narrow 1080p (scaled 14\" / 15.6\" at 125–150%) */
+@media (min-width: 1024px) and (max-width: 1439px) {
+
+    /* Slightly wider cards so text wraps less aggressively */
+    #results {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+}
+
 @media (min-width: 1024px) and (max-width: 1535px) {
 
     #filtersBar #mediaType,
@@ -192,4 +201,51 @@ main.grid>section:last-child #pool {
 main.grid>section:first-child.card,
 main.grid>section:first-child .card-body {
     overflow: visible !important;
+}
+
+/* 1080p laptops / large desktops: 1440–2100px */
+@media (min-width: 1440px) and (max-width: 2100px) {
+
+    /* Use slightly denser grid but keep cards readable */
+    #results {
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    }
+
+    /* Keep the right-side pool from dominating vertically */
+    main.grid>section:last-child #pool {
+        max-height: 28rem;
+    }
+}
+
+@media (min-width: 1680px) and (max-width: 2100px) {
+    #results {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
+/* Optional: two-column desktop with results flowing under pool */
+@media (min-width: 1680px) and (max-width: 2100px) {
+    body.has-room main.grid {
+        display: block !important;
+    }
+
+    body.has-room main.grid::after {
+        content: "";
+        display: block;
+        clear: both;
+    }
+
+    body.has-room main.grid>section:last-child {
+        float: right;
+        width: 520px;
+        margin-left: 1rem;
+    }
+
+    body.has-room main.grid>section:first-child {
+        overflow: visible;
+    }
+
+    body.has-room #results {
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    }
 }
